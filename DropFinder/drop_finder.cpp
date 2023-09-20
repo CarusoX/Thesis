@@ -252,7 +252,13 @@ void drop_finder_on_lvm_file(fs::path lvm_file)
             pulse_ranges.push_back({u1, u2, p1, p2});
 
             // Creamos el corte del pulso
-            create_pulse_cut(ind, u1, p2, nn);
+            auto [from, to] = create_pulse_cut(ind, u1, p2, nn);
+            uint drop_time = drop_cnt * 1000;
+            for (uint i = from; i <= to; i++)
+            {
+                drops.push_back({drop_time++, {var_a[i], var_b[i], ind[i]}});
+            }
+            drop_cnt++;
         }
     }
 
@@ -270,7 +276,8 @@ void drop_finder_on_lvm_file(fs::path lvm_file)
         uint from = u2 - u1 + 1;
         while (i2.size() != from)
             i2.push_back(0);
-        for(uint j = from; j < std::min(p2 - u1 + nn / 2, 4 * nn); j++) {
+        for (uint j = from; j < std::min(p2 - u1 + nn / 2, 4 * nn); j++)
+        {
             i2.push_back(i2.back() - var_b[u1 + j]);
         }
     }
