@@ -28,6 +28,29 @@ std::vector<std::string> split(std::string str, char delimiter)
 }
 
 /**
+ * Dada una linea de un archivo .lvm, devuelve un LVM_DATUM
+ *
+ * @param line linea del archivo .lvm
+ * @return LVM_DATUM con los datos de la linea
+ */
+LVM_DATUM parse_lvm_line(std::string line)
+{
+    std::vector<std::string> parts = split(line, '\t');
+    LVM_DATUM datum;
+
+    // remove the "." and the padded zeros from the time
+    std::string time = parts[0];
+    time.erase(std::remove(time.begin(), time.end(), '.'), time.end());
+
+    datum.time = std::stoull(time);
+    for (uint i = 1; i < parts.size(); i++)
+    {
+        datum.var.push_back(std::stod(parts[i]));
+    }
+    return datum;
+}
+
+/**
  * Lee un archivo y lo separa en un vector de strings por cada linea
  *
  * @param file path al archivo
@@ -54,10 +77,9 @@ std::vector<std::string> read_file(fs::path file)
  * Lee un archivo .lvm y devuelve un vector de LVM_DATUM
  *
  * @param lvm_file path al archivo .lvm
- * @param data_columns cantidad de columnas de datos (la primera es el tiempo) en el archivo .lvm
  * @return std::vector<LVM_DATUM> con los datos del archivo .lvm
  */
-std::vector<LVM_DATUM> read_lvm_file(fs::path lvm_file, uint data_columns)
+std::vector<LVM_DATUM> read_lvm_file(fs::path lvm_file)
 {
 
     std::vector<LVM_DATUM> data;
@@ -66,72 +88,29 @@ std::vector<LVM_DATUM> read_lvm_file(fs::path lvm_file, uint data_columns)
 
     for (const std::string &line : lines)
     {
-        std::vector<std::string> values = split(line, '\t');
-
-        std::string time = values[0];
-        // remove the "." and the padded zeros from the time
-        time.erase(std::remove(time.begin(), time.end(), '.'), time.end());
-
-        std::vector<double> data_values(data_columns);
-        for (uint i = 1; i < values.size(); i++)
-        {
-
-            data_values[i - 1] = std::stod(values[i]);
-        }
-        data.push_back({std::stoull(time), data_values});
+        data.push_back(parse_lvm_line(line));
     }
 
     return data;
 }
 
 /**
- * Lee un archivo .dat y devuelve un vector de DAT_DATUM
- *
- * @param dat_file path al archivo .dat
- * @param data_columns cantidad de columnas de datos en el archivo .dat
- * @return std::vector<DAT_DATUM> con los datos del archivo .dat
- */
-std::vector<DAT_DATUM> read_dat_file(fs::path dat_file, uint data_columns)
-{
-
-    std::vector<DAT_DATUM> data;
-
-    std::vector<std::string> lines = read_file(dat_file);
-
-    for (const std::string &line : lines)
-    {
-        std::vector<std::string> values = split(line, '\t');
-
-        std::vector<double> data_values(data_columns);
-        for (uint i = 0; i < values.size(); i++)
-        {
-
-            data_values[i] = std::stod(values[i]);
-        }
-        data.push_back({data_values});
-    }
-
-    return data;
-}
-
-/**
- * Lee las primeras k lineas de un archivo .dat y devuelve un vector de DAT_DATUM
+ * Lee las primeras k lineas de un archivo .lvm y devuelve un vector de LVM_DATUM
  *un
- * @param dat_file path al archivo .dat
- * @param data_columns cantidad de columnas de datos en el archivo .dat
+ * @param lvm_file path al archivo .lvm
  * @param k cantidad de lineas a leer
- * @return std::vector<DAT_DATUM> con los datos del archivo .dat
+ * @return std::vector<LVM_DATUM> con los datos del archivo .lvm
  */
-std::vector<DAT_DATUM> read_dat_file_first_k_lines(fs::path dat_file, uint data_columns, uint k)
+std::vector<LVM_DATUM> read_lvm_file_first_k_lines(fs::path lvm_file, uint k)
 {
 
-    std::vector<DAT_DATUM> data;
+    std::vector<LVM_DATUM> data;
 
-    std::ifstream file(dat_file);
+    std::ifstream file(lvm_file);
 
     if (!file.is_open())
     {
-        std::cerr << "Error opening file " << dat_file << '\n';
+        std::cerr << "Error opening file " << lvm_file << '\n';
         exit(1);
     }
 
@@ -140,15 +119,7 @@ std::vector<DAT_DATUM> read_dat_file_first_k_lines(fs::path dat_file, uint data_
     for (uint i = 0; i < k; i++)
     {
         std::getline(file, line);
-        std::vector<std::string> values = split(line, '\t');
-
-        std::vector<double> data_values(data_columns);
-        for (uint i = 0; i < values.size(); i++)
-        {
-
-            data_values[i] = std::stod(values[i]);
-        }
-        data.push_back({data_values});
+        data.push_back(parse_lvm_line(line));
     }
 
     file.close();
@@ -156,22 +127,21 @@ std::vector<DAT_DATUM> read_dat_file_first_k_lines(fs::path dat_file, uint data_
 }
 
 /**
- * Lee las ultimas k lineas de un archivo .dat y devuelve un vector de DAT_DATUM
+ * Lee las ultimas k lineas de un archivo .lvm y devuelve un vector de LVM_DATUM
  *un
- * @param dat_file path al archivo .dat
- * @param data_columns cantidad de columnas de datos en el archivo .dat
+ * @param lvm_file path al archivo .lvm
  * @param k cantidad de lineas a leer
- * @return std::vector<DAT_DATUM> con los datos del archivo .dat
+ * @return std::vector<LVM_DATUM> con los datos del archivo .lvm
  */
-std::vector<DAT_DATUM> read_dat_file_last_k_lines(fs::path dat_file, uint data_columns, uint k)
+std::vector<LVM_DATUM> read_lvm_file_last_k_lines(fs::path lvm_file, uint k)
 {
-    std::vector<DAT_DATUM> data;
-    std::ifstream file(dat_file, std::ios::in);
+    std::vector<LVM_DATUM> data;
+    std::ifstream file(lvm_file, std::ios::in);
     std::string line;
 
     if (!file.is_open())
     {
-        std::cerr << "Error opening file " << dat_file << '\n';
+        std::cerr << "Error opening file " << lvm_file << '\n';
         exit(1);
     }
     file.seekg(-2, std::ios::end);
@@ -185,15 +155,7 @@ std::vector<DAT_DATUM> read_dat_file_last_k_lines(fs::path dat_file, uint data_c
             file.seekg(-1, std::ios::cur);
         }
         std::reverse(line.begin(), line.end());
-        std::vector<std::string> values = split(line, '\t');
-
-        std::vector<double> data_values(data_columns);
-        for (uint i = 0; i < values.size(); i++)
-        {
-
-            data_values[i] = std::stod(values[i]);
-        }
-        data.push_back({data_values});
+        data.push_back(parse_lvm_line(line));
         file.seekg(-1, std::ios::cur);
     }
 
@@ -202,29 +164,29 @@ std::vector<DAT_DATUM> read_dat_file_last_k_lines(fs::path dat_file, uint data_c
 }
 
 /**
- * Escribe un .dat
+ * Escribe un .lvm
  *
- * @param dat_file path al archivo .dat
- * @param std::vector<DAT_DATUM> con los datos del archivo .dat
+ * @param lvm_file path al archivo .lvm
+ * @param std::vector<LVM_DATUM> con los datos del archivo .lvm
  */
-void write_dat_file(fs::path dat_file, std::vector<DAT_DATUM> &data)
+void write_lvm_file(fs::path lvm_file, std::vector<LVM_DATUM> &data)
 {
-
-    std::ofstream file(dat_file);
+    std::ofstream file(lvm_file);
 
     if (!file.is_open())
     {
-        std::cerr << "Error opening file " << dat_file << '\n';
+        std::cerr << "Error opening file " << lvm_file << '\n';
         exit(1);
     }
 
     file << std::scientific << std::setprecision(8);
 
-    for (DAT_DATUM datum : data)
+    for (uint i = 0; i < data.size(); i++)
     {
-        for (uint i = 0; i < datum.var.size(); i++)
+        file << data[i].time << "\t";
+        for (uint j = 0; j < data[i].var.size(); j++)
         {
-            file << datum.var[i] << "\t\n"[i == datum.var.size() - 1];
+            file << data[i].var[j] << "\t\n"[j == data[i].var.size() - 1];
         }
     }
 

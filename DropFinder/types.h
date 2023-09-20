@@ -2,6 +2,9 @@
 #define TYPES_H
 
 #include <algorithm>
+#include <assert.h>
+#include <cmath>
+#include <chrono>
 #include <filesystem>
 #include <fstream>
 #include <iostream>
@@ -17,10 +20,6 @@ using ull = unsigned long long;
 
 struct LVM_DATUM {
     ull time;
-    std::vector<double> var;
-};
-
-struct DAT_DATUM {
     std::vector<double> var;
 };
 

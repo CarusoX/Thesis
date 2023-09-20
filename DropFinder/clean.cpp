@@ -38,9 +38,9 @@ void divideTimesBy200(std::vector<LVM_DATUM> &data)
  * @param data vector con los datos
  * @return std::vector<LVM_DATUM> con los datos completados
  */
-std::vector<DAT_DATUM> complete_gaps(std::vector<LVM_DATUM> &data)
+std::vector<LVM_DATUM> complete_gaps(std::vector<LVM_DATUM> &data)
 {
-    std::vector<DAT_DATUM> result;
+    std::vector<LVM_DATUM> result;
 
     ull current_time = 0;
 
@@ -65,10 +65,11 @@ std::vector<DAT_DATUM> complete_gaps(std::vector<LVM_DATUM> &data)
                 double x = j - current_time + 1;
                 double y = from.first + slope_1 * x;
                 double z = from.second + slope_2 * x;
-                result.push_back({{y, z}});
+                result.push_back({j, {y, z, 0}});
             }
         }
-        result.push_back({data[i].var});
+        result.push_back(data[i]);
+        result.back().var.push_back(1);
         current_time = data[i].time + 1;
     }
 
@@ -78,7 +79,7 @@ std::vector<DAT_DATUM> complete_gaps(std::vector<LVM_DATUM> &data)
 /**
  * Realiza transformacion en los datos para finalmente completar los huecos
  * Guarda la nueva data en un archivo con el mismo nombre que el original pero con un
- * "_complete.dat" al final
+ * "_complete.lvm" al final
  *
  * @param directory directorio donde se encuentra el archivo .lvm
  * @param lvm_file nombre del archivo .lvm
@@ -92,9 +93,9 @@ void fill_gaps_on_lvm_file(fs::path lvm_file)
 
     divideTimesBy200(data);
 
-    std::vector<DAT_DATUM> dat_data = complete_gaps(data);
+    std::vector<LVM_DATUM> lvm_data = complete_gaps(data);
 
-    write_dat_file(lvm_file.parent_path() / "data_complete.dat", dat_data);
+    write_lvm_file(lvm_file.parent_path() / "data_complete.lvm", lvm_data);
 }
 
 /**
@@ -105,7 +106,7 @@ void fill_gaps_on_lvm_file(fs::path lvm_file)
  * @param w tamaño de la ventana (debe ser par)
  * @return void
  */
-void compute_dynamic_avg_on_dat_file(fs::path dat_file, fs::path dat_file_left, fs::path dat_file_right, uint w)
+void compute_dynamic_avg_on_lvm_file(fs::path lvm_file, fs::path lvm_file_left, fs::path lvm_file_right, uint w)
 {
 
     if (w % 2 == 1)
@@ -114,20 +115,20 @@ void compute_dynamic_avg_on_dat_file(fs::path dat_file, fs::path dat_file_left, 
         exit(1);
     }
 
-    std::vector<DAT_DATUM> data = read_dat_file(dat_file);
+    std::vector<LVM_DATUM> data = read_lvm_file(lvm_file);
 
-    std::vector<DAT_DATUM> left_data, right_data;
-    if (dat_file_left != "")
+    std::vector<LVM_DATUM> left_data, right_data;
+    if (lvm_file_left != "")
     {
-        left_data = read_dat_file_last_k_lines(dat_file_left, 2, w / 2);
+        left_data = read_lvm_file_last_k_lines(lvm_file_left, w / 2);
     }
 
-    if (dat_file_right != "")
+    if (lvm_file_right != "")
     {
-        right_data = read_dat_file_first_k_lines(dat_file_right, 2, w / 2);
+        right_data = read_lvm_file_first_k_lines(lvm_file_right, w / 2);
     }
 
-    std::vector<DAT_DATUM> all_data;
+    std::vector<LVM_DATUM> all_data;
     all_data.insert(all_data.end(), left_data.begin(), left_data.end());
     all_data.insert(all_data.end(), data.begin(), data.end());
     all_data.insert(all_data.end(), right_data.begin(), right_data.end());
@@ -157,6 +158,5 @@ void compute_dynamic_avg_on_dat_file(fs::path dat_file, fs::path dat_file_left, 
         data[i].var[1] -= (pref_b[index_right] - pref_b[index_left]) / (w + 1);
     }
 
-
-    write_dat_file(dat_file.parent_path() / "data_avg.dat", data);
+    write_lvm_file(lvm_file.parent_path() / "data_avg.lvm", data);
 }

@@ -90,9 +90,9 @@ def compute_dynamic_avg(folders):
     commands = [
         ['../DropFinder/drop_finder',
         'compute_dynamic_avg',
-        f'{folder}/data_complete.dat',
-        f'{folders[i-1]}/data_complete.dat' if i > 0 else '',
-        f'{folders[i+1]}/data_complete.dat' if i < len(folders) - 1 else '' ]
+        f'{folder}/data_complete.lvm',
+        f'{folders[i-1]}/data_complete.lvm' if i > 0 else '',
+        f'{folders[i+1]}/data_complete.lvm' if i < len(folders) - 1 else '' ]
     for i, folder in enumerate(folders)]
 
     run_commands_in_parallel(commands)
