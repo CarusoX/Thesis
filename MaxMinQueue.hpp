@@ -3,7 +3,8 @@
 
 #include <deque>
 
-class MaxMinQueue {
+class MaxMinQueue
+{
 private:
     std::deque<std::pair<double, int>> queue;
     std::deque<std::pair<double, int>> maxDeque;

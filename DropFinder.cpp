@@ -16,9 +16,8 @@ Drop DropFinder::findDrop(const std::vector<LVM::Row> &data)
 
     Drop drop = getDrop(sensor1, sensor2, used);
 
-    if (drop.c1 == -1)
+    if (!drop.valid)
     {
-        // empty drop
         return drop;
     }
 

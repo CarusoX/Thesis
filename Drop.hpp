@@ -6,7 +6,7 @@
 class Drop
 {
 public:
-    int isPositive;                       // picos positivos
+    bool isPositive;                      // picos positivos
     int c1, c2;                           // puntos criticos
     int u1, u2;                           // posiciones iniciales
     int p1;                               // punto medio del primer sensor
@@ -15,11 +15,12 @@ public:
     int q2;                               // carga del plato
     int q;                                // carga promedio
     std::vector<double> sensor1, sensor2; // Datos de los sensores
+    bool valid;
 
     Drop(bool isPositive, int c1, int c2)
-        : isPositive(isPositive), c1(c1), c2(c2) {}
+        : isPositive(isPositive), c1(c1), c2(c2), valid(1) {}
 
-    Drop() : c1(-1), c2(-1) {}
+    Drop() : c1(-1), c2(-1), valid(0) {}
 
     void print() const
     {
