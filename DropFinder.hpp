@@ -14,6 +14,11 @@ public:
     Drop findDrop(const std::vector<LVM::Row>& data);
 
 private:
+
+    Drop getDrop(const std::vector<double>& sensor1,
+                               const std::vector<double>& sensor2,
+                               const std::vector<int>& used);
+
     void getBestCandidateDrop(const std::vector<double>& sensor1,
                                const std::vector<double>& sensor2,
                                const std::vector<int>& used,
