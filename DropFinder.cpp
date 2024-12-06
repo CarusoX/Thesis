@@ -26,15 +26,23 @@ Drop DropFinder::findDrop(const std::vector<LVM::Row> &data)
 
     // Recorte de la gota
     // TODO: Recortar mejor
-    std::vector<double> dropSensor1, dropSensor2;
     for (int i = 0; i < DROP_SIZE; i++)
     {
-        dropSensor1.push_back(sensor1[drop.u1 + i]);
-        dropSensor2.push_back(sensor2[drop.u1 + i]);
+        drop.sensor1.push_back(sensor1[drop.u1 + i]);
+        drop.sensor2.push_back(sensor2[drop.u1 + i]);
     }
 
-    drop.p1 = findSensor1MiddlePoint(dropSensor1, drop.isPositive);
-    drop.p2 = findSensor2TippingPoint(dropSensor2, drop.u2 - drop.u1, drop.isPositive);
+    // Como recortamos la gota, u1 es 0 ahora -> ajustamos las posiciones
+    drop.c1 -= drop.u1;
+    drop.c2 -= drop.u1;
+    drop.u2 -= drop.u1;
+    drop.u1 = 0;
+
+    drop.p1 = findSensor1MiddlePoint(drop);
+    drop.p2 = findSensor2TippingPoint(drop);
+    drop.q1 = findRingCharge(drop);
+    drop.q2 = findDishCharge(drop);
+    drop.q = (drop.q1 / PROP_CHARGE + drop.q2) / 2;
 
     return drop;
 }
@@ -86,7 +94,7 @@ void DropFinder::getBestCandidateDrop(const std::vector<double> &sensor1,
         return isPositive ? std::min(sensor[i], sensor[i + 1]) : std::max(sensor[i], sensor[i + 1]);
     };
 
-    for (int i = 0; i < sensor1.size() - 1; ++i)
+    for (int i = 0; i < int(sensor1.size()) - 1; ++i)
     {
         sensor1Values[i] = getValueOfSensor(sensor1, i);
         sensor2Values[i] = getValueOfSensor(sensor2, i);
@@ -146,16 +154,16 @@ std::pair<int, int> DropFinder::findStartingPoints(const std::vector<double> &se
     return {u1, u2};
 }
 
-int DropFinder::findSensor1MiddlePoint(const std::vector<double> &sensor, bool isPositive)
+int DropFinder::findSensor1MiddlePoint(const Drop &drop)
 {
     auto isSensorAnulled = [&](double x) -> bool
     {
-        return isPositive ? x < 0 : x > 0;
+        return drop.isPositive ? x < 0 : x > 0;
     };
 
-    for (int i = 0; i < sensor.size() - 1; i++)
+    for (int i = 0; i < drop.size() - 1; i++)
     {
-        if (isSensorAnulled(sensor[i]) && isSensorAnulled(sensor[i + 1]))
+        if (isSensorAnulled(drop.sensor1[i]) && isSensorAnulled(drop.sensor1[i + 1]))
         {
             return i;
         }
@@ -163,25 +171,25 @@ int DropFinder::findSensor1MiddlePoint(const std::vector<double> &sensor, bool i
     return -1;
 }
 
-int DropFinder::findSensor2TippingPoint(const std::vector<double> &sensor, int u, bool isPositive)
+int DropFinder::findSensor2TippingPoint(const Drop &drop)
 {
 
     auto compare = [&](double x, double y) -> bool
     {
-        return isPositive ? x < y : x > y;
+        return drop.isPositive ? x < y : x > y;
     };
 
     double integral;
-    for (int i = u; i < sensor.size(); i++)
+    for (int i = drop.u2; i < drop.size(); i++)
     {
-        integral = integral - sensor[i];
-        if (compare(integral, isPositive ? -0.1 : 0.1))
+        integral = integral - drop.sensor2[i];
+        if (compare(integral, drop.isPositive ? -0.1 : 0.1))
         {
             double sum = 0;
-            for (int j = i; j < sensor.size() - 1; j++)
+            for (int j = i; j < drop.size() - 1; j++)
             {
-                sum += sensor[j];
-                if (compare(sensor[j + 1], 0.3 * sum / (j - i + 1)))
+                sum += drop.sensor2[j];
+                if (compare(drop.sensor2[j + 1], 0.3 * sum / (j - i + 1)))
                 {
                     return j;
                 }
@@ -189,4 +197,24 @@ int DropFinder::findSensor2TippingPoint(const std::vector<double> &sensor, int u
         }
     }
     return -1;
+}
+
+double DropFinder::findRingCharge(const Drop &drop)
+{
+    double integral = 0;
+    for (int i = 0; i < drop.p1; ++i)
+    {
+        integral -= drop.sensor1[i];
+    }
+    return 2000.0 / DATA_PER_SECOND * integral;
+}
+
+double DropFinder::findDishCharge(const Drop &drop)
+{
+    double integral = 0;
+    for (int i = 0; i < drop.p2; ++i)
+    {
+        integral -= drop.sensor2[i];
+    }
+    return 2000.0 / DATA_PER_SECOND * integral;
 }

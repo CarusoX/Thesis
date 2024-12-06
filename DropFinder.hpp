@@ -8,29 +8,32 @@
 #include "MaxMinQueue.hpp"
 #include "Drop.hpp"
 
-class DropFinder {
+class DropFinder
+{
 public:
-
-    Drop findDrop(const std::vector<LVM::Row>& data);
+    Drop findDrop(const std::vector<LVM::Row> &data);
 
 private:
+    Drop getDrop(const std::vector<double> &sensor1,
+                 const std::vector<double> &sensor2,
+                 const std::vector<int> &used);
 
-    Drop getDrop(const std::vector<double>& sensor1,
-                               const std::vector<double>& sensor2,
-                               const std::vector<int>& used);
+    void getBestCandidateDrop(const std::vector<double> &sensor1,
+                              const std::vector<double> &sensor2,
+                              const std::vector<int> &used,
+                              bool isPositive,
+                              std::pair<int, int> &criticals,
+                              double &umbral);
 
-    void getBestCandidateDrop(const std::vector<double>& sensor1,
-                               const std::vector<double>& sensor2,
-                               const std::vector<int>& used,
-                               bool isPositive,
-                               std::pair<int, int>& criticals,
-                               double& umbral);
+    std::pair<int, int> findStartingPoints(const std::vector<double> &sensor1, const std::vector<double> &sensor2, std::pair<int, int> criticals, bool isPositive);
 
-    std::pair<int, int> findStartingPoints(const std::vector<double>& sensor1,const std::vector<double>& sensor2, std::pair<int,int> criticals, bool isPositive);
+    int findSensor1MiddlePoint(const Drop &drop);
 
-    int findSensor1MiddlePoint(const std::vector<double> &sensor, bool isPositive);
+    int findSensor2TippingPoint(const Drop &drop);
 
-    int findSensor2TippingPoint(const std::vector<double> &sensor, int u, bool isPositive);
+    double findRingCharge(const Drop &drop);
+
+    double findDishCharge(const Drop &drop);
 };
 
 #endif // DROP_HPP
