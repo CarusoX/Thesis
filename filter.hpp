@@ -6,7 +6,7 @@
 
 class Filter {
 public:
-    static std::vector<LVM::Row> normalize_with_rolling(const std::vector<LVM::Row>& data, size_t window_size);
+    static std::vector<LVM::Row> normalizeWithRolling(const std::vector<LVM::Row>& data);
 };
 
 #endif // FILTER_HPP

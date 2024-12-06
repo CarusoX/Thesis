@@ -1,37 +1,30 @@
-#ifndef DROP_HPP
-#define DROP_HPP
+#ifndef DROP_DATA_HPP
+#define DROP_DATA_HPP
 
-#include <vector>
 #include <iostream>
-#include <cmath>
-#include "LVM.hpp"
-#include "MaxMinQueue.hpp"
-#include "DropData.hpp"
 
 class Drop {
 public:
 
-    Drop(int dropSize, int nn);
+    int u1, u2; // posiciones iniciales
+    int c1, c2; // puntos criticos
+    int p1; // punto medio del primer sensor
+    int p2; // punto de quiebre de la integral del segundo sensor
 
-    DropData findDrop(const std::vector<LVM::Row>& data);
+    Drop(int u1, int u2, int c1, int c2, int p1, int p2)
+        : u1(u1), u2(u2), c1(c1), c2(c2), p1(p1), p2(p2) {}
 
-private:
-    int dropSize;
-    int nn;
-    double threshold; // c2
+    Drop() : u1(-1), u2(-1), c1(-1), c2(-1), p1(-1), p2(-1) {}
 
-    void getBestCandidateDrop(const std::vector<double>& sensor1,
-                               const std::vector<double>& sensor2,
-                               const std::vector<int>& used,
-                               bool isPositive,
-                               std::pair<int, int>& criticals,
-                               double& umbral);
-
-    std::pair<int, int> findStartingPoints(const std::vector<double>& sensor1,const std::vector<double>& sensor2, std::pair<int,int> criticals, bool isPositive);
-
-    int findSensor1MiddlePoint(const std::vector<double> &sensor, bool isPositive);
-
-    int findSensor2TippingPoint(const std::vector<double> &sensor, int u, bool isPositive);
+    void print() const {
+        std::cout << "Drop: " << std::endl;
+        std::cout << "  u1: " << u1 << std::endl;
+        std::cout << "  u2: " << u2 << std::endl;
+        std::cout << "  c1: " << c1 << std::endl;
+        std::cout << "  c2: " << c2 << std::endl;
+        std::cout << "  p1: " << p1 << std::endl;
+        std::cout << "  p2: " << p2 << std::endl;
+    }
 };
 
-#endif // DROP_HPP
+#endif

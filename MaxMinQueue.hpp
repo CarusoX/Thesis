@@ -26,7 +26,7 @@ public:
     size_t size() const;
 
     // Check if the queue is empty
-    bool is_empty() const;
+    bool isEmpty() const;
 };
 
 #endif // MAXMINQUEUE_HPP

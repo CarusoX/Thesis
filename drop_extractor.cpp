@@ -5,13 +5,11 @@
 #include <deque>
 #include "LVM.hpp"
 #include "filter.hpp"
-#include "Drop.hpp"
-
-const size_t DROP_SIZE = 400;
-const size_t WINDOW_SIZE = 5000;
+#include "DropFinder.hpp"
+#include "constants.hpp"
 
 // Define a function to write drop data to a file
-void write_drop_to_file(const std::vector<LVM::Row>& data, int start, int end, const std::string& filename) {
+void writeDropToFile(const std::vector<LVM::Row>& data, int start, int end, const std::string& filename) {
     std::ofstream outFile(filename, std::ios::app); // Open in append mode
 
     if (!outFile.is_open()) {
@@ -29,22 +27,20 @@ void write_drop_to_file(const std::vector<LVM::Row>& data, int start, int end, c
     outFile.close();
 }
 
-void perform(const std::string& fifo_path) {
-    if (!std::filesystem::exists(fifo_path)) {
+void perform(const std::string& fifoPath) {
+    if (!std::filesystem::exists(fifoPath)) {
         throw std::invalid_argument(
-            "El archivo FIFO '" + fifo_path + "' no existe. Usa 'mkfifo' para crearlo."
+            "El archivo FIFO '" + fifoPath + "' no existe. Usa 'mkfifo' para crearlo."
         );
     }
 
-    std::cout << "Leyendo del FIFO: " << fifo_path << std::endl;
+    std::cout << "Leyendo del FIFO: " << fifoPath << std::endl;
 
     LVM lvm(2 * WINDOW_SIZE);
-    Drop drop(DROP_SIZE, 100); // Configure Drop object
-    // Drop drop(DROP_SIZE, 100); // TODO: configure this if needed
+    DropFinder dropFinder;
     size_t gotas = 0;
 
-    // std::ifstream fifo(fifo_path);
-    std::ifstream fifo(fifo_path);
+    std::ifstream fifo(fifoPath);
     if (!fifo.is_open()) {
         throw std::runtime_error("No se pudo abrir el archivo FIFO.");
     }
@@ -57,46 +53,46 @@ void perform(const std::string& fifo_path) {
             continue;
         }
 
-        lvm.add_sensor_data(line); // Agrega datos al buffer
+        lvm.addSensorData(line); // Agrega datos al buffer
 
         if(lvm.size() >= WINDOW_SIZE * 2) {
-          std::vector<LVM::Row> normalized_data = Filter::normalize_with_rolling(lvm.get(), WINDOW_SIZE); // Computar rolling average
+          std::vector<LVM::Row> normalizedData = Filter::normalizeWithRolling(lvm.get()); // Computar rolling average
 
-          std::vector<LVM::Row> find_data(
-                normalized_data.end() - DROP_SIZE * 2,
-                normalized_data.end()
+          std::vector<LVM::Row> findData(
+                normalizedData.end() - DROP_SIZE * 2,
+                normalizedData.end()
             );
 
           // Check if all "Used" entries are 0
-          bool all_used_zero = std::all_of(find_data.begin(), find_data.end(), [](const LVM::Row& row) {
+          bool allUsedZAero = std::all_of(findData.begin(), findData.end(), [](const LVM::Row& row) {
               return row.used == 0;
           });
 
-          if (!all_used_zero) {
+          if (!allUsedZAero) {
               continue;
           }
 
           // Find drop in the last data
-          auto dropData = drop.findDrop(find_data);
-          int drop_index = dropData.u1;
+          auto drop = dropFinder.findDrop(findData);
+          int dropIndex = drop.u1;
 
-          size_t offset = normalized_data.size() - DROP_SIZE * 2;
+          size_t offset = normalizedData.size() - DROP_SIZE * 2;
 
-          if (drop_index == -1) {
-              lvm.set_used(offset, offset + DROP_SIZE);
+          if (dropIndex == -1) {
+              lvm.setUsed(offset, offset + DROP_SIZE);
               continue;
           }
-          dropData.print();
+          drop.print();
 
           // Extract the rows corresponding to the drop
-          int start = offset + drop_index;
-          int end = offset + drop_index + DROP_SIZE;
+          int start = offset + dropIndex;
+          int end = offset + dropIndex + DROP_SIZE;
 
           std::cout << "Gotas: " << ++gotas << std::endl;
-          lvm.set_drop(start, end);
+          lvm.setDrop(start, end);
           // Write the drop data to a file
-          std::string drop_filename = "drops.dat";
-          write_drop_to_file(find_data, drop_index, drop_index + DROP_SIZE, drop_filename);
+          std::string dropFilename = "drops.dat";
+          writeDropToFile(findData, dropIndex, dropIndex + DROP_SIZE, dropFilename);
         }
 
     }

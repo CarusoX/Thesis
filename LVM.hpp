@@ -17,31 +17,31 @@ public:
     };
 private:
     std::deque<Row> data;
-    size_t max_size;
+    size_t maxSize;
 
 public:
     
-    explicit LVM(size_t buffer_size) : max_size(buffer_size) {}
+    explicit LVM(size_t buffer_size) : maxSize(buffer_size) {}
 
-      void add_sensor_data(const std::string& line) {
+      void addSensorData(const std::string& line) {
         std::istringstream iss(line);
         double time, sensor1, sensor2;
         if (!(iss >> time >> sensor1 >> sensor2)) {
             throw std::invalid_argument("Invalid line format");
         }
-        if (data.size() == max_size) {
+        if (data.size() == maxSize) {
             data.pop_front(); // Remove the oldest element
         }
         data.push_back({time, sensor1, sensor2, 0, 0});
     }
 
-    void keep_last(size_t size) {
+    void keepLast(size_t size) {
         while (data.size() > size) {
             data.pop_front();
         }
     }
 
-    void set_used(size_t r1, size_t r2) {
+    void setUsed(size_t r1, size_t r2) {
         if (r2 >= data.size()) {
             throw std::out_of_range("Index out of range");
         }
@@ -50,7 +50,7 @@ public:
         }
     }
 
-    void set_drop(size_t r1, size_t r2) {
+    void setDrop(size_t r1, size_t r2) {
         if (r2 >= data.size()) {
             throw std::out_of_range("Index out of range");
         }

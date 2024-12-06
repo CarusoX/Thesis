@@ -54,6 +54,6 @@ size_t MaxMinQueue::size() const {
     return queue.size();
 }
 
-bool MaxMinQueue::is_empty() const {
+bool MaxMinQueue::isEmpty() const {
     return queue.empty();
 }

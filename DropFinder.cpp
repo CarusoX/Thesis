@@ -1,8 +1,7 @@
-#include "Drop.hpp"
+#include "DropFinder.hpp"
+#include "constants.hpp"
 
-Drop::Drop(int dropSize, int nn) : dropSize(dropSize), nn(nn), threshold(0.02) {} // TODO: 0.02 should be a param
-
-DropData Drop::findDrop(const std::vector<LVM::Row> &data)
+Drop DropFinder::findDrop(const std::vector<LVM::Row> &data)
 {
     // Extract sensor1, sensor2, and used into separate vectors
     std::vector<double> sensor1, sensor2;
@@ -15,36 +14,36 @@ DropData Drop::findDrop(const std::vector<LVM::Row> &data)
         used.push_back(row.used);
     }
 
-    std::pair<int, int> positive_criticals = {-1, -1};
-    std::pair<int, int> negative_criticals = {-1, -1};
+    std::pair<int, int> positiveCriticals = {-1, -1};
+    std::pair<int, int> negativeCriticals = {-1, -1};
     double umbralp = 0.0, umbraln = 0.0;
 
-    getBestCandidateDrop(sensor1, sensor2, used, true, positive_criticals, umbralp);
-    getBestCandidateDrop(sensor1, sensor2, used, false, negative_criticals, umbraln);
+    getBestCandidateDrop(sensor1, sensor2, used, true, positiveCriticals, umbralp);
+    getBestCandidateDrop(sensor1, sensor2, used, false, negativeCriticals, umbraln);
 
-    std::pair<int, int> criticals = umbralp != 0 && (umbraln == 0 || std::abs(umbralp) > std::abs(umbraln)) ? positive_criticals : negative_criticals;
+    std::pair<int, int> criticals = umbralp != 0 && (umbraln == 0 || std::abs(umbralp) > std::abs(umbraln)) ? positiveCriticals : negativeCriticals;
 
-    double umbral = (criticals == positive_criticals) ? umbralp : umbraln;
+    double umbral = (criticals == positiveCriticals) ? umbralp : umbraln;
 
     if (umbral != 0)
     {
         bool isPositive = umbral > 0;
         std::pair<int, int> startingPoints = findStartingPoints(sensor1, sensor2, criticals, isPositive);
-        std::vector<double> drop_sensor1, drop_sensor2;
-        for (int i = 0; i < this->dropSize; i++)
+        std::vector<double> dropSensor1, dropSensor2;
+        for (int i = 0; i < DROP_SIZE; i++)
         {
-            drop_sensor1.push_back(sensor1[startingPoints.first + i]);
-            drop_sensor2.push_back(sensor2[startingPoints.first + i]);
+            dropSensor1.push_back(sensor1[startingPoints.first + i]);
+            dropSensor2.push_back(sensor2[startingPoints.first + i]);
         }
-        int sensor1MiddlePoint = findSensor1MiddlePoint(drop_sensor1, isPositive);
-        int sensor2TippingPoint = findSensor2TippingPoint(drop_sensor2, startingPoints.second - startingPoints.first, isPositive);
-        return DropData(startingPoints.first, startingPoints.second, criticals.first, criticals.second, sensor1MiddlePoint, sensor2TippingPoint);
+        int sensor1MiddlePoint = findSensor1MiddlePoint(dropSensor1, isPositive);
+        int sensor2TippingPoint = findSensor2TippingPoint(dropSensor2, startingPoints.second - startingPoints.first, isPositive);
+        return Drop(startingPoints.first, startingPoints.second, criticals.first, criticals.second, sensor1MiddlePoint, sensor2TippingPoint);
     }
 
-    return DropData();
+    return Drop();
 }
 
-void Drop::getBestCandidateDrop(const std::vector<double> &sensor1,
+void DropFinder::getBestCandidateDrop(const std::vector<double> &sensor1,
                                 const std::vector<double> &sensor2,
                                 const std::vector<int> &used,
                                 bool isPositive,
@@ -54,7 +53,7 @@ void Drop::getBestCandidateDrop(const std::vector<double> &sensor1,
     criticals = {-1, -1};
     umbral = 0.0;
 
-    int maxIndex = sensor1.size() - this->dropSize;
+    int maxIndex = sensor1.size() - DROP_SIZE;
     std::vector<double> sensor1Values(sensor1.size() - 1, 0.0);
     std::vector<double> sensor2Values(sensor1.size() - 1, 0.0);
 
@@ -78,7 +77,7 @@ void Drop::getBestCandidateDrop(const std::vector<double> &sensor1,
     for (int i = sensor1.size() - 2; i >= 0; --i)
     {
         maxMinQueue.push({sensor2Values[i], i});
-        if (maxMinQueue.size() > nn)
+        if (maxMinQueue.size() > NN)
         {
             maxMinQueue.pop();
         }
@@ -95,7 +94,7 @@ void Drop::getBestCandidateDrop(const std::vector<double> &sensor1,
             if (!isPositive && value > 0)
                 continue;
 
-            if (threshold < std::abs(value) && std::abs(umbral) < std::abs(value))
+            if (MINIMUM_THRESHOLD < std::abs(value) && std::abs(umbral) < std::abs(value))
             {
                 umbral = value;
                 criticals = {i, sensor2Value.second};
@@ -104,7 +103,7 @@ void Drop::getBestCandidateDrop(const std::vector<double> &sensor1,
     }
 }
 
-std::pair<int, int> Drop::findStartingPoints(const std::vector<double> &sensor1, const std::vector<double> &sensor2, std::pair<int, int> criticals, bool isPositive)
+std::pair<int, int> DropFinder::findStartingPoints(const std::vector<double> &sensor1, const std::vector<double> &sensor2, std::pair<int, int> criticals, bool isPositive)
 {
     int u1 = criticals.first;
     int u2 = criticals.second;
@@ -114,12 +113,12 @@ std::pair<int, int> Drop::findStartingPoints(const std::vector<double> &sensor1,
         return isPositive ? x > 0 : x < 0;
     };
 
-    while (u1 > 0 && isNotStartingPoint(sensor1[u1]) && criticals.first - u1 < nn)
+    while (u1 > 0 && isNotStartingPoint(sensor1[u1]) && criticals.first - u1 < NN)
     {
         --u1;
     }
 
-    while (u2 > 0 && isNotStartingPoint(sensor2[u2]) && criticals.second - u2 < nn && u1 < u2)
+    while (u2 > 0 && isNotStartingPoint(sensor2[u2]) && criticals.second - u2 < NN && u1 < u2)
     {
         u2--;
     }
@@ -127,7 +126,7 @@ std::pair<int, int> Drop::findStartingPoints(const std::vector<double> &sensor1,
     return {u1, u2};
 }
 
-int Drop::findSensor1MiddlePoint(const std::vector<double> &sensor, bool isPositive)
+int DropFinder::findSensor1MiddlePoint(const std::vector<double> &sensor, bool isPositive)
 {
     auto isSensorAnulled = [&](double x) -> bool
     {
@@ -144,7 +143,7 @@ int Drop::findSensor1MiddlePoint(const std::vector<double> &sensor, bool isPosit
     return -1;
 }
 
-int Drop::findSensor2TippingPoint(const std::vector<double> &sensor, int u, bool isPositive)
+int DropFinder::findSensor2TippingPoint(const std::vector<double> &sensor, int u, bool isPositive)
 {
 
     auto compare = [&](double x, double y) -> bool
