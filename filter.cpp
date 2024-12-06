@@ -1,5 +1,4 @@
 #include "filter.hpp"
-#include "constants.hpp"
 
 std::vector<LVM::Row> Filter::normalizeWithRolling(const std::vector<LVM::Row> &data)
 {

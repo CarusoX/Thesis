@@ -5,11 +5,12 @@
 #include <deque>
 #include "LVM.hpp"
 #include "filter.hpp"
+#include "Drop.hpp"
 #include "DropFinder.hpp"
 #include "constants.hpp"
 
 // Define a function to write drop data to a file
-void writeDropToFile(const std::vector<LVM::Row> &data, int start, int end, const std::string &filename)
+void writeDropToFile(Drop &drop, const std::string &filename)
 {
     std::ofstream outFile(filename, std::ios::app); // Open in append mode
 
@@ -20,11 +21,16 @@ void writeDropToFile(const std::vector<LVM::Row> &data, int start, int end, cons
     }
 
     outFile << std::fixed << std::setprecision(6); // Format numbers to 6 decimal places
-    for (int i = start; i < end; ++i)
+    for (int i = 0; i < drop.size(); ++i)
     {
-        outFile << data[i].time << "\t"
-                << data[i].sensor1 << "\t"
-                << data[i].sensor2 << "\n";
+        outFile << drop.time[i] << "\t"
+                << drop.sensor1[i] << "\t"
+                << drop.sensor2[i] << "\t"
+                << drop.integralSensor1[i] * 2000 / DATA_PER_SECOND << "\t"
+                << drop.integralSensor2[i] * 2000 / DATA_PER_SECOND << "\t"
+                << drop.a1[i] << "\t"
+                << drop.a2[i] << "\t"
+                << drop.b1[i] << "\n";
     }
 
     outFile.close();
@@ -80,8 +86,8 @@ void perform(const std::string &fifoPath)
             }
 
             // Find drop in the last data
+            // TODO: this should be a while loop so that we don't lose drops from the start
             auto drop = dropFinder.findDrop(findData);
-
             size_t offset = normalizedData.size() - DROP_SIZE * 2;
 
             if (!drop.valid)
@@ -102,7 +108,7 @@ void perform(const std::string &fifoPath)
             lvm.setDrop(start, end);
             // Write the drop data to a file
             std::string dropFilename = "drops.dat";
-            writeDropToFile(findData, dropIndex, dropIndex + DROP_SIZE, dropFilename);
+            writeDropToFile(drop, dropFilename);
         }
     }
 }

@@ -1,7 +1,9 @@
 #ifndef FILTER_HPP
 #define FILTER_HPP
 
+#include <iostream>
 #include <vector>
+#include "constants.hpp"
 #include "LVM.hpp"
 
 class Filter

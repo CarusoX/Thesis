@@ -7,6 +7,7 @@
 #include "LVM.hpp"
 #include "MaxMinQueue.hpp"
 #include "Drop.hpp"
+#include "constants.hpp"
 
 class DropFinder
 {
@@ -26,14 +27,6 @@ private:
                               double &umbral);
 
     std::pair<int, int> findStartingPoints(const std::vector<double> &sensor1, const std::vector<double> &sensor2, std::pair<int, int> criticals, bool isPositive);
-
-    int findSensor1MiddlePoint(const Drop &drop);
-
-    int findSensor2TippingPoint(const Drop &drop);
-
-    double findRingCharge(const Drop &drop);
-
-    double findDishCharge(const Drop &drop);
 };
 
 #endif // DROP_HPP

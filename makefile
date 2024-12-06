@@ -2,7 +2,7 @@
 CXX := g++
 
 # Compiler flags
-CXXFLAGS := -std=c++17 -Wall -Wextra -O3
+CXXFLAGS := -std=c++17 -Wall -Wextra -O3 -MMD
 
 # Source files
 SRC := $(wildcard *.cpp)

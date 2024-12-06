@@ -21,4 +21,10 @@ constexpr int NN = 100;
 // Proporcion entre la carga del anillo y del plato
 constexpr double PROP_CHARGE = 0.87;
 
+// Minima carga electrica que debe tener la gota en el plato
+constexpr double MINIMUM_CHARGE = 0.2;
+
+// Separacion del anillo y plato (5.7cm)
+constexpr double RING_DISH_SEP = 0.057;
+
 #endif // CONSTANTS_HPP
