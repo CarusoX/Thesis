@@ -31,7 +31,7 @@ public:
 
     Drop();
 
-    void print() const;
+    void debug() const;
 
     int size() const;
 

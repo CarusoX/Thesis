@@ -12,7 +12,7 @@
 // Define a function to write drop data to a file
 void writeDropToFile(Drop &drop, const std::string &filename)
 {
-    std::ofstream outFile(filename, std::ios::app); // Open in append mode
+    std::ofstream outFile(filename, std::ofstream::out | std::ofstream::trunc);
 
     if (!outFile.is_open())
     {
@@ -21,20 +21,21 @@ void writeDropToFile(Drop &drop, const std::string &filename)
     }
 
     outFile << std::fixed << std::setprecision(6); // Format numbers to 6 decimal places
-    for (int i = 0; i < drop.size(); ++i)
+    for (int i = 0; i < drop.p2; ++i)
     {
         std::vector<double> row = {
             drop.time[i],
             drop.sensor1[i],
             drop.sensor2[i],
-            drop.integralSensor1[i] * 2000 / DATA_PER_SECOND,
-            drop.integralSensor2[i] * 2000 / DATA_PER_SECOND,
+            drop.integralSensor1[i] * INTEGRATION_FACTOR / DATA_PER_SECOND,
+            drop.integralSensor2[i] * INTEGRATION_FACTOR / DATA_PER_SECOND,
             drop.a1[i],
             drop.a2[i],
             drop.b1[i],
             drop.q1,
             drop.q2,
-            drop.penalty()};
+            drop.penalty(),
+        };
 
         for (uint j = 0; j < row.size(); j++)
         {
@@ -94,30 +95,29 @@ void perform(const std::string &fifoPath)
                 continue;
             }
 
-            // Find drop in the last data
-            // TODO: this should be a while loop so that we don't lose drops from the start
-            auto drop = dropFinder.findDrop(findData);
+            Drop drop;
             size_t offset = normalizedData.size() - DROP_SIZE * 2;
-
-            if (!drop.valid)
+            do
             {
-                lvm.setUsed(offset, offset + DROP_SIZE);
-                continue;
-            }
+                drop = dropFinder.findDrop(findData);
+                if (!drop.valid)
+                {
+                    break;
+                }
+                // Marcar la data de la gota como usada
+                for (int i = drop.u1; i < drop.u1 + drop.size(); i++)
+                {
+                    findData[i].used = 1;
+                }
 
-            int dropIndex = drop.u1;
+                // Write the drop data to a file
+                std::cout << "Gotas: " << ++gotas << std::endl;
+                drop.debug();
+                std::string dropFilename = "drops.dat";
+                writeDropToFile(drop, dropFilename);
+            } while (true);
 
-            drop.print();
-
-            // Extract the rows corresponding to the drop
-            int start = offset + dropIndex;
-            int end = offset + dropIndex + drop.size();
-
-            std::cout << "Gotas: " << ++gotas << std::endl;
-            lvm.setDrop(start, end);
-            // Write the drop data to a file
-            std::string dropFilename = "drops.dat";
-            writeDropToFile(drop, dropFilename);
+            lvm.setUsed(offset, offset + DROP_SIZE);
         }
     }
 }

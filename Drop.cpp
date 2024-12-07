@@ -62,12 +62,12 @@ void Drop::computeIntegral()
 
 void Drop::computeRingCharge()
 {
-  this->q1 = 2000.0 / DATA_PER_SECOND * this->integralSensor1[this->p1];
+  this->q1 = INTEGRATION_FACTOR / DATA_PER_SECOND * this->integralSensor1[this->p1];
 }
 
 void Drop::computeDishCharge()
 {
-  this->q2 = 2000.0 / DATA_PER_SECOND * this->integralSensor2[this->p2];
+  this->q2 = INTEGRATION_FACTOR / DATA_PER_SECOND * this->integralSensor2[this->p2];
 }
 
 void Drop::computeAverageCharge()
@@ -90,12 +90,6 @@ int Drop::satisfiesBasicFilters()
   {
     return this->valid = 0;
   }
-  // maxima diferencia entre picos (para que de velocidad minima de 0.7125 m/s)
-  // TODO: preguntar sobre esto porque las gotas tiene 400 puntos
-  if (this->p2 > this->p1 + 4 * NN)
-  {
-    return this->valid = 0;
-  }
 
   // no pueden ser de diferente signo
   if (this->q1 > 0 && this->q2 < 0)
@@ -113,7 +107,6 @@ int Drop::satisfiesBasicFilters()
 
 void Drop::computeVelocity()
 {
-  // TODO: preguntar porque para mi el * rate esta de mas
   this->v = RING_DISH_SEP / (this->time[p2] - this->time[p1]);
 }
 
@@ -147,11 +140,11 @@ void Drop::computeSumOfSquaredDiffPenalty()
 {
   for (int i = 0; i < std::min(2 * this->p1, this->size()); ++i)
   {
-    this->sumOfSquaredDiffPenalty1 += std::pow((this->a1[i] - this->integralSensor1[i] * 2000 / DATA_PER_SECOND) / this->q1, 2);
+    this->sumOfSquaredDiffPenalty1 += std::pow((this->a1[i] - this->integralSensor1[i] * INTEGRATION_FACTOR / DATA_PER_SECOND) / this->q1, 2);
   }
   for (int i = 0; i < std::min(this->p2 + NN / 2, this->size()); ++i)
   {
-    this->sumOfSquaredDiffPenalty2 += std::pow((this->a2[i] - this->integralSensor2[i] * 2000 / DATA_PER_SECOND) / this->q2, 2);
+    this->sumOfSquaredDiffPenalty2 += std::pow((this->a2[i] - this->integralSensor2[i] * INTEGRATION_FACTOR / DATA_PER_SECOND) / this->q2, 2);
   }
   this->sumOfSquaredDiffPenalty1 = std::log(this->sumOfSquaredDiffPenalty1);
   this->sumOfSquaredDiffPenalty2 = std::log(this->sumOfSquaredDiffPenalty2);
@@ -186,11 +179,11 @@ void Drop::computeNoisePropPenalty()
   int noise = 0;
   for (int i = 0; i < this->size(); i++)
   {
-    if (std::abs(sensor1[i] - avgSensor1) < MINIMUM_CHARGE)
+    if (std::abs(sensor1[i] - avgSensor1) < MINIMUM_THRESHOLD)
     {
       noise++;
     }
-    if (std::abs(sensor2[i] - avgSensor2) < MINIMUM_CHARGE)
+    if (std::abs(sensor2[i] - avgSensor2) < MINIMUM_THRESHOLD)
     {
       noise++;
     }
@@ -203,7 +196,7 @@ double Drop::penalty() const
   return this->sumOfSquaredDiffPenalty1 + this->sumOfSquaredDiffPenalty2 + this->chargeDiffPenalty + this->widthDiffPenalty + this->noisePropPenalty;
 }
 
-void Drop::print() const
+void Drop::debug() const
 {
   std::cout << "Drop: " << std::endl;
   std::cout << "  u1: " << u1 << std::endl;
@@ -216,12 +209,12 @@ void Drop::print() const
   std::cout << "  q2: " << q2 << std::endl;
   std::cout << "  q: " << q << std::endl;
   std::cout << "  v: " << v << std::endl;
-  std::cout << "  sumOfSquaredDiffPenalty1:" << sumOfSquaredDiffPenalty1 << std::endl;
-  std::cout << "  sumOfSquaredDiffPenalty2:" << sumOfSquaredDiffPenalty2 << std::endl;
-  std::cout << "  chargeDiffPenalty:" << chargeDiffPenalty << std::endl;
-  std::cout << "  widthDiffPenalty:" << widthDiffPenalty << std::endl;
-  std::cout << "  noisePropPenalty:" << noisePropPenalty << std::endl;
-  std::cout << "  penalty:" << this->penalty() << std::endl;
+  std::cout << "  sumOfSquaredDiffPenalty1: " << sumOfSquaredDiffPenalty1 << std::endl;
+  std::cout << "  sumOfSquaredDiffPenalty2: " << sumOfSquaredDiffPenalty2 << std::endl;
+  std::cout << "  chargeDiffPenalty: " << chargeDiffPenalty << std::endl;
+  std::cout << "  widthDiffPenalty: " << widthDiffPenalty << std::endl;
+  std::cout << "  noisePropPenalty: " << noisePropPenalty << std::endl;
+  std::cout << "  penalty: " << this->penalty() << std::endl;
 }
 
 int Drop::size() const

@@ -15,7 +15,6 @@ public:
         double sensor1;
         double sensor2;
         int used;
-        int isDrop;
     };
 
 private:

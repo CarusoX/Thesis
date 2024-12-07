@@ -30,4 +30,7 @@ constexpr double RING_DISH_SEP = 0.057;
 // Proporcion entre el ancho entre del anillo y la olla
 constexpr double PROP_WIDTH = 0.79;
 
+// Factor de integracion
+constexpr double INTEGRATION_FACTOR = 2000;
+
 #endif // CONSTANTS_HPP
