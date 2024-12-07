@@ -14,8 +14,8 @@ constexpr int DATA_PER_SECOND = 5000;
 // Umbral minimo (valor absoluto)
 constexpr double MINIMUM_THRESHOLD = 0.02;
 
-// Número máximo de puntos para buscar puntos en el segundo sensor que superen el umbral
-// desde el punto critico del primer sensor
+// Número máximo de puntos para buscar puntos en el segundo sensor que superen
+// el umbral desde el punto critico del primer sensor
 constexpr int NN = 100;
 
 // Proporcion entre la carga del anillo y del plato

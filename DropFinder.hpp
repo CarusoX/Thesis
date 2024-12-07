@@ -1,13 +1,13 @@
 #ifndef DROP_HPP
 #define DROP_HPP
 
-#include <vector>
-#include <iostream>
-#include <cmath>
+#include "Drop.hpp"
 #include "LVM.hpp"
 #include "MaxMinQueue.hpp"
-#include "Drop.hpp"
 #include "constants.hpp"
+#include <cmath>
+#include <iostream>
+#include <vector>
 
 class DropFinder
 {
@@ -21,12 +21,13 @@ private:
 
     void getBestCandidateDrop(const std::vector<double> &sensor1,
                               const std::vector<double> &sensor2,
-                              const std::vector<int> &used,
-                              bool isPositive,
-                              std::pair<int, int> &criticals,
-                              double &umbral);
+                              const std::vector<int> &used, bool isPositive,
+                              std::pair<int, int> &criticals, double &umbral);
 
-    std::pair<int, int> findStartingPoints(const std::vector<double> &sensor1, const std::vector<double> &sensor2, std::pair<int, int> criticals, bool isPositive);
+    std::pair<int, int> findStartingPoints(const std::vector<double> &sensor1,
+                                           const std::vector<double> &sensor2,
+                                           std::pair<int, int> criticals,
+                                           bool isPositive);
 };
 
 #endif // DROP_HPP

@@ -61,12 +61,6 @@ std::pair<double, int> MaxMinQueue::min() const
     return minDeque.front();
 }
 
-size_t MaxMinQueue::size() const
-{
-    return queue.size();
-}
+size_t MaxMinQueue::size() const { return queue.size(); }
 
-bool MaxMinQueue::isEmpty() const
-{
-    return queue.empty();
-}
+bool MaxMinQueue::isEmpty() const { return queue.empty(); }

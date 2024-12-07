@@ -1,6 +1,7 @@
 #include "filter.hpp"
 
-std::vector<LVM::Row> Filter::normalizeWithRolling(const std::vector<LVM::Row> &data)
+std::vector<LVM::Row>
+Filter::normalizeWithRolling(const std::vector<LVM::Row> &data)
 {
     double sumSensor1 = 0.0;
     double sumSensor2 = 0.0;

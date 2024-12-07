@@ -2,9 +2,9 @@
 #define LVM_HPP
 
 #include <deque>
-#include <vector>
-#include <stdexcept>
 #include <sstream>
+#include <stdexcept>
+#include <vector>
 
 class LVM
 {

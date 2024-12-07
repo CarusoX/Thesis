@@ -1,123 +1,113 @@
-#include <iostream>
-#include <fstream>
-#include <stdexcept>
-#include <string>
-#include <deque>
-#include "LVM.hpp"
-#include "filter.hpp"
 #include "Drop.hpp"
 #include "DropFinder.hpp"
+#include "LVM.hpp"
 #include "constants.hpp"
+#include "filter.hpp"
+#include <deque>
+#include <fstream>
+#include <iostream>
+#include <stdexcept>
+#include <string>
 
-// Define a function to write drop data to a file
-void writeDropToFile(Drop &drop, const std::string &filename)
+void processLine(LVM &lvm, std::string line, size_t &gotas,
+                 std::ofstream &outFile)
 {
-    std::ofstream outFile(filename, std::ofstream::out | std::ofstream::trunc);
+    DropFinder dropFinder;
+    lvm.addSensorData(line); // Agrega datos al buffer
 
-    if (!outFile.is_open())
+    if (lvm.size() >= WINDOW_SIZE * 2)
     {
-        std::cerr << "Error: Unable to open file " << filename << " for writing." << std::endl;
-        return;
-    }
+        std::vector<LVM::Row> normalizedData =
+            Filter::normalizeWithRolling(lvm.get()); // Computar rolling average
 
-    outFile << std::fixed << std::setprecision(6); // Format numbers to 6 decimal places
-    for (int i = 0; i < drop.p2; ++i)
-    {
-        std::vector<double> row = {
-            drop.time[i],
-            drop.sensor1[i],
-            drop.sensor2[i],
-            drop.integralSensor1[i] * INTEGRATION_FACTOR / DATA_PER_SECOND,
-            drop.integralSensor2[i] * INTEGRATION_FACTOR / DATA_PER_SECOND,
-            drop.a1[i],
-            drop.a2[i],
-            drop.b1[i],
-            drop.q1,
-            drop.q2,
-            drop.penalty(),
-        };
+        std::vector<LVM::Row> findData(normalizedData.end() - DROP_SIZE * 2,
+                                       normalizedData.end());
 
-        for (uint j = 0; j < row.size(); j++)
+        // Check if all "Used" entries are 0
+        bool allUsedAreZero =
+            std::all_of(findData.begin(), findData.end(),
+                        [](const LVM::Row &row) { return row.used == 0; });
+
+        if (!allUsedAreZero)
         {
-            outFile << row[j] << "\t\n"[j + 1 == row.size()];
+            return;
         }
-    }
 
-    outFile.close();
+        Drop drop;
+        size_t offset = normalizedData.size() - DROP_SIZE * 2;
+        do
+        {
+            drop = dropFinder.findDrop(findData);
+            if (!drop.valid)
+            {
+                break;
+            }
+            // Marcar la data de la gota como usada
+            for (int i = drop.u1; i < drop.u1 + drop.size(); i++)
+            {
+                findData[i].used = 1;
+            }
+
+            // Darle un ID a la gota
+            drop.id = ++gotas;
+
+            // Write the drop data to a file
+            drop.writeToFile(outFile);
+
+            // Print drop debugging info
+            drop.debug();
+        } while (true);
+
+        lvm.setUsed(offset, offset + DROP_SIZE);
+    }
 }
 
-void perform(const std::string &fifoPath)
+void perform(const std::string &filePath, const std::string &outPath)
 {
-    if (!std::filesystem::exists(fifoPath))
+    if (!std::filesystem::exists(filePath))
     {
-        throw std::invalid_argument(
-            "El archivo FIFO '" + fifoPath + "' no existe. Usa 'mkfifo' para crearlo.");
+        throw std::invalid_argument("El archivo '" + filePath + "' no existe.");
     }
 
-    std::cout << "Leyendo del FIFO: " << fifoPath << std::endl;
+    std::cout << "Leyendo del archivo: " << filePath << std::endl;
 
     LVM lvm(2 * WINDOW_SIZE);
-    DropFinder dropFinder;
+
     size_t gotas = 0;
 
-    std::ifstream fifo(fifoPath);
+    std::ifstream fifo(filePath);
     if (!fifo.is_open())
     {
-        throw std::runtime_error("No se pudo abrir el archivo FIFO.");
+        throw std::runtime_error("No se pudo abrir el archivo.");
+    }
+
+    std::ofstream outFile(outPath, std::ofstream::out | std::ofstream::trunc);
+    if (!outFile.is_open())
+    {
+        throw std::runtime_error("No se pudo abrir el archivo.");
     }
 
     std::string line;
+    char ch;
     while (true)
     {
-        if (!std::getline(fifo, line))
+        if (!fifo.get(ch))
         {
-            // Esperar más datos si no hay líneas disponibles
-            exit(0);
+            // Esperar más datos si no hay mas caracteres disponibles
             continue;
         }
-
-        lvm.addSensorData(line); // Agrega datos al buffer
-
-        if (lvm.size() >= WINDOW_SIZE * 2)
+        else if (ch == '\r')
         {
-            std::vector<LVM::Row> normalizedData = Filter::normalizeWithRolling(lvm.get()); // Computar rolling average
-
-            std::vector<LVM::Row> findData(
-                normalizedData.end() - DROP_SIZE * 2,
-                normalizedData.end());
-
-            // Check if all "Used" entries are 0
-            bool allUsedZAero = std::all_of(findData.begin(), findData.end(), [](const LVM::Row &row)
-                                            { return row.used == 0; });
-
-            if (!allUsedZAero)
-            {
-                continue;
-            }
-
-            Drop drop;
-            size_t offset = normalizedData.size() - DROP_SIZE * 2;
-            do
-            {
-                drop = dropFinder.findDrop(findData);
-                if (!drop.valid)
-                {
-                    break;
-                }
-                // Marcar la data de la gota como usada
-                for (int i = drop.u1; i < drop.u1 + drop.size(); i++)
-                {
-                    findData[i].used = 1;
-                }
-
-                // Write the drop data to a file
-                std::cout << "Gotas: " << ++gotas << std::endl;
-                drop.debug();
-                std::string dropFilename = "drops.dat";
-                writeDropToFile(drop, dropFilename);
-            } while (true);
-
-            lvm.setUsed(offset, offset + DROP_SIZE);
+            // ignorar
+        }
+        else if (ch != '\n')
+        {
+            line += ch;
+        }
+        else
+        {
+            processLine(lvm, line, gotas, outFile);
+            line.clear();
         }
     }
 }
@@ -126,13 +116,14 @@ int main(int argc, char *argv[])
 {
     if (argc != 2)
     {
-        std::cerr << "Uso: " << argv[0] << " <ruta al archivo FIFO>" << std::endl;
+        std::cerr << "Uso: " << argv[0] << " <ruta al archivo FIFO>"
+                  << std::endl;
         return 1;
     }
 
     try
     {
-        perform(argv[1]);
+        perform(argv[1], "drops.dat");
     }
     catch (const std::exception &e)
     {
