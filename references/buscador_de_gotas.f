@@ -199,9 +199,9 @@
 ****** PRIMERA LECTURA DE DATOS ****************
 ************************************************
 
-c do i=1,1128
-c    read(11,*) vc(i),dc(i)
-c enddo
+      do i=1,1128
+         read(11,*) vc(i),dc(i)
+      enddo
       ! lectura de la tabla velocidad terminal-diametro
 
       read(10,*) numarch

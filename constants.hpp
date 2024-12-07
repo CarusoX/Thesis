@@ -27,4 +27,7 @@ constexpr double MINIMUM_CHARGE = 0.2;
 // Separacion del anillo y plato (5.7cm)
 constexpr double RING_DISH_SEP = 0.057;
 
+// Proporcion entre el ancho entre del anillo y la olla
+constexpr double PROP_WIDTH = 0.79;
+
 #endif // CONSTANTS_HPP

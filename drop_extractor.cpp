@@ -23,14 +23,23 @@ void writeDropToFile(Drop &drop, const std::string &filename)
     outFile << std::fixed << std::setprecision(6); // Format numbers to 6 decimal places
     for (int i = 0; i < drop.size(); ++i)
     {
-        outFile << drop.time[i] << "\t"
-                << drop.sensor1[i] << "\t"
-                << drop.sensor2[i] << "\t"
-                << drop.integralSensor1[i] * 2000 / DATA_PER_SECOND << "\t"
-                << drop.integralSensor2[i] * 2000 / DATA_PER_SECOND << "\t"
-                << drop.a1[i] << "\t"
-                << drop.a2[i] << "\t"
-                << drop.b1[i] << "\n";
+        std::vector<double> row = {
+            drop.time[i],
+            drop.sensor1[i],
+            drop.sensor2[i],
+            drop.integralSensor1[i] * 2000 / DATA_PER_SECOND,
+            drop.integralSensor2[i] * 2000 / DATA_PER_SECOND,
+            drop.a1[i],
+            drop.a2[i],
+            drop.b1[i],
+            drop.q1,
+            drop.q2,
+            drop.penalty()};
+
+        for (uint j = 0; j < row.size(); j++)
+        {
+            outFile << row[j] << "\t\n"[j + 1 == row.size()];
+        }
     }
 
     outFile.close();
