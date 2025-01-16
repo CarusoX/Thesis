@@ -1,7 +1,7 @@
 #ifndef MAXMINQUEUE_HPP
 #define MAXMINQUEUE_HPP
 
-#include <deque>
+#include "lib.hpp"
 
 class MaxMinQueue
 {

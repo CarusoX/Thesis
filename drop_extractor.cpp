@@ -3,11 +3,6 @@
 #include "LVM.hpp"
 #include "constants.hpp"
 #include "filter.hpp"
-#include <deque>
-#include <fstream>
-#include <iostream>
-#include <stdexcept>
-#include <string>
 
 void processLine(LVM &lvm, std::string line, size_t &gotas,
                  std::ofstream &outFile)

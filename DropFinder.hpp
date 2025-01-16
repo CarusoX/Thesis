@@ -5,9 +5,7 @@
 #include "LVM.hpp"
 #include "MaxMinQueue.hpp"
 #include "constants.hpp"
-#include <cmath>
-#include <iostream>
-#include <vector>
+#include "lib.hpp"
 
 class DropFinder
 {

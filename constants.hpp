@@ -1,6 +1,6 @@
 #ifndef CONSTANTS_HPP
 #define CONSTANTS_HPP
-#include <cmath>
+#include "lib.hpp"
 
 // Tamaño maximo de una gota
 constexpr int DROP_SIZE = 300;

@@ -1,8 +1,4 @@
 #include "Drop.hpp"
-#include <fstream>
-#include <iostream>
-#include <stdexcept>
-#include <string>
 
 void perform(const std::string &filePath, const std::string &outPath)
 {
@@ -48,7 +44,7 @@ void perform(const std::string &filePath, const std::string &outPath)
         {
             drop.time[i] = current_time++;
         }
-        drop.writeToFile(outFile);
+        drop.writeToFile(outFile, true);
     }
 }
 

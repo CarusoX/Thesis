@@ -2,9 +2,7 @@
 #define DROP_DATA_HPP
 
 #include "constants.hpp"
-#include <fstream>
-#include <iostream>
-#include <sstream>
+#include "lib.hpp"
 
 class Drop
 {
@@ -50,7 +48,7 @@ public:
 
     std::vector<Drop> static readFromFile(std::ifstream &file);
 
-    void writeToFile(std::ofstream &file);
+    void writeToFile(std::ofstream &file, bool withoutIndividualPenalties = false);
 
 private:
     int findSensor1MiddlePoint();

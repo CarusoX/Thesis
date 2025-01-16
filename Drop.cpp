@@ -147,6 +147,7 @@ void Drop::computeModels()
 
 void Drop::computeSumOfSquaredDiffPenalty()
 {
+    this->sumOfSquaredDiffPenalty1 = this->sumOfSquaredDiffPenalty2 = 0;
     for (int i = 0; i < std::min(2 * this->p1, this->size()); ++i)
     {
         this->sumOfSquaredDiffPenalty1 +=
@@ -163,8 +164,10 @@ void Drop::computeSumOfSquaredDiffPenalty()
                          this->q2,
                      2);
     }
-    this->sumOfSquaredDiffPenalty1 = std::log(this->sumOfSquaredDiffPenalty1);
-    this->sumOfSquaredDiffPenalty2 = std::log(this->sumOfSquaredDiffPenalty2);
+    this->sumOfSquaredDiffPenalty1 =
+        std::log(this->sumOfSquaredDiffPenalty1 + 1);
+    this->sumOfSquaredDiffPenalty2 =
+        std::log(this->sumOfSquaredDiffPenalty2 + 1);
 }
 
 void Drop::computeChargeDiffPenalty()
@@ -312,16 +315,19 @@ std::vector<Drop> Drop::readFromFile(std::ifstream &file)
         currentDrop.widthDiffPenalty = widthDiffPenalty;
         currentDrop.noisePropPenalty = noisePropPenalty;
     }
+    currentDrop.valid = 1;
+    drops.push_back(currentDrop);
+    currentDrop = Drop();
     return drops;
 }
 
-void Drop::writeToFile(std::ofstream &file)
+void Drop::writeToFile(std::ofstream &file, bool sortedDrops)
 {
     file << std::fixed
          << std::setprecision(6); // Format numbers to 6 decimal places
     for (int i = 0; i < this->size(); ++i)
     {
-        std::vector<std::variant<double, int>> row = {
+        std::vector<std::variant<double, int, bool>> row = {
             this->time[i],
             this->sensor1[i],
             this->sensor2[i],
@@ -332,14 +338,30 @@ void Drop::writeToFile(std::ofstream &file)
             this->b1[i],
             this->q1,
             this->q2,
-            this->sumOfSquaredDiffPenalty1,
-            this->sumOfSquaredDiffPenalty2,
-            this->chargeDiffPenalty,
-            this->widthDiffPenalty,
-            this->noisePropPenalty,
+            !sortedDrops ? this->sumOfSquaredDiffPenalty1 : false,
+            !sortedDrops ? this->sumOfSquaredDiffPenalty2 : false,
+            !sortedDrops ? this->chargeDiffPenalty : false,
+            !sortedDrops ? this->widthDiffPenalty : false,
+            !sortedDrops ? this->noisePropPenalty : false,
             this->penalty(),
-            this->id,
+            !sortedDrops ? this->id : false,
         };
+
+        std::vector<std::variant<double, int>> filtered_row;
+
+        for (const auto &value : row)
+        {
+            std::visit(
+                [&filtered_row](const auto &val)
+                {
+                    using T = std::decay_t<decltype(val)>;
+                    if constexpr (!std::is_same_v<T, bool>)
+                    {
+                        filtered_row.push_back(val);
+                    }
+                },
+                value);
+        }
 
         for (size_t j = 0; j < row.size(); ++j)
         {

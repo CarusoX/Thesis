@@ -48,7 +48,7 @@ clean:
 	rm -rf $(OBJDIR) $(EXECDIR)
 
 buscar_gotas:
-	./${EXTRACTOR} $(file)
+	./${EXTRACTOR} $(archivo)
 
 ordenar_gotas:
 	./${SORTER}

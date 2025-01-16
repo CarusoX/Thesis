@@ -1,4 +1,4 @@
 obj/
-drop_extractor
-drops.dat
+exec
+*.dat
 references/LabVIEW

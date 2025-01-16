@@ -1,10 +1,7 @@
 #ifndef LVM_HPP
 #define LVM_HPP
 
-#include <deque>
-#include <sstream>
-#include <stdexcept>
-#include <vector>
+#include "lib.hpp"
 
 class LVM
 {
