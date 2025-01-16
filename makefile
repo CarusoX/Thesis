@@ -12,8 +12,12 @@ SRC += $(wildcard */*.cpp)  # Include subdirectories if needed
 OBJDIR := obj
 OBJ := $(addprefix $(OBJDIR)/, $(notdir $(SRC:.cpp=.o)))
 
-# Executable name
-EXEC := drop_extractor
+# Executable directory
+EXECDIR := exec
+
+# Executable names
+EXTRACTOR := $(EXECDIR)/drop_extractor
+SORTER := $(EXECDIR)/drop_sorter
 
 # Include directories
 INCLUDES := -I.
@@ -21,12 +25,18 @@ INCLUDES := -I.
 # Libraries (add any required libraries)
 LIBS := 
 
-all: $(OBJDIR) $(EXEC)
+all: $(OBJDIR) ${EXECDIR} $(EXTRACTOR) $(SORTER)
 
 $(OBJDIR):
 	mkdir -p $(OBJDIR)
 
-$(EXEC): $(OBJ)
+$(EXECDIR):
+	mkdir -p $(EXECDIR)
+
+$(EXTRACTOR): $(filter-out $(OBJDIR)/drop_sorter.o, $(OBJ))
+	$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ $^ $(LIBS)
+
+$(SORTER): $(filter-out $(OBJDIR)/drop_extractor.o, $(OBJ))
 	$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ $^ $(LIBS)
 
 $(OBJDIR)/%.o: %.cpp
@@ -35,4 +45,10 @@ $(OBJDIR)/%.o: %.cpp
 .PHONY: clean
 
 clean:
-	rm -rf $(OBJDIR) $(EXEC)
+	rm -rf $(OBJDIR) $(EXECDIR)
+
+buscar_gotas:
+	./${EXTRACTOR} $(file)
+
+ordenar_gotas:
+	./${SORTER}

@@ -75,8 +75,8 @@ void perform(const std::string &filePath, const std::string &outPath)
 
     size_t gotas = 0;
 
-    std::ifstream fifo(filePath);
-    if (!fifo.is_open())
+    std::ifstream file(filePath);
+    if (!file.is_open())
     {
         throw std::runtime_error("No se pudo abrir el archivo.");
     }
@@ -91,7 +91,7 @@ void perform(const std::string &filePath, const std::string &outPath)
     char ch;
     while (true)
     {
-        if (!fifo.get(ch))
+        if (!file.get(ch))
         {
             // Esperar más datos si no hay mas caracteres disponibles
             continue;
@@ -116,8 +116,7 @@ int main(int argc, char *argv[])
 {
     if (argc != 2)
     {
-        std::cerr << "Uso: " << argv[0] << " <ruta al archivo FIFO>"
-                  << std::endl;
+        std::cerr << "Uso: " << argv[0] << " <ruta al archivo>" << std::endl;
         return 1;
     }
 

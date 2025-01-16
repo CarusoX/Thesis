@@ -48,7 +48,7 @@ public:
 
     double penalty() const;
 
-    std::vector<Drop> readFromFile(std::ifstream &file);
+    std::vector<Drop> static readFromFile(std::ifstream &file);
 
     void writeToFile(std::ofstream &file);
 
