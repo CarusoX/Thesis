@@ -1,25 +1,11 @@
 #include "Drop.hpp"
+#include "file.hpp"
 
 void perform(const std::string &filePath, const std::string &outPath)
 {
-    if (!std::filesystem::exists(filePath))
-    {
-        throw std::invalid_argument("El archivo '" + filePath + "' no existe.");
-    }
+    auto file = openFileRead(filePath);
 
-    std::cout << "Leyendo del archivo: " << filePath << std::endl;
-
-    std::ifstream file(filePath);
-    if (!file.is_open())
-    {
-        throw std::runtime_error("No se pudo abrir el archivo.");
-    }
-
-    std::ofstream outFile(outPath, std::ofstream::out | std::ofstream::trunc);
-    if (!outFile.is_open())
-    {
-        throw std::runtime_error("No se pudo abrir el archivo.");
-    }
+    auto outFile = openFileWrite(outPath);
 
     std::vector<Drop> drops = Drop::readFromFile(file);
 

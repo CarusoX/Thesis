@@ -33,4 +33,16 @@ constexpr double PROP_WIDTH = 0.79;
 // Factor de integracion
 constexpr double INTEGRATION_FACTOR = 2000;
 
+// Diametros
+constexpr double MIN_DIAMETER = 0.175;
+constexpr double MAX_DIAMETER = 5.81;
+
+// Histograma de carga
+constexpr int HISTOGRAM_CHARGE_MIN = -101;
+constexpr int HISTOGRAM_CHARGE_MAX = 101;
+
+// Histograma de diametro
+constexpr int HISTOGRAM_DIAMETER_MAX = 10;
+constexpr int HISTOGRAM_DIAMETER_PRECISION = 2;
+
 #endif // CONSTANTS_HPP

@@ -114,6 +114,14 @@ void Drop::computeVelocity()
     this->v = RING_DISH_SEP / (this->time[p2] - this->time[p1]);
 }
 
+void Drop::computeDiameter()
+{
+    this->d =
+        std::min(MAX_DIAMETER,
+                 std::max(MIN_DIAMETER,
+                          3.83733 * std::exp(0.0595377 * this->v) - 3.82742));
+}
+
 void Drop::computeModels()
 {
     for (int i = 0; i < this->size(); i++)
@@ -230,6 +238,7 @@ void Drop::debug() const
     std::cout << "  q1: " << q1 << std::endl;
     std::cout << "  q2: " << q2 << std::endl;
     std::cout << "  q: " << q << std::endl;
+    std::cout << "  d: " << d << std::endl;
     std::cout << "  v: " << v << std::endl;
     std::cout << "  sumOfSquaredDiffPenalty1: " << sumOfSquaredDiffPenalty1
               << std::endl;
@@ -253,6 +262,7 @@ void Drop::computeStats()
     this->computeAverageCharge();           // q
     this->satisfiesBasicFilters();          // filter 2
     this->computeVelocity();                // v
+    this->computeDiameter();                // d
     this->computeModels();                  // a1, b1, a2
     this->computeSumOfSquaredDiffPenalty(); // sumOfSquaredDiffPenalty1,
                                             // sumOfSquaredDiffPenalty2
@@ -275,14 +285,14 @@ std::vector<Drop> Drop::readFromFile(std::ifstream &file)
     {
         std::istringstream iss(line);
         double time, sensor1, sensor2, integralSensor1, integralSensor2;
-        double a1, a2, b1, q1, q2, sumOfSquaredDiffPenalty1,
+        double a1, a2, b1, q1, q2, d, sumOfSquaredDiffPenalty1,
             sumOfSquaredDiffPenalty2, chargeDiffPenalty, widthDiffPenalty,
             noisePropPenalty, penalty;
         int id;
 
         // Leer los datos en el mismo orden en el que fueron escritos
         if (!(iss >> time >> sensor1 >> sensor2 >> integralSensor1 >>
-              integralSensor2 >> a1 >> a2 >> b1 >> q1 >> q2 >>
+              integralSensor2 >> a1 >> a2 >> b1 >> q1 >> q2 >> d >>
               sumOfSquaredDiffPenalty1 >> sumOfSquaredDiffPenalty2 >>
               chargeDiffPenalty >> widthDiffPenalty >> noisePropPenalty >>
               penalty >> id))
@@ -309,11 +319,13 @@ std::vector<Drop> Drop::readFromFile(std::ifstream &file)
         currentDrop.b1.push_back(b1);
         currentDrop.q1 = q1;
         currentDrop.q2 = q2;
+        currentDrop.d = d;
         currentDrop.sumOfSquaredDiffPenalty1 = sumOfSquaredDiffPenalty1;
         currentDrop.sumOfSquaredDiffPenalty2 = sumOfSquaredDiffPenalty2;
         currentDrop.chargeDiffPenalty = chargeDiffPenalty;
         currentDrop.widthDiffPenalty = widthDiffPenalty;
         currentDrop.noisePropPenalty = noisePropPenalty;
+        currentDrop.computeAverageCharge();
     }
     currentDrop.valid = 1;
     drops.push_back(currentDrop);
@@ -338,6 +350,7 @@ void Drop::writeToFile(std::ofstream &file, bool sortedDrops)
             this->b1[i],
             this->q1,
             this->q2,
+            this->d,
             !sortedDrops ? this->sumOfSquaredDiffPenalty1 : false,
             !sortedDrops ? this->sumOfSquaredDiffPenalty2 : false,
             !sortedDrops ? this->chargeDiffPenalty : false,

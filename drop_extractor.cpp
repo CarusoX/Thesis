@@ -2,6 +2,7 @@
 #include "DropFinder.hpp"
 #include "LVM.hpp"
 #include "constants.hpp"
+#include "file.hpp"
 #include "filter.hpp"
 
 void processLine(LVM &lvm, std::string line, size_t &gotas,
@@ -59,28 +60,13 @@ void processLine(LVM &lvm, std::string line, size_t &gotas,
 
 void perform(const std::string &filePath, const std::string &outPath)
 {
-    if (!std::filesystem::exists(filePath))
-    {
-        throw std::invalid_argument("El archivo '" + filePath + "' no existe.");
-    }
+    auto file = openFileRead(filePath);
 
-    std::cout << "Leyendo del archivo: " << filePath << std::endl;
+    auto outFile = openFileWrite(outPath);
 
     LVM lvm(2 * WINDOW_SIZE);
 
     size_t gotas = 0;
-
-    std::ifstream file(filePath);
-    if (!file.is_open())
-    {
-        throw std::runtime_error("No se pudo abrir el archivo.");
-    }
-
-    std::ofstream outFile(outPath, std::ofstream::out | std::ofstream::trunc);
-    if (!outFile.is_open())
-    {
-        throw std::runtime_error("No se pudo abrir el archivo.");
-    }
 
     std::string line;
     char ch;

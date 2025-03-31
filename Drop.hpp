@@ -16,6 +16,7 @@ public:
     double q2;       // carga del plato
     double q;        // carga promedio
     double v;        // velocidad
+    double d;        // diametro
     std::vector<double> sensor1, sensor2; // datos de los sensores
     std::vector<double> integralSensor1,
         integralSensor2;        // integral de los sensores
@@ -48,7 +49,8 @@ public:
 
     std::vector<Drop> static readFromFile(std::ifstream &file);
 
-    void writeToFile(std::ofstream &file, bool withoutIndividualPenalties = false);
+    void writeToFile(std::ofstream &file,
+                     bool withoutIndividualPenalties = false);
 
 private:
     int findSensor1MiddlePoint();
@@ -66,6 +68,8 @@ private:
     int satisfiesBasicFilters();
 
     void computeVelocity();
+
+    void computeDiameter();
 
     void computeSumOfSquaredDiffPenalty();
 
