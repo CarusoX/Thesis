@@ -1,6 +1,8 @@
 #ifndef LIB_HPP
 #define LIB_HPP
 
+#include <algorithm>
+#include <assert.h>
 #include <cmath>
 #include <deque>
 #include <fstream>

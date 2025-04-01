@@ -3,7 +3,7 @@
 
 #include "constants.hpp"
 #include "lib.hpp"
-
+#include "diameter.hpp"
 class Drop
 {
 public:

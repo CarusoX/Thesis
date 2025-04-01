@@ -111,15 +111,36 @@ int Drop::satisfiesBasicFilters()
 
 void Drop::computeVelocity()
 {
+    // TODO: check why time is not sorted
     this->v = RING_DISH_SEP / (this->time[p2] - this->time[p1]);
 }
 
 void Drop::computeDiameter()
 {
-    this->d =
-        std::min(MAX_DIAMETER,
-                 std::max(MIN_DIAMETER,
-                          3.83733 * std::exp(0.0595377 * this->v) - 3.82742));
+    if (this->v < diameters[0].first) {
+        this->d = diameters[0].second;
+    } else if (this->v > diameters[diameters.size() - 1].first) {
+        this->d = diameters[diameters.size() - 1].second;
+    } else {
+        // Binary search to find the diameter based on velocity
+        int left = 0;
+        int right = diameters.size() - 1;
+
+        while (left <= right) {
+            int mid = (left + right) / 2;
+            
+            if (diameters[mid].first <= this->v && this->v < diameters[mid + 1].first) {
+                this->d = diameters[mid].second;
+                break;
+            }
+            
+            if (this->v < diameters[mid].first) {
+                right = mid - 1;
+            } else {
+                left = mid + 1;
+            }
+        }
+    }
 }
 
 void Drop::computeModels()

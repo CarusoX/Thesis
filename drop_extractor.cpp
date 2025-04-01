@@ -58,7 +58,8 @@ void processLine(LVM &lvm, std::string line, size_t &gotas,
     }
 }
 
-void perform(const std::string &filePath, const std::string &outPath)
+void perform(const std::string &filePath, const std::string &outPath,
+             bool realtime)
 {
     auto file = openFileRead(filePath);
 
@@ -74,6 +75,9 @@ void perform(const std::string &filePath, const std::string &outPath)
     {
         if (!file.get(ch))
         {
+            if (!realtime) {
+                break;
+            }
             // Esperar más datos si no hay mas caracteres disponibles
             continue;
         }
@@ -101,9 +105,15 @@ int main(int argc, char *argv[])
         return 1;
     }
 
+    bool realtime = false;
+    if (argc == 3 && std::string(argv[2]) == "--realtime")
+    {
+        realtime = true;
+    }
+
     try
     {
-        perform(argv[1], "drops.dat");
+        perform(argv[1], "drops.dat", realtime);
     }
     catch (const std::exception &e)
     {
