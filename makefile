@@ -50,12 +50,3 @@ $(OBJDIR)/%.o: %.cpp
 
 clean:
 	rm -rf $(OBJDIR) $(EXECDIR)
-
-buscar_gotas:
-	./${EXTRACTOR} $(archivo)
-
-ordenar_gotas:
-	./${SORTER}
-
-graficar:
-	./${CHART}
