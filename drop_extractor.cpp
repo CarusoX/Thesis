@@ -71,6 +71,7 @@ void perform(const std::string &filePath, const std::string &outPath,
 
     std::string line;
     char ch;
+    uint start_pos = 0;
     while (true)
     {
         if (!file.get(ch))
@@ -79,9 +80,15 @@ void perform(const std::string &filePath, const std::string &outPath,
                 break;
             }
             // Esperar más datos si no hay mas caracteres disponibles
+            // Para esto se cierra el archivo y se abre de nuevo
+            // y se posiciona en la posición donde se quedó
+            file.close();
+            file = openFileRead(filePath);
+            file.seekg(start_pos);
             continue;
         }
-        else if (ch == '\r')
+        start_pos = file.tellg();
+        if (ch == '\r')
         {
             // ignorar
         }
