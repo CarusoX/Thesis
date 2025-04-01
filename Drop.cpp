@@ -20,7 +20,7 @@ int Drop::findSensor1MiddlePoint()
             return this->p1 = i;
         }
     }
-    return this->p1 = this->size();
+    return this->p1 = this->size() - 1;
 }
 
 int Drop::findSensor2TippingPoint()
@@ -46,7 +46,7 @@ int Drop::findSensor2TippingPoint()
             }
         }
     }
-    return this->p2 = this->size();
+    return this->p2 = this->size() - 1;
 }
 
 void Drop::computeIntegral()
@@ -111,7 +111,6 @@ int Drop::satisfiesBasicFilters()
 
 void Drop::computeVelocity()
 {
-    // TODO: check why time is not sorted
     this->v = RING_DISH_SEP / (this->time[p2] - this->time[p1]);
 }
 
