@@ -121,7 +121,6 @@ void Drop::computeDiameter()
     } else if (this->v > diameters[diameters.size() - 1].first) {
         this->d = diameters[diameters.size() - 1].second;
     } else {
-        // Binary search to find the diameter based on velocity
         int left = 0;
         int right = diameters.size() - 1;
 
