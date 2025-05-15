@@ -16,6 +16,7 @@ OBJ := $(addprefix $(OBJDIR)/, $(notdir $(SRC:.cpp=.o)))
 EXECDIR := exec
 
 # Executable names
+AVERAGE := $(EXECDIR)/drop_average
 EXTRACTOR := $(EXECDIR)/drop_extractor
 SORTER := $(EXECDIR)/drop_sorter
 CHART := $(EXECDIR)/drop_chart
@@ -26,7 +27,7 @@ INCLUDES := -I.
 # Libraries (add any required libraries)
 LIBS := 
 
-all: $(OBJDIR) ${EXECDIR} $(EXTRACTOR) $(SORTER) $(CHART)
+all: $(OBJDIR) ${EXECDIR} $(EXTRACTOR) $(SORTER) $(CHART) $(AVERAGE)
 
 $(OBJDIR):
 	mkdir -p $(OBJDIR)
@@ -34,13 +35,16 @@ $(OBJDIR):
 $(EXECDIR):
 	mkdir -p $(EXECDIR)
 
-$(EXTRACTOR): $(filter-out $(OBJDIR)/drop_sorter.o $(OBJDIR)/drop_chart.o, $(OBJ))
+$(EXTRACTOR): $(filter-out $(OBJDIR)/drop_sorter.o $(OBJDIR)/drop_chart.o $(OBJDIR)/drop_average.o, $(OBJ))
 	$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ $^ $(LIBS)
 
-$(SORTER): $(filter-out $(OBJDIR)/drop_extractor.o $(OBJDIR)/drop_chart.o, $(OBJ))
+$(SORTER): $(filter-out $(OBJDIR)/drop_extractor.o $(OBJDIR)/drop_chart.o $(OBJDIR)/drop_average.o, $(OBJ))
 	$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ $^ $(LIBS)
 
-$(CHART): $(filter-out $(OBJDIR)/drop_sorter.o $(OBJDIR)/drop_extractor.o, $(OBJ))
+$(CHART): $(filter-out $(OBJDIR)/drop_sorter.o $(OBJDIR)/drop_extractor.o $(OBJDIR)/drop_average.o, $(OBJ))
+	$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ $^ $(LIBS)
+
+$(AVERAGE): $(filter-out $(OBJDIR)/drop_extractor.o $(OBJDIR)/drop_sorter.o $(OBJDIR)/drop_chart.o, $(OBJ))
 	$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ $^ $(LIBS)
 
 $(OBJDIR)/%.o: %.cpp

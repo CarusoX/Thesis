@@ -1,6 +1,6 @@
 #include "LVM.hpp"
 
-LVM::LVM(size_t buffer_size) : maxSize(buffer_size) {}
+LVM::LVM(size_t buffer_size) : totalUsed(0), maxSize(buffer_size) {}
 
 void LVM::addSensorData(const std::string &line)
 {
@@ -12,17 +12,13 @@ void LVM::addSensorData(const std::string &line)
     }
     if (data.size() == maxSize)
     {
+        if (data.front().used == 1)
+        {
+            totalUsed--;
+        }
         data.pop_front(); // Remove the oldest element
     }
     data.push_back({time, sensor1, sensor2, 0});
-}
-
-void LVM::keepLast(size_t size)
-{
-    while (data.size() > size)
-    {
-        data.pop_front();
-    }
 }
 
 void LVM::setUsed(size_t r1, size_t r2)
@@ -33,7 +29,11 @@ void LVM::setUsed(size_t r1, size_t r2)
     }
     for (size_t i = r1; i <= r2; ++i)
     {
-        data[i].used = 1;
+        if (data[i].used == 0)
+        {
+            data[i].used = 1;
+            totalUsed++;
+        }
     }
 }
 
@@ -43,3 +43,15 @@ std::vector<LVM::Row> LVM::get() const
 }
 
 size_t LVM::size() const { return data.size(); }
+
+LVM::Row &LVM::operator[](size_t index) { return data[index]; }
+
+LVM::Row LVM::operator[](size_t index) const { return data[index]; }
+
+LVM::Row *LVM::begin() { return &data[0]; }
+
+LVM::Row *LVM::end() { return &data[0] + data.size(); }
+
+const LVM::Row *LVM::begin() const { return &data[0]; }
+
+const LVM::Row *LVM::end() const { return &data[0] + data.size(); }

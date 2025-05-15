@@ -38,7 +38,8 @@ int main()
 {
     try
     {
-        perform("drops.dat", "drops_sorted.dat");
+        std::filesystem::path outPath = std::filesystem::current_path() / "drops_sorted.dat";
+        perform("drops.dat", outPath);
     }
     catch (const std::exception &e)
     {

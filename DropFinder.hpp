@@ -10,7 +10,7 @@
 class DropFinder
 {
 public:
-    Drop findDrop(const std::vector<LVM::Row> &data);
+    Drop findDrop(const LVM &lvm);
 
 private:
     Drop getDrop(const std::vector<double> &sensor1,

@@ -1,12 +1,12 @@
 #include "DropFinder.hpp"
 
-Drop DropFinder::findDrop(const std::vector<LVM::Row> &data)
+Drop DropFinder::findDrop(const LVM &lvm)
 {
     // Extraer time, sensor1, sensor2, y used en vectores
     std::vector<double> time, sensor1, sensor2;
     std::vector<int> used;
 
-    for (const auto &row : data)
+    for (const auto &row : lvm)
     {
         time.push_back(row.time);
         sensor1.push_back(row.sensor1);
