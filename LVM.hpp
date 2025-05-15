@@ -37,13 +37,13 @@ public:
 
     Row operator[](size_t index) const;
 
-    Row *begin();
+    using iterator = std::deque<Row>::iterator;
+    using const_iterator = std::deque<Row>::const_iterator;
 
-    Row *end();
-
-    const Row *begin() const;
-
-    const Row *end() const;
+    iterator begin();
+    iterator end();
+    const_iterator begin() const;
+    const_iterator end() const;
 };
 
 #endif // LVM_HPP

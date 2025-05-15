@@ -22,7 +22,7 @@ void perform(const std::string &filePath, const std::string &outPath)
         Filter::normalizeWithRolling(lvm.get()); // Compute rolling average
 
     for (const auto& row : normalizedData) {
-        outFile << row.time << " " << row.sensor1 << " " << row.sensor2 << "\n";
+        outFile << std::fixed << std::setprecision(6) << row.time << " " << row.sensor1 << " " << row.sensor2 << "\n";
     }
 }
 
