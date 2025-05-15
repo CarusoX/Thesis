@@ -63,6 +63,7 @@ void perform(const std::string &filePath, const std::string &outPath,
 {
     auto file = openFileRead(filePath);
 
+    // TODO: solve issue non existing file
     auto outFile = openFileWrite(outPath);
 
     LVM lvm(2 * WINDOW_SIZE);

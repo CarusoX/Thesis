@@ -5,7 +5,7 @@
 // Tamaño maximo de una gota
 constexpr int DROP_SIZE = 300;
 
-// Tamaño de la ventana deslizante
+// Tamaño de la ventana deslizante para el promedio
 constexpr int WINDOW_SIZE = 5000;
 
 // Datos por segundo
