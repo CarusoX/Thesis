@@ -4,6 +4,7 @@
 #include "constants.hpp"
 #include "file.hpp"
 #include "filter.hpp"
+#include "utils.hpp"
 
 void processLine(LVM &lvm, std::string line, size_t &gotas,
                  std::ofstream &outFile)
@@ -35,7 +36,7 @@ void processLine(LVM &lvm, std::string line, size_t &gotas,
             drop.writeToFile(outFile);
 
             // Print drop debugging info
-            drop.debug();
+            // drop.debug();
         } while (true);
 
         lvm.setUsed(0, DROP_SIZE - 1);
@@ -45,18 +46,19 @@ void processLine(LVM &lvm, std::string line, size_t &gotas,
 void perform(const std::string &filePath, const std::string &outPath)
 {
     auto file = openFileRead(filePath);
-
     auto outFile = openFileWrite(outPath);
 
+    utils::ProgressTracker progress(filePath);
+
     LVM lvm(2 * DROP_SIZE);
-
-    std::string line;
-
     size_t gotas = 0;
+    std::string line;
+    size_t currentLine = 0;
 
     while (std::getline(file, line))
     {
         processLine(lvm, line, gotas, outFile);
+        progress.update(++currentLine);
     }
 }
 
