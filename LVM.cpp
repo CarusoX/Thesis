@@ -12,12 +12,6 @@ void LVM::addSensorData(const std::string &line)
         throw std::invalid_argument("Invalid line format");
     }
 
-    if (!std::isfinite(sensor1) || !std::isfinite(sensor2) || 
-        std::abs(sensor1) > 1.0 || std::abs(sensor2) > 1.0)
-    {
-        return;
-    }
-
     if (data.size() == maxSize)
     {
         if (data.front().used == 1)
