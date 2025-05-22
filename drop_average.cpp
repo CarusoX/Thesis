@@ -4,18 +4,23 @@
 #include "constants.hpp"
 #include "file.hpp"
 #include "filter.hpp"
+#include "utils.hpp"
 
 void perform(const std::string &filePath, const std::string &outPath)
 {
     auto file = openFileRead(filePath);
     auto outFile = openFileWrite(outPath);
 
+    utils::ProgressTracker progress(filePath);
+
     LVM lvm(size_t(-1));
 
     std::string line;
+    size_t currentLine = 0;
     while (std::getline(file, line))
     {
         lvm.addSensorData(line);
+        progress.update(++currentLine);
     }
 
     std::vector<LVM::Row> normalizedData =
