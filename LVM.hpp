@@ -1,5 +1,4 @@
-#ifndef LVM_HPP
-#define LVM_HPP
+#pragma once
 
 #include "lib.hpp"
 
@@ -45,5 +44,3 @@ public:
     const_iterator begin() const;
     const_iterator end() const;
 };
-
-#endif // LVM_HPP

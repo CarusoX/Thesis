@@ -1,5 +1,4 @@
-#ifndef DROP_HPP
-#define DROP_HPP
+#pragma once
 
 #include "Drop.hpp"
 #include "LVM.hpp"
@@ -27,5 +26,3 @@ private:
                                            std::pair<int, int> criticals,
                                            bool isPositive);
 };
-
-#endif // DROP_HPP

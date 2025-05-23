@@ -1,5 +1,4 @@
-#ifndef FILTER_HPP
-#define FILTER_HPP
+#pragma once
 
 #include "LVM.hpp"
 #include "constants.hpp"
@@ -11,5 +10,3 @@ public:
     static std::vector<LVM::Row>
     normalizeWithRolling(const std::vector<LVM::Row> &data);
 };
-
-#endif // FILTER_HPP

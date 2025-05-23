@@ -1,5 +1,4 @@
-#ifndef MAXMINQUEUE_HPP
-#define MAXMINQUEUE_HPP
+#pragma once
 
 #include "lib.hpp"
 
@@ -29,5 +28,3 @@ public:
     // Check if the queue is empty
     bool isEmpty() const;
 };
-
-#endif // MAXMINQUEUE_HPP

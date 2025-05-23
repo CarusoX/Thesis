@@ -1,5 +1,4 @@
-#ifndef LIB_HPP
-#define LIB_HPP
+#pragma once
 
 #include <algorithm>
 #include <assert.h>
@@ -15,5 +14,3 @@
 #include <string>
 #include <variant>
 #include <vector>
-
-#endif

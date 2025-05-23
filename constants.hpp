@@ -1,5 +1,4 @@
-#ifndef CONSTANTS_HPP
-#define CONSTANTS_HPP
+#pragma once
 #include "lib.hpp"
 
 // Tamaño maximo de una gota
@@ -44,5 +43,3 @@ constexpr int HISTOGRAM_CHARGE_MAX = 101;
 // Histograma de diametro
 constexpr int HISTOGRAM_DIAMETER_MAX = 10;
 constexpr int HISTOGRAM_DIAMETER_PRECISION = 2;
-
-#endif // CONSTANTS_HPP

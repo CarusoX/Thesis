@@ -1,5 +1,4 @@
-#ifndef DROP_DATA_HPP
-#define DROP_DATA_HPP
+#pragma once
 
 #include "constants.hpp"
 #include "lib.hpp"
@@ -81,5 +80,3 @@ private:
 
     void computeModels();
 };
-
-#endif

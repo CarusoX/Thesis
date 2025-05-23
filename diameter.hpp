@@ -1,5 +1,4 @@
-#ifndef DIAMETER_HPP
-#define DIAMETER_HPP
+#pragma once
 
 #include "lib.hpp"
 
@@ -1133,5 +1132,3 @@ const std::vector<std::pair<double, double>> diameters = {
     {9.0238471955, 5.805},
     {9.0238480018, 5.81},
 };
-
-#endif
