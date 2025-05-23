@@ -6,6 +6,8 @@ Filter::normalizeWithRolling(const std::vector<LVM::Row> &data)
     double sumSensor1 = 0.0;
     double sumSensor2 = 0.0;
     std::vector<LVM::Row> normalizedData;
+    size_t halfWindow = WINDOW_SIZE / 2;
+    size_t actualWindowSize = halfWindow * 2 + 1;
 
     size_t currentSize = 0;
 
@@ -17,24 +19,24 @@ Filter::normalizeWithRolling(const std::vector<LVM::Row> &data)
         ++currentSize;
 
         // If we exceed the window size, remove the oldest values
-        if (currentSize > WINDOW_SIZE)
+        if (currentSize > actualWindowSize)
         {
-            sumSensor1 -= data[i - WINDOW_SIZE].sensor1;
-            sumSensor2 -= data[i - WINDOW_SIZE].sensor2;
+            sumSensor1 -= data[i - actualWindowSize].sensor1;
+            sumSensor2 -= data[i - actualWindowSize].sensor2;
             --currentSize;
         }
 
-        // Compute the rolling mean in O(1)
-        double meanSensor1 = sumSensor1 / currentSize;
-        double meanSensor2 = sumSensor2 / currentSize;
+        if (currentSize == actualWindowSize)
+        {
+            double meanSensor1 = sumSensor1 / actualWindowSize;
+            double meanSensor2 = sumSensor2 / actualWindowSize;
 
-        // Create a normalized row
-        LVM::Row normalizedRow = data[i];
-        normalizedRow.sensor1 -= meanSensor1;
-        normalizedRow.sensor2 -= meanSensor2;
-
-        // Add the normalized row to the output
-        normalizedData.push_back(normalizedRow);
+            // Create a normalized row for the center of the window
+            LVM::Row normalizedRow = data[i - halfWindow];
+            normalizedRow.sensor1 -= meanSensor1;
+            normalizedRow.sensor2 -= meanSensor2;
+            normalizedData.push_back(normalizedRow);
+        }
     }
 
     return normalizedData;
