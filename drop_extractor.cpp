@@ -5,6 +5,7 @@
 #include "file.hpp"
 #include "filter.hpp"
 #include "utils.hpp"
+#include "cli.hpp"
 
 void processLine(LVM &lvm, std::string line, size_t &gotas,
                  std::ofstream &outFile)
@@ -48,7 +49,9 @@ void perform(const std::string &filePath, const std::string &outPath)
     auto file = openFileRead(filePath);
     auto outFile = openFileWrite(outPath);
 
-    utils::ProgressTracker progress(filePath);
+    CLI cli;
+    size_t totalLines = utils::countLines(filePath);
+    cli.startProgress("process", "Processing data", totalLines);
 
     LVM lvm(2 * DROP_SIZE);
     size_t gotas = 0;
@@ -58,8 +61,11 @@ void perform(const std::string &filePath, const std::string &outPath)
     while (std::getline(file, line))
     {
         processLine(lvm, line, gotas, outFile);
-        progress.update(++currentLine);
+        cli.updateProgress("process", ++currentLine);
     }
+
+    cli.finishProgress("process");
+    cli.printSuccess("Processing complete!");
 }
 
 int main()

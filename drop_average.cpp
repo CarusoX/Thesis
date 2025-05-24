@@ -5,30 +5,50 @@
 #include "file.hpp"
 #include "filter.hpp"
 #include "utils.hpp"
+#include "cli.hpp"
 
-void perform(const std::string &filePath, const std::string &outPath)
+void read(LVM &lvm, CLI &cli, const std::string &filePath)
 {
+    size_t totalLines = utils::countLines(filePath);
     auto file = openFileRead(filePath);
-    auto outFile = openFileWrite(outPath);
 
-    utils::ProgressTracker progress(filePath);
-
-    LVM lvm(size_t(-1));
-
-    std::string line;
+    cli.startProgress("read", "Reading data", totalLines);
     size_t currentLine = 0;
+    std::string line;
     while (std::getline(file, line))
     {
         lvm.addSensorData(line);
-        progress.update(++currentLine);
+        cli.updateProgress("read", ++currentLine);
     }
+    cli.finishProgress("read");
+}
 
-    std::vector<LVM::Row> normalizedData =
-        Filter::normalizeWithRolling(lvm.get()); // Compute rolling average
-
+void write(const std::vector<LVM::Row> &normalizedData, CLI &cli, const std::string &outPath)
+{
+    auto outFile = openFileWrite(outPath);
+    cli.startProgress("write", "Writing results", normalizedData.size());
+    size_t currentLine = 0;
     for (const auto& row : normalizedData) {
-        outFile << std::fixed << std::setprecision(6) << row.time << " " << row.sensor1 << " " << row.sensor2 << "\n";
+        outFile << std::fixed << std::setprecision(6) 
+                << row.time << " " << row.sensor1 << " " << row.sensor2 << "\n";
+        cli.updateProgress("write", ++currentLine);
     }
+    cli.finishProgress("write");
+}
+
+
+void perform(const std::string &filePath, const std::string &outPath)
+{
+    CLI cli;
+    LVM lvm(size_t(-1));
+
+    read(lvm, cli, filePath);
+
+    std::vector<LVM::Row> normalizedData = Filter::normalizeWithRolling(lvm.get(), cli);
+
+    write(normalizedData, cli, outPath);
+
+    cli.printSuccess("Processing complete!");
 }
 
 int main(int argc, char *argv[])

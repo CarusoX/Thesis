@@ -1,8 +1,9 @@
 #include "filter.hpp"
 
 std::vector<LVM::Row>
-Filter::normalizeWithRolling(const std::vector<LVM::Row> &data)
+Filter::normalizeWithRolling(const std::vector<LVM::Row> &data, CLI &cli)
 {
+    cli.startProgress("normalize", "Normalizing data", data.size());
     double sumSensor1 = 0.0;
     double sumSensor2 = 0.0;
     std::vector<LVM::Row> normalizedData;
@@ -37,7 +38,8 @@ Filter::normalizeWithRolling(const std::vector<LVM::Row> &data)
             normalizedRow.sensor2 -= meanSensor2;
             normalizedData.push_back(normalizedRow);
         }
+        cli.updateProgress("normalize", i);
     }
-
+    cli.finishProgress("normalize");
     return normalizedData;
 }

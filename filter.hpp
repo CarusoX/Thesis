@@ -3,10 +3,11 @@
 #include "LVM.hpp"
 #include "constants.hpp"
 #include "lib.hpp"
+#include "cli.hpp"
 
 class Filter
 {
 public:
     static std::vector<LVM::Row>
-    normalizeWithRolling(const std::vector<LVM::Row> &data);
+    normalizeWithRolling(const std::vector<LVM::Row> &data, CLI &cli);
 };
