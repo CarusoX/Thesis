@@ -44,28 +44,21 @@ void perform(const std::string &filePath, const std::string &outPath)
 
     read(lvm, cli, filePath);
 
-    std::vector<LVM::Row> filledData = normalizer::fillHoles(lvm.get(), cli);
-
-    std::vector<LVM::Row> normalizedData = normalizer::normalizeWithRolling(filledData, cli);
+    std::vector<LVM::Row> normalizedData = normalizer::normalizeWithRolling(lvm.get(), cli);
+    lvm.clear();
 
     write(normalizedData, cli, outPath);
 
     cli.printSuccess("Processing complete!");
 }
 
-int main(int argc, char *argv[])
+int main()
 {
-    if (argc < 2)
-    {
-        std::cerr << "Usage: " << argv[0] << " <input file path>" << std::endl;
-        return 1;
-    }
-
     std::filesystem::path outPath = std::filesystem::current_path() / "drops_average.dat";
 
     try
     {
-        perform(argv[1], outPath);
+        perform("drops_filled.dat", outPath);
     }
     catch (const std::exception &e)
     {

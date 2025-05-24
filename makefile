@@ -20,14 +20,14 @@ AVERAGE := $(EXECDIR)/drop_average
 EXTRACTOR := $(EXECDIR)/drop_extractor
 SORTER := $(EXECDIR)/drop_sorter
 CHART := $(EXECDIR)/drop_chart
-
+FILLER := $(EXECDIR)/drop_filler
 # Include directories
 INCLUDES := -I.
 
 # Libraries (add any required libraries)
 LIBS := 
 
-all: $(OBJDIR) ${EXECDIR} $(EXTRACTOR) $(SORTER) $(CHART) $(AVERAGE)
+all: $(OBJDIR) ${EXECDIR} $(EXTRACTOR) $(SORTER) $(CHART) $(AVERAGE) $(FILLER)
 
 $(OBJDIR):
 	mkdir -p $(OBJDIR)
@@ -35,16 +35,19 @@ $(OBJDIR):
 $(EXECDIR):
 	mkdir -p $(EXECDIR)
 
-$(EXTRACTOR): $(filter-out $(OBJDIR)/drop_sorter.o $(OBJDIR)/drop_chart.o $(OBJDIR)/drop_average.o, $(OBJ))
+$(EXTRACTOR): $(filter-out $(OBJDIR)/drop_sorter.o $(OBJDIR)/drop_chart.o $(OBJDIR)/drop_average.o $(OBJDIR)/drop_filler.o, $(OBJ))
 	$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ $^ $(LIBS)
 
-$(SORTER): $(filter-out $(OBJDIR)/drop_extractor.o $(OBJDIR)/drop_chart.o $(OBJDIR)/drop_average.o, $(OBJ))
+$(SORTER): $(filter-out $(OBJDIR)/drop_extractor.o $(OBJDIR)/drop_chart.o $(OBJDIR)/drop_average.o $(OBJDIR)/drop_filler.o, $(OBJ))
 	$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ $^ $(LIBS)
 
-$(CHART): $(filter-out $(OBJDIR)/drop_sorter.o $(OBJDIR)/drop_extractor.o $(OBJDIR)/drop_average.o, $(OBJ))
+$(CHART): $(filter-out $(OBJDIR)/drop_sorter.o $(OBJDIR)/drop_extractor.o $(OBJDIR)/drop_average.o $(OBJDIR)/drop_filler.o, $(OBJ))
 	$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ $^ $(LIBS)
 
-$(AVERAGE): $(filter-out $(OBJDIR)/drop_extractor.o $(OBJDIR)/drop_sorter.o $(OBJDIR)/drop_chart.o, $(OBJ))
+$(FILLER): $(filter-out $(OBJDIR)/drop_extractor.o $(OBJDIR)/drop_sorter.o $(OBJDIR)/drop_chart.o $(OBJDIR)/drop_average.o, $(OBJ))
+	$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ $^ $(LIBS)
+
+$(AVERAGE): $(filter-out $(OBJDIR)/drop_extractor.o $(OBJDIR)/drop_sorter.o $(OBJDIR)/drop_chart.o $(OBJDIR)/drop_filler.o, $(OBJ))
 	$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ $^ $(LIBS)
 
 $(OBJDIR)/%.o: %.cpp

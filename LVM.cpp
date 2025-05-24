@@ -46,6 +46,8 @@ std::vector<LVM::Row> LVM::get() const
 
 size_t LVM::size() const { return data.size(); }
 
+void LVM::clear() { data.clear(); }
+
 LVM::Row &LVM::operator[](size_t index) { return data.at(index); }
 
 LVM::Row LVM::operator[](size_t index) const { return data.at(index); }

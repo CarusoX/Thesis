@@ -32,6 +32,8 @@ public:
 
     size_t size() const;
 
+    void clear();
+
     Row &operator[](size_t index);
 
     Row operator[](size_t index) const;
