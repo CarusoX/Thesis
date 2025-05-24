@@ -3,7 +3,7 @@
 #include "LVM.hpp"
 #include "constants.hpp"
 #include "file.hpp"
-#include "filter.hpp"
+#include "normalizer.hpp"
 #include "utils.hpp"
 #include "cli.hpp"
 
@@ -65,7 +65,7 @@ void perform(const std::string &filePath, const std::string &outPath)
     }
 
     cli.finishProgress("process");
-    cli.printSuccess("Processing complete!");
+    cli.printSuccess("Processing complete found " + std::to_string(gotas) + " drops!");
 }
 
 int main()

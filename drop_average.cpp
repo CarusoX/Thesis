@@ -3,7 +3,7 @@
 #include "LVM.hpp"
 #include "constants.hpp"
 #include "file.hpp"
-#include "filter.hpp"
+#include "normalizer.hpp"
 #include "utils.hpp"
 #include "cli.hpp"
 
@@ -44,7 +44,9 @@ void perform(const std::string &filePath, const std::string &outPath)
 
     read(lvm, cli, filePath);
 
-    std::vector<LVM::Row> normalizedData = Filter::normalizeWithRolling(lvm.get(), cli);
+    std::vector<LVM::Row> filledData = normalizer::fillHoles(lvm.get(), cli);
+
+    std::vector<LVM::Row> normalizedData = normalizer::normalizeWithRolling(filledData, cli);
 
     write(normalizedData, cli, outPath);
 
