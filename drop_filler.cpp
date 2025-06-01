@@ -34,14 +34,13 @@ void perform(const std::string &filePath, const std::string &outPath)
     LVM lvm(size_t(-1));
     read(lvm, cli, filePath);
     auto outFile = openFileWrite(outPath);
-    size_t halfWindow = WINDOW_SIZE / 2;
+    size_t halfWindow = FILL_WINDOW_SIZE;
     double EXPECTED_TIME_DIFF = static_cast<double>(1) / DATA_PER_SECOND;
     double MAX_TIME_DIFF = 2 * EXPECTED_TIME_DIFF;
 
     cli.startProgress("fill", "Filling data", lvm.size());
 
     for(size_t i = 0; i < lvm.size(); i++) {
-      write(outFile, lvm[i]);
       if(i > 0 && lvm[i].time - lvm[i - 1].time > MAX_TIME_DIFF) {
         double diff = lvm[i].time - lvm[i - 1].time;
         // We have a hole, fill it and start from scratch
@@ -74,6 +73,7 @@ void perform(const std::string &filePath, const std::string &outPath)
           write(outFile, LVM::Row{t, sensor1, sensor2, 0});
         }
       }
+      write(outFile, lvm[i]);
       cli.updateProgress("fill", i);
     }
     cli.finishProgress("fill");

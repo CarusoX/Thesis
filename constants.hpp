@@ -7,6 +7,9 @@ constexpr int DROP_SIZE = 300;
 // Tamaño de la ventana deslizante para el promedio
 constexpr int WINDOW_SIZE = 5000;
 
+// Tamaño de la ventana deslizante para el promedio cuando llenamos huecos
+constexpr int FILL_WINDOW_SIZE = 1000;
+
 // Datos por segundo
 constexpr int DATA_PER_SECOND = 5000;
 
