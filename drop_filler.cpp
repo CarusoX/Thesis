@@ -44,7 +44,7 @@ void perform(const std::string &filePath, const std::string &outPath)
       if(i > 0 && lvm[i].time - lvm[i - 1].time > MAX_TIME_DIFF) {
         double diff = lvm[i].time - lvm[i - 1].time;
         // We have a hole, fill it and start from scratch
-        size_t numberOfLinesToFill = std::round(diff / EXPECTED_TIME_DIFF);
+        size_t numberOfLinesToFill = std::round(diff / EXPECTED_TIME_DIFF) - 1;
         double leftAvgSensor1 = 0, leftAvgSensor2 = 0;
         double rightAvgSensor1 = 0, rightAvgSensor2 = 0;
         size_t leftCount = 0, rightCount = 0;
