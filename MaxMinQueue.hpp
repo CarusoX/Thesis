@@ -6,8 +6,8 @@ class MaxMinQueue
 {
 private:
     std::deque<std::pair<double, int>> queue;
-    std::deque<std::pair<double, int>> maxDeque;
-    std::deque<std::pair<double, int>> minDeque;
+    std::deque<std::pair<std::pair<double, int>, int>> maxDeque;
+    std::deque<std::pair<std::pair<double, int>, int>> minDeque;
 
 public:
     // Add a new value to the queue

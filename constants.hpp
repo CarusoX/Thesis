@@ -2,7 +2,7 @@
 #include "lib.hpp"
 
 // Tamaño maximo de una gota
-constexpr int DROP_SIZE = 300;
+constexpr int DROP_SIZE = 400;
 
 // Tamaño de la ventana deslizante para el promedio
 constexpr int WINDOW_SIZE = 5000;

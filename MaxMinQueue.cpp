@@ -4,19 +4,29 @@ void MaxMinQueue::push(std::pair<double, int> value)
 {
     queue.push_back(value);
 
+    size_t maxEqualCount = 0;
+    size_t minEqualCount = 0;
     // Maintain the maxDeque for maximum values
-    while (!maxDeque.empty() && maxDeque.back().first < value.first)
+    while (!maxDeque.empty() && maxDeque.back().first.first <= value.first)
     {
+        if (maxDeque.back().first.first == value.first)
+        {
+            maxEqualCount++;
+        }
         maxDeque.pop_back();
     }
-    maxDeque.push_back(value);
+    maxDeque.push_back({value, maxEqualCount});
 
     // Maintain the minDeque for minimum values
-    while (!minDeque.empty() && minDeque.back().first > value.first)
+    while (!minDeque.empty() && minDeque.back().first.first >= value.first)
     {
+        if (minDeque.back().first.first == value.first)
+        {
+            minEqualCount++;
+        }
         minDeque.pop_back();
     }
-    minDeque.push_back(value);
+    minDeque.push_back({value, minEqualCount});
 }
 
 std::pair<double, int> MaxMinQueue::pop()
@@ -29,15 +39,19 @@ std::pair<double, int> MaxMinQueue::pop()
     queue.pop_front();
 
     // Update maxDeque if the popped value is the current maximum
-    if (!maxDeque.empty() && value == maxDeque.front())
+    if (!maxDeque.empty() && value == maxDeque.front().first)
     {
-        maxDeque.pop_front();
+        if(--maxDeque.front().second == 0) {
+            maxDeque.pop_front();
+        }
     }
 
     // Update minDeque if the popped value is the current minimum
-    if (!minDeque.empty() && value == minDeque.front())
+    if (!minDeque.empty() && value == minDeque.front().first)
     {
-        minDeque.pop_front();
+        if(--minDeque.front().second == 0) {
+            minDeque.pop_front();
+        }
     }
 
     return value;
@@ -49,7 +63,7 @@ std::pair<double, int> MaxMinQueue::max() const
     {
         throw std::runtime_error("Queue is empty");
     }
-    return maxDeque.front();
+    return maxDeque.front().first;
 }
 
 std::pair<double, int> MaxMinQueue::min() const
@@ -58,7 +72,7 @@ std::pair<double, int> MaxMinQueue::min() const
     {
         throw std::runtime_error("Queue is empty");
     }
-    return minDeque.front();
+    return minDeque.front().first;
 }
 
 size_t MaxMinQueue::size() const { return queue.size(); }

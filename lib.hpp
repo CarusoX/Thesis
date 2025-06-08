@@ -9,6 +9,7 @@
 #include <filesystem>
 #include <iostream>
 #include <iomanip>
+#include <set>
 #include <sstream>
 #include <stdexcept>
 #include <string>

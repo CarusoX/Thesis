@@ -29,7 +29,7 @@ int Drop::findSensor2TippingPoint()
     auto compare = [&](double x, double y) -> bool
     { return this->isPositive ? x < y : x > y; };
 
-    double integral;
+    double integral = 0;
     for (int i = this->u2; i < this->size(); i++)
     {
         integral = integral - this->sensor2[i];
