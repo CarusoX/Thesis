@@ -30,7 +30,7 @@ int Drop::findSensor2TippingPoint()
     { return this->isPositive ? x < y : x > y; };
 
     double integral = 0;
-    for (int i = this->u2; i < this->size(); i++)
+    for (int i = this->u2 - this->u1; i < this->size(); i++)
     {
         integral = integral - this->sensor2[i];
         if (compare(integral, this->isPositive ? -0.1 : 0.1))
@@ -267,14 +267,13 @@ void Drop::debug() const
     std::cout << "  widthDiffPenalty: " << widthDiffPenalty << std::endl;
     std::cout << "  noisePropPenalty: " << noisePropPenalty << std::endl;
     std::cout << "  penalty: " << this->penalty() << std::endl;
+    std::cout << "  valid: " << valid << std::endl;
 }
 
 int Drop::size() const { return sensor1.size(); }
 
 void Drop::computeStats()
 {
-    this->findSensor1MiddlePoint();         // p1
-    this->findSensor2TippingPoint();        // p2
     this->computeIntegral();                // integrals
     this->computeRingCharge();              // q1
     this->computeDishCharge();              // q2

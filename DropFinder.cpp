@@ -1,4 +1,5 @@
 #include "DropFinder.hpp"
+#include "constants.hpp"
 
 Drop DropFinder::findDrop(const LVM &lvm)
 {
@@ -24,8 +25,7 @@ Drop DropFinder::findDrop(const LVM &lvm)
     std::tie(drop.u1, drop.u2) = findStartingPoints(
         sensor1, sensor2, {drop.c1, drop.c2}, drop.isPositive);
 
-    // Recorte de la gota
-    // TODO: Recortar mejor
+    // Recorte maximo de la gota (4*NN)
     for (int i = 0; i < DROP_SIZE; i++)
     {
         drop.time.push_back(time[drop.u1 + i]);
@@ -33,10 +33,35 @@ Drop DropFinder::findDrop(const LVM &lvm)
         drop.sensor2.push_back(sensor2[drop.u1 + i]);
     }
 
+    drop.findSensor1MiddlePoint();
+    drop.findSensor2TippingPoint();
+
+    // Ahora ajustamos el corte de la gota
+    size_t drop_size = DROP_SIZE;
+    if(drop.p2 + NN / 2 < 3 * NN / 2) {
+        // Caso en que el segundo pulso es muy angosto
+        // se toma como minimo 3*NN/2 despues del inicio del primer pulso
+        drop_size = 3 * NN / 2;
+    } else if(drop.p2 + NN / 2 <= 4 * NN) {
+        // Caso en que el segundo pulso es muy ancho
+        // se toman p2+NN/2 despues del inicio del segundo pulso
+        drop_size = drop.p2 + NN / 2;
+    } else {
+        // Caso intermedio,se toma como maximo 4*nn
+        // despues del inicio primer pulso
+        drop_size = 4*NN;
+    }
+
+    drop.time.resize(std::min(drop_size, size_t(DROP_SIZE)));
+    drop.sensor1.resize(std::min(drop_size, size_t(DROP_SIZE)));
+    drop.sensor2.resize(std::min(drop_size, size_t(DROP_SIZE)));
+
     // Como recortamos la gota, u1 es 0 ahora -> ajustamos las posiciones
     drop.c1 -= drop.u1;
     drop.c2 -= drop.u1;
     drop.u2 -= drop.u1;
+    drop.p1 = std::min(drop.p1, drop.size() - 1);
+    drop.p2 = std::min(drop.p2, drop.size() - 1);
     // IMPORTANTE: NO AJUSTAMOS U1 simplemente para saber en que indice de la
     // data original comenzo la gota
     drop.computeStats();

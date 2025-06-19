@@ -42,6 +42,10 @@ public:
 
     int size() const;
 
+    int findSensor1MiddlePoint();
+
+    int findSensor2TippingPoint();
+
     void computeStats();
 
     double penalty() const;
@@ -52,10 +56,6 @@ public:
                      bool withoutIndividualPenalties = false);
 
 private:
-    int findSensor1MiddlePoint();
-
-    int findSensor2TippingPoint();
-
     void computeIntegral();
 
     void computeRingCharge();

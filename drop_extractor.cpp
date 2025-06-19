@@ -14,7 +14,7 @@ void processLine(LVM &lvm, std::string line, size_t &gotas,
     lvm.addSensorData(line); // Agrega datos al buffer
     if (lvm.size() == DROP_SIZE * 2)
     {
-        if (lvm.totalUsed != 0)
+        if (lvm.totalUsed > NN)
         {
             return;
         }
