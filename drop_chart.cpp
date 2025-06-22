@@ -198,12 +198,12 @@ int main()
 
         std::vector<Drop> drops = Drop::readFromFile(file);
 
-        std::cout << drops.size() << " gotas leidas" << std::endl;
 
         chargeHistogram(drops);
         diameterHistogram(drops);
         averageDiameter(drops);
         chargeVsTime(drops);
+        std::cout << drops.size() << " gotas leidas" << std::endl;
         diameterVsTime(drops);
         chargeVsTimePos(drops);
         chargeVsTimeNeg(drops);

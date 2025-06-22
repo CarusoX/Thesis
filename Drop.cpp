@@ -344,10 +344,11 @@ std::vector<Drop> Drop::readFromFile(std::ifstream &file)
         currentDrop.widthDiffPenalty = widthDiffPenalty;
         currentDrop.noisePropPenalty = noisePropPenalty;
         currentDrop.computeAverageCharge();
+        currentDrop.valid = 1;
     }
-    currentDrop.valid = 1;
-    drops.push_back(currentDrop);
-    currentDrop = Drop();
+    if (currentDrop.valid) {
+        drops.push_back(currentDrop);
+    }
     return drops;
 }
 
