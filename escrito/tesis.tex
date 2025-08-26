@@ -94,21 +94,21 @@ La adquisición de datos se realiza a una tasa de 5 kHz por canal (5000 datos po
 
 \subsection{Procesamiento de Señales}
 
-El procedimiento de análisis de las señales consta de 5 pasos principales:
+El procesamiento transforma las señales crudas registradas por el instrumento en una lista de gotas con sus propiedades. Para ello se emplean dos programas que se ejecutan de manera secuencial: el primero realiza un preprocesamiento de las señales y el segundo extrae las gotas y calcula sus características. Un pulso es un recorte de la señal que representa la variación característica de corriente producida por el paso de una única gota a través del anillo y su impacto en la placa. El flujo general consta de cinco pasos principales:
 
 \begin{enumerate}
     \item Rellenado de huecos en los datos.
-    \item Suavizado de las señales para quitar el ruido de fondo.
-    \item Busqueda de picos en las señales.
-    \item Aplicacion de filtros de calidad para extraer las gotas.
-    \item Calculo de propiedades de las gotas.
+    \item Remoción del offset de las señales.
+    \item Búsqueda de pulsos en las señales.
+    \item Aplicación de filtros de calidad para extraer las gotas.
+    \item Cálculo de propiedades de las gotas.
 \end{enumerate}
 
 Para el procesamiento de los datos se han desarrollado dos programas en Fortran que trabajan de manera secuencial.
 
-El primer programa se encarga del preprocesamiento de los datos, específicamente del rellenado de huecos mediante interpolación lineal y del suavizado de las señales para reducir el ruido de fondo.
+El primer programa se encarga del preprocesamiento de los datos, específicamente del rellenado de huecos mediante interpolación lineal y de la remoción del offset de las señales.
 
-El segundo programa realiza el análisis principal de las señales ya pre-procesadas. Implementa el algoritmo de detección de picos, aplica filtros para separar las gotas válidas, y calcula las propiedades físicas de ellas, incluyendo su tamaño, carga eléctrica y velocidad de caída.
+El segundo programa realiza el análisis principal de las señales ya pre-procesadas. Implementa el algoritmo de detección de pulsos, aplica filtros para separar las gotas válidas y calcula sus propiedades físicas, incluyendo tamaño, carga eléctrica y velocidad de caída.
 
 \subsection{Necesidad de Mejoras}
 
@@ -116,7 +116,7 @@ El código actual, aunque funcional, sufre de varios problemas tanto en su dise�
 
 En primer lugar, el código consta de pocos archivos con una cantidad de líneas muy grande, lo que dificulta su mantenimiento y modificación. Cualquier cambio requiere revisar y entender todo el código, ya que las responsabilidades no están bien asignadas. Además, hay muchas variables sin nombres descriptivos y constantes hard-codeadas sin referencia alguna, lo que complica aún más la comprensión.
 
-En segundo lugar, para grandes volúmenes de datos, la ejecución es muy lenta. Por ejemplo, para procesar datos de una tormenta de 5 horas de duración (aproximadamente 100M de datos), el programa requiere varias horas de ejecución. A esto se suma un consumo de memoria excesivamente alto, lo que obliga a procesar los datos de a partes. A su vez el algoritmo actual no tiene en cuenta las gotas que quedan en medio de estos cortes, resultando en la pérdida de algunos datos.
+En segundo lugar, para grandes volúmenes de datos, la ejecución es muy lenta. Por ejemplo, para procesar datos de una tormenta de 5 horas de duración (aproximadamente 100M de datos), el programa tarda alrededor de 6 horas en completarse. A esto se suma un consumo de memoria excesivamente alto, lo que obliga a procesar los datos de a partes. A su vez el algoritmo actual no tiene en cuenta las gotas que quedan en medio de estos cortes, resultando en la pérdida de algunos datos.
 
 \subsection{Objetivos}
 
@@ -124,20 +124,18 @@ En segundo lugar, para grandes volúmenes de datos, la ejecución es muy lenta. 
 
 Desarrollar un sistema modular y automatizado para el análisis de datos de gotas cargadas eléctricamente que mejore significativamente la eficiencia, mantenibilidad y escalabilidad del código existente, facilitando la obtención de nuevos resultados.
 
-El nuevo sistema debe ser capaz de detectar mayor cantidad de gotas y debe ser capaz de procesar grandes volúmenes de datos de manera eficiente.
+El nuevo sistema debe ser capaz de procesar grandes volúmenes de datos de manera eficiente y, como mínimo, detectar la misma cantidad de gotas que el código original, intentando incrementarla en lo posible.
 
 \subsubsection{Objetivos Específicos}
 
 \begin{enumerate}
-    \item \textbf{Diseñar una arquitectura modular} que separe las diferentes etapas del procesamiento en componentes independientes y reutilizables.
-    
-    \item \textbf{Implementar procesamiento paralelo} para analizar múltiples archivos de datos simultáneamente, reduciendo significativamente el tiempo total de procesamiento.
-    
-    \item \textbf{Desarrollar un sistema de automatización} que permita el procesamiento completo de conjuntos de datos sin intervención manual.
-    
-    \item \textbf{Optimizar el rendimiento} del algoritmo de detección de gotas para manejar grandes volúmenes de datos de manera eficiente.
-    
-    \item \textbf{Documentar completamente} el sistema para facilitar su uso por otros investigadores y su mantenimiento futuro.
+    \item \textbf{Diseñar una arquitectura modular} que separe las etapas del procesamiento en al menos tres componentes independientes y reutilizables.
+
+    \item \textbf{Optimizar el rendimiento y el uso de memoria} del algoritmo de detección de gotas para manejar aproximadamente 100 millones de muestras utilizando menos de 2 GB de memoria y reduciendo el tiempo de análisis de una tormenta de 5 horas de 6 horas a aproximadamente 15 minutos, asegurando al menos la misma cantidad de gotas detectadas que el programa original.
+
+    \item \textbf{Desarrollar un sistema de automatización} que permita ejecutar la cadena completa de análisis con un único comando y sin intervención manual.
+
+    \item \textbf{Documentar completamente} el sistema mediante un manual de usuario y comentarios en el código para facilitar su uso y mantenimiento futuro.
 \end{enumerate}
 
 \subsection{Estructura de la Tesis}
@@ -152,9 +150,9 @@ Aca iria el analisis de todo el codigo existente. Señalando todas las fallas es
 
 \subsection{Algoritmos y estructuras de datos utilizadas}
 
-Aca explicaria min-max-queue que lo uso para detectar los picos en O(1).
+Aca explicaria min-max-queue que lo uso para detectar los pulsos en O(1).
 
-Tambien explicaria el algoritmo de promedio movil que uso para suavizar las señales.
+Tambien explicaria el algoritmo de promedio movil utilizado para quitar el offset de las señales.
 
 Y capaz que me estoy olvidando de algo mas
 
