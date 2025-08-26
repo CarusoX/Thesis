@@ -104,7 +104,7 @@ El procesamiento transforma las señales crudas registradas por el instrumento e
     \item Cálculo de propiedades de las gotas.
 \end{enumerate}
 
-En este contexto se denomina pulso a la variación característica de corriente producida por el paso de una única gota a través del anillo y su impacto en la placa.
+En este contexto se denomina pulso a un recorte de la señal que representa la variación característica de corriente producida por el paso de una única gota a través del anillo y su impacto en la placa.
 
 Para el procesamiento de los datos se han desarrollado dos programas en Fortran que trabajan de manera secuencial.
 
@@ -133,11 +133,9 @@ El nuevo sistema debe ser capaz de procesar grandes volúmenes de datos de maner
 \begin{enumerate}
     \item \textbf{Diseñar una arquitectura modular} que separe las etapas del procesamiento en al menos tres componentes independientes y reutilizables.
 
-    \item \textbf{Implementar procesamiento paralelo} para analizar múltiples archivos de datos simultáneamente, con el objetivo de reducir el tiempo total de análisis de una tormenta de 5 horas de 6 horas a aproximadamente 15 minutos.
-
     \item \textbf{Desarrollar un sistema de automatización} que permita ejecutar la cadena completa de análisis con un único comando y sin intervención manual.
 
-    \item \textbf{Optimizar el rendimiento y el uso de memoria} del algoritmo de detección de gotas para manejar aproximadamente 100 millones de muestras utilizando menos de 2 GB de memoria y asegurando al menos la misma cantidad de gotas detectadas que el programa original.
+    \item \textbf{Optimizar el rendimiento y el uso de memoria} del algoritmo de detección de gotas para manejar aproximadamente 100 millones de muestras utilizando menos de 2 GB de memoria y reduciendo el tiempo de análisis de una tormenta de 5 horas de 6 horas a aproximadamente 15 minutos, asegurando al menos la misma cantidad de gotas detectadas que el programa original.
 
     \item \textbf{Documentar completamente} el sistema mediante un manual de usuario y comentarios en el código para facilitar su uso y mantenimiento futuro.
 \end{enumerate}
