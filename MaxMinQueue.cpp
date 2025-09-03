@@ -4,29 +4,27 @@ void MaxMinQueue::push(std::pair<double, int> value)
 {
     queue.push_back(value);
 
-    size_t maxEqualCount = 0;
-    size_t minEqualCount = 0;
     // Maintain the maxDeque for maximum values
-    while (!maxDeque.empty() && maxDeque.back().first.first <= value.first)
+    while (!maxDeque.empty() && maxDeque.back().first.first < value.first)
     {
-        if (maxDeque.back().first.first == value.first)
-        {
-            maxEqualCount++;
-        }
         maxDeque.pop_back();
     }
-    maxDeque.push_back({value, maxEqualCount});
+    if (!maxDeque.empty() && maxDeque.back().first.first == value.first) {
+        maxDeque.back().second++;
+    } else {
+        maxDeque.push_back({value, 1});
+    }
 
     // Maintain the minDeque for minimum values
-    while (!minDeque.empty() && minDeque.back().first.first >= value.first)
+    while (!minDeque.empty() && minDeque.back().first.first > value.first)
     {
-        if (minDeque.back().first.first == value.first)
-        {
-            minEqualCount++;
-        }
         minDeque.pop_back();
     }
-    minDeque.push_back({value, minEqualCount});
+    if (!minDeque.empty() && minDeque.back().first.first == value.first) {
+        minDeque.back().second++;
+    } else {
+        minDeque.push_back({value, 1});
+    }
 }
 
 std::pair<double, int> MaxMinQueue::pop()

@@ -24,9 +24,9 @@ public:
 
     void addSensorData(const std::string &line);
 
+    void addSensorData(Row &row);
+    
     void setUsed(size_t r1, size_t r2);
-
-    void setDrop(size_t r1, size_t r2);
 
     std::vector<Row> get() const;
 

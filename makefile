@@ -16,6 +16,7 @@ OBJ := $(addprefix $(OBJDIR)/, $(notdir $(SRC:.cpp=.o)))
 EXECDIR := exec
 
 # Executable names
+FINDER := $(EXECDIR)/drop_finder
 AVERAGE := $(EXECDIR)/drop_average
 EXTRACTOR := $(EXECDIR)/drop_extractor
 SORTER := $(EXECDIR)/drop_sorter
@@ -27,7 +28,7 @@ INCLUDES := -I.
 # Libraries (add any required libraries)
 LIBS := 
 
-all: $(OBJDIR) ${EXECDIR} $(EXTRACTOR) $(SORTER) $(CHART) $(AVERAGE) $(FILLER)
+all: $(OBJDIR) ${EXECDIR} $(EXTRACTOR) $(SORTER) $(CHART) $(AVERAGE) $(FILLER) $(FINDER)
 
 $(OBJDIR):
 	mkdir -p $(OBJDIR)
@@ -35,19 +36,22 @@ $(OBJDIR):
 $(EXECDIR):
 	mkdir -p $(EXECDIR)
 
-$(EXTRACTOR): $(filter-out $(OBJDIR)/drop_sorter.o $(OBJDIR)/drop_chart.o $(OBJDIR)/drop_average.o $(OBJDIR)/drop_filler.o, $(OBJ))
+$(EXTRACTOR): $(filter-out $(OBJDIR)/drop_sorter.o $(OBJDIR)/drop_chart.o $(OBJDIR)/drop_average.o $(OBJDIR)/drop_filler.o $(OBJDIR)/drop_finder.o, $(OBJ))
 	$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ $^ $(LIBS)
 
-$(SORTER): $(filter-out $(OBJDIR)/drop_extractor.o $(OBJDIR)/drop_chart.o $(OBJDIR)/drop_average.o $(OBJDIR)/drop_filler.o, $(OBJ))
+$(SORTER): $(filter-out $(OBJDIR)/drop_extractor.o $(OBJDIR)/drop_chart.o $(OBJDIR)/drop_average.o $(OBJDIR)/drop_filler.o $(OBJDIR)/drop_finder.o, $(OBJ))
 	$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ $^ $(LIBS)
 
-$(CHART): $(filter-out $(OBJDIR)/drop_sorter.o $(OBJDIR)/drop_extractor.o $(OBJDIR)/drop_average.o $(OBJDIR)/drop_filler.o, $(OBJ))
+$(CHART): $(filter-out $(OBJDIR)/drop_sorter.o $(OBJDIR)/drop_extractor.o $(OBJDIR)/drop_average.o $(OBJDIR)/drop_filler.o $(OBJDIR)/drop_finder.o, $(OBJ))
 	$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ $^ $(LIBS)
 
-$(FILLER): $(filter-out $(OBJDIR)/drop_extractor.o $(OBJDIR)/drop_sorter.o $(OBJDIR)/drop_chart.o $(OBJDIR)/drop_average.o, $(OBJ))
+$(FILLER): $(filter-out $(OBJDIR)/drop_extractor.o $(OBJDIR)/drop_sorter.o $(OBJDIR)/drop_chart.o $(OBJDIR)/drop_average.o $(OBJDIR)/drop_finder.o, $(OBJ))
 	$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ $^ $(LIBS)
 
-$(AVERAGE): $(filter-out $(OBJDIR)/drop_extractor.o $(OBJDIR)/drop_sorter.o $(OBJDIR)/drop_chart.o $(OBJDIR)/drop_filler.o, $(OBJ))
+$(AVERAGE): $(filter-out $(OBJDIR)/drop_extractor.o $(OBJDIR)/drop_sorter.o $(OBJDIR)/drop_chart.o $(OBJDIR)/drop_filler.o $(OBJDIR)/drop_finder.o, $(OBJ))
+	$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ $^ $(LIBS)
+
+$(FINDER): $(filter-out $(OBJDIR)/drop_extractor.o $(OBJDIR)/drop_sorter.o $(OBJDIR)/drop_chart.o $(OBJDIR)/drop_average.o $(OBJDIR)/drop_filler.o, $(OBJ))
 	$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ $^ $(LIBS)
 
 $(OBJDIR)/%.o: %.cpp
