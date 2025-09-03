@@ -192,6 +192,7 @@ void diameterVsTimeNeg(const std::vector<Drop> &drops)
 
 int main()
 {
+    FAST_IO;
     try
     {
         auto file = openFileRead("drops.dat");

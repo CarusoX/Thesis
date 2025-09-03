@@ -54,6 +54,7 @@ void perform(const std::string &filePath, const std::string &outPath)
 
 int main()
 {
+    FAST_IO;
     std::filesystem::path outPath = std::filesystem::current_path() / "drops_average.dat";
 
     try

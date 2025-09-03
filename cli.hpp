@@ -37,7 +37,7 @@ private:
     };
 
     std::map<std::string, ProgressState> progressStates;
-    static constexpr std::chrono::milliseconds MIN_UPDATE_INTERVAL{100}; // 100ms minimum between updates
+    static constexpr std::chrono::milliseconds MIN_UPDATE_INTERVAL{1000}; // 1s minimum between updates
 
     // Console manipulation
     void clearLine();

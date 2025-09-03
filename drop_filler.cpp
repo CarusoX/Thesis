@@ -83,6 +83,7 @@ void perform(const std::string &filePath, const std::string &outPath)
 
 int main(int argc, char *argv[])
 {
+    FAST_IO;
     if (argc < 2)
     {
         std::cerr << "Usage: " << argv[0] << " <input file path>" << std::endl;

@@ -1,5 +1,4 @@
 #include "LVM.hpp"
-#include <cmath>
 
 LVM::LVM(size_t buffer_size) : totalUsed(0), maxSize(buffer_size) {}
 
