@@ -171,9 +171,7 @@ Despues la hago
 \lhead{}
 \rhead{Análisis del Código Existente}
 
-Antes de comenzar a desarrollar el nuevo sistema, fue fundamental analizar el código existente. El programa consta de dos archivos Fortran (`buscador\_de\_gotas.f` y `promedio\_general.f`) donde toda la lógica está implementada directamente en el entorno global del programa, sin modularización alguna. 
-
-
+Antes de comenzar a desarrollar el nuevo sistema, fue fundamental analizar el código existente. El programa consta de dos archivos Fortran (`promedio\_general.f` y `buscador\_de\_gotas.f`) donde toda la lógica está implementada directamente en el entorno global del programa, sin modularización alguna. 
 
 \subsubsection{Problemas de diseño}
 
@@ -185,7 +183,7 @@ El código existente presenta problemas de diseño que dificultan su comprensió
 
 \item \textbf{Variables sin contexto semántico:} El código utiliza variables como `s`, `ss`, `i`,
 `j`, `w`, `k`, `l`, `p`, `r`, `x`, `cont`, `contt`, `cc1`, `cc2`, `iii` sin ningún contexto. Es
-imposible determinar qué representa cada una sin leer todo el código. Ademas, estan todas definidad en el principio del programa, lo cual hace que sea dificil entender su uso en el resto del código.
+imposible determinar qué representa cada una sin leer todo el código. Ademas, estan todas definidas en el principio del programa, lo cual hace que sea dificil entender su uso en el resto del código.
     
 \item \textbf{Requiere dividir el conjunto de datos en varias partes}: El consumo de memoria es muy alto, por lo que el programa requiere dividir el conjunto de datos en varias partes y procesarlos secuencialmente. Esto hace que se pierdan algunas gotas, ya que las gotas que quedan en medio de los cortes no se procesan.
 
@@ -214,11 +212,67 @@ invertir tanta cantidad de tiempo y esfuerzo estudiándolo.
 
 \subsubsection{Problemas descubiertos durante la refactorización}
 
-En la parte de preprocesamiento, especificamente en el algoritmo de rellenado de huecos, se descubrió un error en la implementación.
+El programa `promedio\_general.f`, como se menciono anteriormente, se encarga tanto del rellenado de huecos como de la remocion del offset de las señales. Es en esta primera parte donde se descubrio un error en la implementacion.
 
-Basicamente, por mas que los comentarios del codigo indicaban que se estaba utilizando una interpolacion lineal entre los extremos del hueco para llenarlo, en realidad se estaba utilizando el valor del extremo izquierdo del hueco como valor constante. Esto afecta los resultados que se obtienen en los pasos siguientes del algoritmo.
+Basicamente, primero el algoritmo llena los huecos con un valor constante `10`, para luego buscar los bordes de estos huecos y completarlos con una interpolacion lineal. En los comentarios del codigo, se menciona que esta interpolacion lineal se hace entre los promedios de los 1000 puntos anteriores y posteriores al hueco. Sin embargo, en la implementacion, se utiliza los valores de los extremos del huecos.
 
-(Ya voy a ver si me acuerdo de otro)
+El código \ref{lst:codigo_error} muestra la implementación del algoritmo de rellenado de huecos. Como se puede observar, los comentarios indican que se debe usar el promedio de 1000 puntos, pero la implementación utiliza directamente los valores de los bordes (`a1`, `a2`, `b1`, `b2`).
+
+Este error tiene un impacto significativo en los pasos posteriores del procesamiento, particularmente en la remoción del offset. Al rellenar los huecos utilizando una interpolación entre dos valores puntuales, en lugar de promedios de ventanas más amplias, se pueden introducir distorsiones importantes. Esto ocurre especialmente cuando los valores utilizados para la interpolación corresponden a puntos críticos que difieren considerablemente del promedio de la señal en ese momento.
+
+\begin{lstlisting}[language=Fortran, label=lst:codigo_error]
+* Busca donde esta un punto que tiene valor de 10. y 
+* va hacia atras para encontrar el primer que no es
+* igual a 10.
+* es decir es un borde izquierdo de un 'hueco'
+* tambien va hacia adelante para encontrar el borde
+* derecho del 'hueco'
+* despues promedia los numeros de cada canal
+* 100 puntos hacia atras
+* y 1000 puntos hacia adelante 
+* y a esos promedios los llama a1 y a2 para el 
+* primer canal y
+* b1 y b2 para el segundo canal
+* Despues el valor w1(j) y w2(j) los revalua como
+* siguiendo una recta 
+* entre esos dos promedios.
+* Tambien ingresa un indice que vale 1 cunado no hay
+* blanco y un 0 cuando si lo hay.
+
+      do j=1,ww
+         if (w1(j).eq.10.) then
+            ind(j)=0
+            
+            do i=1,ww
+               if ((j-i.gt.0.).and.(w1(j-i).ne.10.)) then
+		     a1=w1(j-i)
+		     b1=w2(j-i)                  
+                     k1=i
+                  goto 20
+               endif
+            enddo
+            
+ 20         do i=1,ww  
+               if ((j+i.le.ww).and.(w1(j+i).ne.10.)) then
+		     a2=w1(j+i)
+		     b2=w2(j+i)                  
+                     k2=i-1
+                  goto 30
+               endif
+            enddo
+
+! Aca es donde se utiliza los valores de los extremos
+! en vez de los promedios de 1000 puntos
+ 30         w1p(j)=(a2-a1)/real(k2+k1)*real(k1)+a1
+            w2p(j)=(b2-b1)/real(k2+k1)*real(k1)+b1
+         else
+            ind(j)=1
+            w1p(j)=w1(j)
+            w2p(j)=w2(j)
+         endif
+      enddo
+\end{lstlisting}
+
 
 \subsubsection{Descripción del algoritmo actual}
 Como se menciono anteriormente, el sistema de procesamiento actual consta de dos programas que se ejecutan
