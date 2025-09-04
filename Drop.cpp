@@ -299,6 +299,10 @@ std::vector<Drop> Drop::readFromFile(std::ifstream &file)
     std::string line;
     Drop currentDrop;
     int currentId = -1;
+
+    // Nos salteamos los headers
+    std::getline(file, line);
+
     while (std::getline(file, line))
     {
         std::istringstream iss(line);
@@ -350,6 +354,31 @@ std::vector<Drop> Drop::readFromFile(std::ifstream &file)
         drops.push_back(currentDrop);
     }
     return drops;
+}
+
+void Drop::writeHeader(std::ofstream &file, bool sortedDrops)
+{
+    if (sortedDrops)
+    {
+        // Column order for sorted drops:
+        // time, sensor1, sensor2, integral_sensor1, integral_sensor2,
+        // a1, a2, b1, q1, q2, d, penalty
+        file << "time\tsensor1\tsensor2\tintegral_sensor1\tintegral_sensor2"
+             "\ta1\ta2\tb1\tq1\tq2\tdiameter\tsum_of_penalties\n";
+    }
+    else
+    {
+        // Column order for drops written by drop_finder:
+        // time, sensor1, sensor2, integral_sensor1, integral_sensor2,
+        // a1, a2, b1, q1, q2, d,
+        // sum_sq_diff_penalty1, sum_sq_diff_penalty2, charge_diff_penalty,
+        // width_diff_penalty, noise_prop_penalty, penalty, id
+        file <<
+            "time\tsensor1\tsensor2\tintegral_sensor1\tintegral_sensor2"
+            "\ta1\ta2\tb1\tq1\tq2\tdiameter\tsum_sq_diff_penalty1"
+            "\tsum_sq_diff_penalty2\tcharge_diff_penalty\twidth_diff_penalty"
+            "\tnoise_prop_penalty\tsum_of_penalties\tid\n";
+    }
 }
 
 void Drop::writeToFile(std::ofstream &file, bool sortedDrops)

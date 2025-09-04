@@ -52,6 +52,8 @@ public:
 
     std::vector<Drop> static readFromFile(std::ifstream &file);
 
+    static void writeHeader(std::ofstream &file, bool sortedDrops = false);
+
     void writeToFile(std::ofstream &file,
                      bool withoutIndividualPenalties = false);
 

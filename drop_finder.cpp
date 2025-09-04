@@ -131,6 +131,7 @@ void perform(const std::string &filePath, const std::string &outPath)
     filledLvm.clear(); // clear the filled lvm
 
     auto outFile = openFileWrite(outPath);
+    Drop::writeHeader(outFile);
     find_drops(offsetLvm, cli, findLvm, outFile);
 }
 

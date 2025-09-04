@@ -6,6 +6,7 @@ void perform(const std::string &filePath, const std::string &outPath)
     auto file = openFileRead(filePath);
 
     auto outFile = openFileWrite(outPath);
+    Drop::writeHeader(outFile, true);
 
     std::vector<Drop> drops = Drop::readFromFile(file);
 
