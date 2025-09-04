@@ -27,34 +27,12 @@ def compile_programs(clean: bool):
         exit(1)
 
 
-def run_drop_filler(file: str, force: bool, quiet: bool = False):
-    if force or not os.path.exists("drops_filled.dat"):
-        if not quiet:
-            print(f"Ejecutando drop_filler")
-        
-        cmd = f"../exec/drop_filler ../{file}"
-        if quiet:
-            cmd += " > /dev/null 2>&1"
-        os.system(cmd)
-
-
-def run_drop_average(force: bool, quiet: bool = False):
-    if force or not os.path.exists("drops_average.dat"):
-        if not quiet:
-            print(f"Ejecutando drop_average")
-        
-        cmd = f"../exec/drop_average"
-        if quiet:
-            cmd += " > /dev/null 2>&1"
-        os.system(cmd)
-
-
-def run_drop_extractor(force: bool, quiet: bool = False):
+def run_drop_finder(file: str, force: bool, quiet: bool = False):
     if force or not os.path.exists("drops.dat"):
         if not quiet:
-            print(f"Ejecutando drop_extractor")
-        
-        cmd = f"../exec/drop_extractor"
+            print(f"Ejecutando drop_finder")
+
+        cmd = f"../exec/drop_finder ../{file}"
         if quiet:
             cmd += " > /dev/null 2>&1"
         os.system(cmd)
@@ -94,16 +72,12 @@ def analyze_storm(file: str, from_step: int, quiet: bool = False):
         folder = create_folder_for_file(file, quiet)
         # 2. Nos paramos dentro de la carpeta creada
         os.chdir(folder)
-        # 3. Ejecutamos el programa drop_filler
-        run_drop_filler(file, from_step <= 1, quiet)
-        # 4. Ejecutamos el programa drop_average
-        run_drop_average(from_step <= 2, quiet)
-        # 5. Ejecutamos el programa drop_extractor
-        run_drop_extractor(from_step <= 3, quiet)
-        # 6. Ejecutamos el programa drop_sorter
-        run_drop_sorter(from_step <= 4, quiet)
-        # 7. Ejecutamos el programa drop_charts
-        run_drop_charts(from_step <= 5, quiet)
+        # 3. Ejecutamos el programa drop_finder
+        run_drop_finder(file, from_step <= 1, quiet)
+        # 4. Ejecutamos el programa drop_sorter
+        run_drop_sorter(from_step <= 2, quiet)
+        # 5. Ejecutamos el programa drop_charts
+        run_drop_charts(from_step <= 3, quiet)
         
         if not quiet:
             print(f"[{os.getpid()}] Análisis completado para {file}")
@@ -256,9 +230,9 @@ Ejemplos de uso:
     parser.add_argument(
         "--from-step",
         type=int,
-        help="Paso desde el que se quiere analizar la tormenta (1=filler, 2=average, 3=extractor, 4=sorter, 5=charts)",
+        help="Paso desde el que se quiere analizar la tormenta (1=finder, 2=sorter, 3=charts)",
         default=100,
-        choices=[1, 2, 3, 4, 5],
+        choices=[1, 2, 3],
     )
     parser.add_argument(
         "--processes",

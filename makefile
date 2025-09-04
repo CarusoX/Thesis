@@ -17,18 +17,15 @@ EXECDIR := exec
 
 # Executable names
 FINDER := $(EXECDIR)/drop_finder
-AVERAGE := $(EXECDIR)/drop_average
-EXTRACTOR := $(EXECDIR)/drop_extractor
 SORTER := $(EXECDIR)/drop_sorter
 CHART := $(EXECDIR)/drop_chart
-FILLER := $(EXECDIR)/drop_filler
 # Include directories
 INCLUDES := -I.
 
 # Libraries (add any required libraries)
 LIBS := 
 
-all: $(OBJDIR) ${EXECDIR} $(EXTRACTOR) $(SORTER) $(CHART) $(AVERAGE) $(FILLER) $(FINDER)
+all: $(OBJDIR) ${EXECDIR} $(FINDER) $(SORTER) $(CHART)
 
 $(OBJDIR):
 	mkdir -p $(OBJDIR)
@@ -36,22 +33,13 @@ $(OBJDIR):
 $(EXECDIR):
 	mkdir -p $(EXECDIR)
 
-$(EXTRACTOR): $(filter-out $(OBJDIR)/drop_sorter.o $(OBJDIR)/drop_chart.o $(OBJDIR)/drop_average.o $(OBJDIR)/drop_filler.o $(OBJDIR)/drop_finder.o, $(OBJ))
+$(SORTER): $(filter-out $(OBJDIR)/drop_finder.o $(OBJDIR)/drop_chart.o, $(OBJ))
 	$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ $^ $(LIBS)
 
-$(SORTER): $(filter-out $(OBJDIR)/drop_extractor.o $(OBJDIR)/drop_chart.o $(OBJDIR)/drop_average.o $(OBJDIR)/drop_filler.o $(OBJDIR)/drop_finder.o, $(OBJ))
+$(CHART): $(filter-out $(OBJDIR)/drop_sorter.o $(OBJDIR)/drop_finder.o, $(OBJ))
 	$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ $^ $(LIBS)
 
-$(CHART): $(filter-out $(OBJDIR)/drop_sorter.o $(OBJDIR)/drop_extractor.o $(OBJDIR)/drop_average.o $(OBJDIR)/drop_filler.o $(OBJDIR)/drop_finder.o, $(OBJ))
-	$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ $^ $(LIBS)
-
-$(FILLER): $(filter-out $(OBJDIR)/drop_extractor.o $(OBJDIR)/drop_sorter.o $(OBJDIR)/drop_chart.o $(OBJDIR)/drop_average.o $(OBJDIR)/drop_finder.o, $(OBJ))
-	$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ $^ $(LIBS)
-
-$(AVERAGE): $(filter-out $(OBJDIR)/drop_extractor.o $(OBJDIR)/drop_sorter.o $(OBJDIR)/drop_chart.o $(OBJDIR)/drop_filler.o $(OBJDIR)/drop_finder.o, $(OBJ))
-	$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ $^ $(LIBS)
-
-$(FINDER): $(filter-out $(OBJDIR)/drop_extractor.o $(OBJDIR)/drop_sorter.o $(OBJDIR)/drop_chart.o $(OBJDIR)/drop_average.o $(OBJDIR)/drop_filler.o, $(OBJ))
+$(FINDER): $(filter-out $(OBJDIR)/drop_sorter.o $(OBJDIR)/drop_chart.o, $(OBJ))
 	$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ $^ $(LIBS)
 
 $(OBJDIR)/%.o: %.cpp

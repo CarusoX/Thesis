@@ -26,53 +26,24 @@ make
 
 ## Componentes del Programa
 
-El programa está dividido en cinco componentes principales que procesan los datos en secuencia:
+El programa está dividido en tres componentes principales que procesan los datos en secuencia:
 
-### 1. Rellenador de Datos (`drop_filler`)
+### 1. Detector de Gotas (`drop_finder`)
 
-**Propósito**: Rellena los huecos en los datos de los sensores mediante interpolación.
-
-**Funcionamiento**: 
-- Lee los datos originales del archivo de entrada (.lvm)
-- Detecta gaps en la serie temporal donde faltan mediciones
-- Interpola los valores faltantes usando promedios de ventanas deslizantes
-- Genera un archivo `drops_filled.dat` con los datos completos
-
-**Uso manual**:
-```bash
-./exec/drop_filler archivo_entrada.lvm
-```
-
-### 2. Promediador (`drop_average`)
-
-**Propósito**: Aplica un promedio móvil a los datos para suavizar la señal y reducir el ruido.
+**Propósito**: Lee los datos originales, rellena huecos, normaliza la señal y detecta las gotas.
 
 **Funcionamiento**:
-- Lee los datos rellenados desde `drops_filled.dat`
-- Aplica normalización con ventana deslizante
-- Genera un archivo `drops_average.dat` con los datos suavizados
-
-**Uso manual**:
-```bash
-./exec/drop_average
-```
-
-### 3. Extractor de Gotas (`drop_extractor`)
-
-**Propósito**: Detecta y extrae las gotas individuales de los datos procesados.
-
-**Funcionamiento**:
-- Analiza los datos suavizados buscando patrones característicos de gotas
-- Utiliza un algoritmo especializado (DropFinder) para identificar eventos de gotas
-- Calcula las propiedades de cada gota (carga, diámetro, tiempo, etc.)
+- Lee los datos del archivo de entrada (.lvm)
+- Interpola valores faltantes y corrige el offset de la señal
+- Identifica las gotas presentes en la señal
 - Guarda las gotas detectadas en `drops.dat`
 
 **Uso manual**:
 ```bash
-./exec/drop_extractor
+./exec/drop_finder archivo_entrada.lvm
 ```
 
-### 4. Ordenador de Gotas (`drop_sorter`)
+### 2. Ordenador de Gotas (`drop_sorter`)
 
 **Propósito**: Ordena las gotas detectadas por su calidad/confiabilidad.
 
@@ -87,7 +58,7 @@ El programa está dividido en cinco componentes principales que procesan los dat
 ./exec/drop_sorter
 ```
 
-### 5. Generador de Gráficos (`drop_chart`)
+### 3. Generador de Gráficos (`drop_chart`)
 
 **Propósito**: Genera análisis estadísticos y gráficos de las gotas procesadas.
 
@@ -145,11 +116,9 @@ python run.py *.lvm --processes 1      # Procesamiento secuencial
 ```
 
 Los pasos disponibles son:
-- `1`: Ejecutar desde drop_filler
-- `2`: Ejecutar desde drop_average  
-- `3`: Ejecutar desde drop_extractor
-- `4`: Ejecutar desde drop_sorter
-- `5`: Ejecutar desde drop_chart
+- `1`: Ejecutar desde drop_finder
+- `2`: Ejecutar desde drop_sorter
+- `3`: Ejecutar desde drop_chart
 
 ### Procesamiento Paralelo
 
@@ -181,8 +150,6 @@ Después de ejecutar el análisis completo, se genera la siguiente estructura:
 
 ```
 nombre_archivo/
-├── drops_filled.dat      # Datos con huecos rellenados
-├── drops_average.dat     # Datos suavizados  
 ├── drops.dat            # Gotas detectadas
 ├── drops_sorted.dat     # Gotas ordenadas por calidad
 └── graficos/            # Gráficos y análisis estadísticos
@@ -219,10 +186,10 @@ python run.py datos_*.lvm
 python run.py *.lvm --processes 8
 
 # Recompilar y analizar desde el paso 2 con 6 procesos
-python run.py datos_*.lvm --clean --from-step 2 --processes 6
+  python run.py datos_*.lvm --clean --from-step 2 --processes 6
 
-# Solo generar gráficos para todos los archivos procesados
-python run.py *.lvm --from-step 5
+ # Solo generar gráficos para todos los archivos procesados
+ python run.py *.lvm --from-step 3
 
 # Procesamiento secuencial (un archivo a la vez)
 python run.py *.lvm --processes 1
@@ -238,7 +205,7 @@ Archivos a procesar: 1
 Procesando archivo único...
 [12345] Iniciando análisis de tormenta_001.lvm
 Creando carpeta tormenta_001
-Ejecutando drop_filler
+Ejecutando drop_finder
 ...
 [12345] Análisis completado para tormenta_001.lvm
 Éxito: tormenta_001.lvm
