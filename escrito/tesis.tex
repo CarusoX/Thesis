@@ -173,6 +173,126 @@ Despues la hago
 
 Antes de comenzar a desarrollar el nuevo sistema, fue fundamental analizar el código existente. El programa consta de dos archivos Fortran (`promedio\_general.f` y `buscador\_de\_gotas.f`) donde toda la lógica está implementada directamente en el entorno global del programa, sin modularización alguna. 
 
+\subsubsection{Descripción del algoritmo actual}
+Como se menciono anteriormente, el sistema de procesamiento actual consta de dos programas que se ejecutan
+secuencialmente.
+
+\subsubsubsection{Programa de preprocesamiento}
+
+El primer programa (`promedio\_general.f`) recibe como entrada las señales crudas registradas por el instrumento y realiza dos operaciones fundamentales:    
+
+\begin{enumerate}
+
+
+\item \textbf{Lectura de datos:} El programa lee los archivos de datos crudos y los convierte en señales. El formato de los archivos es un archivo `.lvm` que contiene 3 columnas: tiempo, señal del anillo y señal de la placa.
+
+\item \textbf{Rellenado de huecos mediante interpolación:} Debido a las limitaciones de
+hardware mencionadas anteriormente, cada segundo se pierden aproximadamente
+$50ms$ de datos durante la adquisición. El programa identifica estos huecos y los
+rellena utilizando interpolación lineal entre el promedio de 1000 puntos anteriores y posteriores al hueco.
+
+\item \textbf{Remoción del offset de las señales:} Para cada punto de la señal, se calcula el
+promedio de los 5000 puntos circundantes (2500 puntos a cada lado) y se le resta este
+valor. Para esto se ignoran los primeros y últimos 2500 puntos de la señal.
+
+Este proceso elimina el offset de corriente continua que puede variar durante la medición.
+
+\item \textbf{Salida de resultados:} Finalmente, se escriben las señales preprocesadas en un archivo. El formato de salida son 4 columnas: contador de tiempo (entero), señal del anillo resultante, señal de la placa resultante y un booleano que indice si la fila corresponde a un hueco.
+
+\end{enumerate}
+
+\subsubsubsection{Programa de detección de gotas}
+
+El segundo programa (`buscador\_de\_gotas.f`) implementa el algoritmo principal de
+detección y análisis. El flujo general consta de las siguientes etapas:
+
+\begin{enumerate}
+
+\item \textbf{Lectura y preprocesamiento de datos:} El programa lee los archivos de datos
+preprocesados con el paso anterior. Se pueden leer hasta 36 archivos, y cada archivo puede contener hasta 13 millones de muestras.
+
+\item \textbf{Detección de pulsos mediante umbrales:} Se implementa un sistema de umbrales que varía dinámicamente desde un valor superior (`c1=2.00`) hasta
+uno inferior (`c2=0.02`) a lo largo de 1000 pasos (`ps=1000`). Esta variación permite
+detectar pulsos de diferentes amplitudes.
+Para cada umbral, se buscan pares de puntos consecutivos que superen el umbral en ambas señales (anillo y placa), con una separación máxima de 100 puntos
+(`nn=100`).
+
+(agregar figura)
+
+\item \textbf{Localización y delimitación de pulsos:} Una vez detectado un pulso, se determina su inicio retrocediendo hasta encontrar el punto donde la señal se anula. Se
+calcula el punto medio de la señal del anillo mirando hacia adelante donde se anula, y el punto de quiebre de la señal de la placa mediante análisis de la integral de la misma. (agregar figura)
+El algoritmo recorta cada pulso considerando un ancho máximo de $4nn$ puntos.
+
+\item \textbf{Cálculo de propiedades físicas:} Para cada pulso detectado, se calculan:
+
+\begin{itemize}
+    \item Carga eléctrica: Se integra la señal de ambos canales y se aplica el factor de
+    conversión correspondiente a la amplificación del instrumento. La integración de la señal se fundamenta en el principio físico de que la carga eléctrica inducida en un conductor es proporcional a la integral temporal de la corriente que fluye a través de él. (agregar figura)
+    \item Velocidad de caída: Se determina mediante la separación conocida entre
+    anillo y placa (5.7 cm) dividida por el tiempo que hay entre los picos de la señal del anillo y la placa.
+    \item Diámetro: Se obtiene interpolando en una tabla velocidad-diámetro precalculada.
+\end{itemize}
+
+\item \textbf{Aplicación de filtros de calidad:} Se implementan filtros secuenciales para separar
+las gotas válidas del ruido:
+
+\begin{itemize}
+
+\item \textbf{Filtros de carga:} La carga de la gota tanto en el anillo como en la placa tiene
+que ser mayor a un valor mínimo (`qminima=0.2`) (en valor absoluto).
+
+\item \textbf{Filtro de velocidad:} Se verifica que la distancia temporal entre los picos del
+anillo y la placa corresponda a una velocidad de caída físicamente plausible
+(entre 0.7125 y 11.4 m/s).
+
+\item \textbf{Filtro de signo:} Se verifica que la carga de la gota sea del mismo signo en
+ambos canales.
+\end{itemize}
+
+\item \textbf{Sistema de penalización y ordenamiento:} Se implementa un sistema de puntuación que evalúa la calidad de cada detección mediante cinco criterios:
+
+\begin{itemize}
+
+    \item \textbf{Penal1 y Penal2:} Diferencia cuadrática entre la señal real y 2 modelos teóricos distintos
+    del pulso.
+    Para el pulso del anillo se utilizan dos modelos:
+    
+    \begin{equation}
+        a_1(t) = \frac{30.6 \cdot q_1}{\left(30.6^{1/1.7} + \left(\frac{v}{50.7}\right)^2(t-p_1)^2\right)^{1.7}}
+    \end{equation}
+    
+    \begin{equation}
+        b_1(t) = q_1 \cdot e^{-\frac{(t-p_1)^2}{p_1^2} \cdot 3.62}
+    \end{equation}
+
+    Para el pulso de la placa se utiliza un modelo por partes:
+
+    \begin{equation}
+        a_2(t) = \begin{cases}
+            0 & \text{si } t < u_2 \\
+            q_2 \cdot \left(\frac{t-u_2}{p_2-u_2}\right)^{1.373} & \text{si } u_2 \leq t < p_2 \\
+            q_2 & \text{si } t \geq p_2
+        \end{cases}
+    \end{equation}
+
+    donde $q_1$ y $q_2$ son las cargas medidas en el anillo y la placa respectivamente, $v$ es la velocidad de la gota, $p_1$ es el punto medio del pulso del anillo, $p_2$ es el punto de quiebre de la integral del pulso de la placa, y $u_2$ es el punto inicial del pulso de la placa.
+
+    Estos modelos fueron obtenidos ajustando parámetros mediante inspección visual.
+
+    (agregar figura)
+
+    \item \textbf{Penal3:} Desviación de la proporción esperada entre cargas del anillo y la placa. Se observó experimentalmente que la carga medida en el anillo es aproximadamente el 87\% de la carga medida en la placa.
+    \item \textbf{Penal4:} Desviación de la proporción esperada del ancho entre los picos de la
+señal de la placa y el anillo. Se observó experimentalmente que el ancho del pulso de la placa es aproximadamente el 79\% del ancho del pulso del anillo.
+    \item \textbf{Penal5:} Proporción de señal en el rango de ruido (entre -0.02 y 0.02). Este valor 0.02 (tambien usado en la deteccion por umbrales)fue obtenido mediante inspección visual.
+\end{itemize}
+    La suma de estas penalizaciones determina el orden de calidad de las gotas detectadas, permitiendo clasificar las gotas según su calidad.
+
+\item \textbf{Salida de resultados:} Finalmente, se escriben los datos de todas las gotas válidas
+en un archivo, incluyendo posición temporal, cargas, velocidad, diámetro y puntuación de calidad.
+
+\end{enumerate}
+
 \subsubsection{Problemas de diseño}
 
 El código existente presenta problemas de diseño que dificultan su comprensión y mantenimiento:
@@ -272,103 +392,6 @@ Este error tiene un impacto significativo en los pasos posteriores del procesami
          endif
       enddo
 \end{lstlisting}
-
-
-\subsubsection{Descripción del algoritmo actual}
-Como se menciono anteriormente, el sistema de procesamiento actual consta de dos programas que se ejecutan
-secuencialmente.
-
-\subsubsubsection{Programa de preprocesamiento}
-
-El primer programa (`promedio\_general.f`) recibe como entrada las señales crudas registradas por el instrumento y realiza dos operaciones fundamentales:    
-
-\begin{enumerate}
-    \item \textbf{Rellenado de huecos mediante interpolación:} Debido a las limitaciones de
-hardware mencionadas anteriormente, cada segundo se pierden aproximadamente
-$50ms$ de datos durante la adquisición. El programa identifica estos huecos y los
-rellena utilizando interpolación lineal entre los puntos adyacentes.
-
-\textbf{Nota importante:} Esta es la parte del programa que fue modificada para corregir el error en la implementación del rellenado de huecos.
-
-\item \textbf{Remoción del offset de las señales:} Para cada punto de la señal, se calcula el
-promedio de los 5000 puntos circundantes (2500 puntos a cada lado) y se resta este
-valor al punto central. Este proceso elimina el offset de corriente continua que puede
-variar durante la medición.
-
-\textbf{Nota importante:} Como a cada punto se le resta el promedio de los 5000 puntos circundantes, los valores que se encuentran cercanos a los huecos, se ven afectados por el error en la implementación del paso anterior. Como el valor del offset puede cambiar entre los 2 extremos de un hueco, el promedio calculado se aleja del valor real, haciendo que estos puntos no se les pueda eliminar completamente el offset.
-
-\end{enumerate}
-
-La salida de este programa son las señales preprocesadas: sin huecos y con el offset
-removido, listas para ser analizadas por el segundo programa.
-
-\subsubsubsection{Programa de detección de gotas}
-
-El segundo programa (`buscador\_de\_gotas.f`) implementa el algoritmo principal de
-detección y análisis. El flujo general consta de las siguientes etapas:
-
-\begin{enumerate}
-
-\item \textbf{Lectura y preprocesamiento de datos:} El programa lee los archivos de datos
-preprocesados que contienen las señales del anillo y la placa. Se pueden leer hasta
-36 archivos, y cada archivo puede contener hasta 13 millones de muestras.
-
-\item \textbf{Detección de pulsos mediante umbrales:} Se implementa un sistema de umbrales que varía dinámicamente desde un valor superior (`c1=2.00`) hasta
-uno inferior (`c2=0.02`) a lo largo de 1000 pasos (`ps=1000`). Esta variación permite
-detectar pulsos de diferentes amplitudes.
-Para cada umbral, se buscan pares de puntos consecutivos que superen el umbral en ambas señales (anillo y placa), con una separación máxima de 100 puntos
-(`nn=100`).
-
-\item \textbf{Localización y delimitación de pulsos:} Una vez detectado un pulso, se determina su inicio retrocediendo hasta encontrar el punto donde la señal se anula. Se
-calcula el punto medio del primer pulso (anillo) y el punto de quiebre del segundo
-pulso (placa) mediante análisis de la integral de la señal.
-El algoritmo recorta cada pulso considerando un ancho máximo de $4\times nn$ puntos,
-adaptándose dinámicamente según la duración real del evento.
-
-\item \textbf{Cálculo de propiedades físicas:} Para cada pulso detectado, se calculan:
-
-\begin{itemize}
-    \item Carga eléctrica: Se integra la señal de ambos canales y se aplica el factor de
-    conversión correspondiente a la amplificación del instrumento.
-    \item Velocidad de caída: Se determina mediante la separación conocida entre
-    anillo y placa (5.7 cm) dividida por el tiempo entre picos de la señal.
-    \item Diámetro: Se obtiene interpolando en una tabla velocidad-diámetro precalculada.
-\end{itemize}
-
-\item \textbf{Aplicación de filtros de calidad:} Se implementan filtros secuenciales para separar
-las gotas válidas del ruido:
-
-\begin{itemize}
-
-\item \textbf{Filtros de carga:} La carga de la gota tanto en el anillo como en la placa tiene
-que ser mayor a un valor mínimo (`qminima=0.2`) (en valor absoluto).
-
-\item \textbf{Filtro de velocidad:} Se verifica que la distancia temporal entre los picos del
-anillo y la placa corresponda a una velocidad de caída físicamente plausible
-(entre 0.7125 y 11.4 m/s).
-
-\item \textbf{Filtro de signo:} Se verifica que la carga de la gota sea del mismo signo en
-ambos canales.
-\end{itemize}
-
-\item \textbf{Sistema de penalización y ordenamiento:} Se implementa un sistema de puntuación que evalúa la calidad de cada detección mediante cinco criterios:
-
-\begin{itemize}
-
-    \item \textbf{Penal1 y Penal2:} Diferencia cuadrática entre la señal real y 2 modelos teóricos distintos
-    del pulso.
-    \item \textbf{Penal3:} Desviación de la proporción esperada entre cargas del anillo y la placa.
-    \item \textbf{Penal4:} Desviación de la proporción esperada del ancho entre los picos de la
-señal de la placa y el anillo.
-    \item \textbf{Penal5:} Proporción de señal en el rango de ruido (entre -0.02 y 0.02).
-\end{itemize}
-    La suma de estas penalizaciones determina el orden de calidad de las gotas detectadas, permitiendo filtrar los resultados según la precisión requerida.
-
-\item \textbf{Salida de resultados:} Finalmente, se escriben los datos de todas las gotas válidas
-en un archivo, incluyendo posición temporal, cargas, velocidad, diámetro y puntuación de calidad.
-
-
-\end{enumerate}
 
 \subsection{Algoritmos y estructuras de datos utilizadas}
 \lhead{}

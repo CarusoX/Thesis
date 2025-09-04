@@ -151,7 +151,7 @@ void Drop::computeModels()
                                                    std::pow(i - this->p1, 2),
                      1.7));
         this->b1.push_back(this->q1 * std::exp(-std::pow(i - this->p1, 2) /
-                                               std::pow(-this->p1, 2) * 3.62));
+                                               std::pow(this->p1, 2) * 3.62));
     }
 
     for (int i = 0; i < this->size(); i++)
