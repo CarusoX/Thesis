@@ -105,6 +105,7 @@ void find_drops(LVM &lvm, CLI &cli, LVM &findLvm, std::ofstream &outFile) {
         }
         findLvm.setUsed(drop.u1, drop.u1 + drop.size() - 1);
         drop.id = ++gotas;
+        drop.dataOffset = static_cast<int>(i - findLvm.size() + 1 + drop.u1);
         drop.writeToFile(outFile);
       } while(true);
 

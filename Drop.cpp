@@ -1,11 +1,11 @@
 #include "Drop.hpp"
 
 Drop::Drop(bool isPositive, int c1, int c2)
-    : isPositive(isPositive), c1(c1), c2(c2), valid(1)
+    : isPositive(isPositive), c1(c1), c2(c2), dataOffset(0), valid(1)
 {
 }
 
-Drop::Drop() : c1(-1), c2(-1), valid(0) {}
+Drop::Drop() : c1(-1), c2(-1), dataOffset(0), valid(0) {}
 
 int Drop::findSensor1MiddlePoint()
 {
@@ -307,14 +307,14 @@ std::vector<Drop> Drop::readFromFile(std::ifstream &file)
     {
         std::istringstream iss(line);
         double time, sensor1, sensor2, integralSensor1, integralSensor2;
-        double a1, a2, b1, q1, q2, d, sumOfSquaredDiffPenalty1,
+        double a1, a2, b1, q1, q2, v, d, sumOfSquaredDiffPenalty1,
             sumOfSquaredDiffPenalty2, chargeDiffPenalty, widthDiffPenalty,
             noisePropPenalty, penalty;
-        int id;
+        int step, id;
 
         // Leer los datos en el mismo orden en el que fueron escritos
-        if (!(iss >> time >> sensor1 >> sensor2 >> integralSensor1 >>
-              integralSensor2 >> a1 >> a2 >> b1 >> q1 >> q2 >> d >>
+        if (!(iss >> time >> step >> sensor1 >> sensor2 >> integralSensor1 >>
+              integralSensor2 >> a1 >> a2 >> b1 >> q1 >> q2 >> v >> d >>
               sumOfSquaredDiffPenalty1 >> sumOfSquaredDiffPenalty2 >>
               chargeDiffPenalty >> widthDiffPenalty >> noisePropPenalty >>
               penalty >> id))
@@ -327,6 +327,7 @@ std::vector<Drop> Drop::readFromFile(std::ifstream &file)
             currentDrop.valid = 1;
             drops.push_back(currentDrop);
             currentDrop = Drop();
+            currentDrop.dataOffset = step;
         }
         // Update current ID and append data to the current drop
         currentId = id;
@@ -341,6 +342,7 @@ std::vector<Drop> Drop::readFromFile(std::ifstream &file)
         currentDrop.b1.push_back(b1);
         currentDrop.q1 = q1;
         currentDrop.q2 = q2;
+        currentDrop.v = v;
         currentDrop.d = d;
         currentDrop.sumOfSquaredDiffPenalty1 = sumOfSquaredDiffPenalty1;
         currentDrop.sumOfSquaredDiffPenalty2 = sumOfSquaredDiffPenalty2;
@@ -361,21 +363,22 @@ void Drop::writeHeader(std::ofstream &file, bool sortedDrops)
     if (sortedDrops)
     {
         // Column order for sorted drops:
-        // time, sensor1, sensor2, integral_sensor1, integral_sensor2,
-        // a1, a2, b1, q1, q2, d, penalty
-        file << "time\tsensor1\tsensor2\tintegral_sensor1\tintegral_sensor2"
-             "\ta1\ta2\tb1\tq1\tq2\tdiameter\tsum_of_penalties\n";
+        // time, step, sensor1, sensor2, integral_sensor1, integral_sensor2,
+        // a1, a2, b1, q1, q2, v, d, penalty
+        file <<
+            "time\tstep\tsensor1\tsensor2\tintegral_sensor1\tintegral_sensor2"
+            "\ta1\ta2\tb1\tq1\tq2\tv\tdiameter\tsum_of_penalties\n";
     }
     else
     {
         // Column order for drops written by drop_finder:
-        // time, sensor1, sensor2, integral_sensor1, integral_sensor2,
-        // a1, a2, b1, q1, q2, d,
+        // time, step, sensor1, sensor2, integral_sensor1, integral_sensor2,
+        // a1, a2, b1, q1, q2, v, d,
         // sum_sq_diff_penalty1, sum_sq_diff_penalty2, charge_diff_penalty,
         // width_diff_penalty, noise_prop_penalty, penalty, id
         file <<
-            "time\tsensor1\tsensor2\tintegral_sensor1\tintegral_sensor2"
-            "\ta1\ta2\tb1\tq1\tq2\tdiameter\tsum_sq_diff_penalty1"
+            "time\tstep\tsensor1\tsensor2\tintegral_sensor1\tintegral_sensor2"
+            "\ta1\ta2\tb1\tq1\tq2\tv\tdiameter\tsum_sq_diff_penalty1"
             "\tsum_sq_diff_penalty2\tcharge_diff_penalty\twidth_diff_penalty"
             "\tnoise_prop_penalty\tsum_of_penalties\tid\n";
     }
@@ -387,8 +390,10 @@ void Drop::writeToFile(std::ofstream &file, bool sortedDrops)
          << std::setprecision(6); // Format numbers to 6 decimal places
     for (int i = 0; i < this->size(); ++i)
     {
+        int step = this->dataOffset + i;
         std::vector<std::variant<double, int, bool>> row = {
             this->time[i],
+            step,
             this->sensor1[i],
             this->sensor2[i],
             this->integralSensor1[i] * INTEGRATION_FACTOR / DATA_PER_SECOND,
@@ -398,6 +403,7 @@ void Drop::writeToFile(std::ofstream &file, bool sortedDrops)
             this->b1[i],
             this->q1,
             this->q2,
+            this->v,
             this->d,
             !sortedDrops ? this->sumOfSquaredDiffPenalty1 : false,
             !sortedDrops ? this->sumOfSquaredDiffPenalty2 : false,

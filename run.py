@@ -60,6 +60,18 @@ def run_drop_charts(force: bool, quiet: bool = False):
         os.system(cmd)
 
 
+def run_carga_velocidad(force: bool, quiet: bool = False):
+    """Ejecuta el programa Fortran que resume drops.dat en carga_velocidad.dat."""
+    if force or not os.path.exists("carga_velocidad.dat"):
+        if not quiet:
+            print(f"Ejecutando carga_velocidad")
+
+        cmd = f"../exec/carga_velocidad"
+        if quiet:
+            cmd += " > /dev/null 2>&1"
+        os.system(cmd)
+
+
 def analyze_storm(file: str, from_step: int, quiet: bool = False):
     """Analiza una tormenta individual. Esta función se ejecuta en un proceso separado."""
     original_dir = os.getcwd()
@@ -78,6 +90,7 @@ def analyze_storm(file: str, from_step: int, quiet: bool = False):
         run_drop_sorter(from_step <= 2, quiet)
         # 5. Ejecutamos el programa drop_charts
         run_drop_charts(from_step <= 3, quiet)
+        run_carga_velocidad(from_step <= 4, quiet)
         
         if not quiet:
             print(f"[{os.getpid()}] Análisis completado para {file}")
@@ -230,9 +243,9 @@ Ejemplos de uso:
     parser.add_argument(
         "--from-step",
         type=int,
-        help="Paso desde el que se quiere analizar la tormenta (1=finder, 2=sorter, 3=charts)",
+        help="Paso desde el que se quiere analizar la tormenta (1=finder, 2=sorter, 3=charts, 4=carga_velocidad)",
         default=100,
-        choices=[1, 2, 3],
+        choices=[1, 2, 3, 4],
     )
     parser.add_argument(
         "--processes",

@@ -36,7 +36,7 @@ El programa está dividido en tres componentes principales que procesan los dato
 - Lee los datos del archivo de entrada (.lvm)
 - Interpola valores faltantes y corrige el offset de la señal
 - Identifica las gotas presentes en la señal
-- Guarda las gotas detectadas en `drops.dat`
+- Guarda las gotas detectadas en `drops.dat` (incluye una columna `step` con la posición de cada muestra)
 
 **Uso manual**:
 ```bash
@@ -107,6 +107,7 @@ python run.py *.lvm --clean
 **Ejecutar desde un paso específico**:
 ```bash
 python run.py *.lvm --from-step 3
+python run.py *.lvm --from-step 4   # Generar carga_velocidad.dat (Fortran)
 ```
 
 **Controlar el número de procesos paralelos**:
@@ -119,6 +120,9 @@ Los pasos disponibles son:
 - `1`: Ejecutar desde drop_finder
 - `2`: Ejecutar desde drop_sorter
 - `3`: Ejecutar desde drop_chart
+- `4`: Generar carga_velocidad.dat (Fortran)
+
+El paso 4 ejecuta un programa Fortran que lee `drops.dat`, toma la primera fila de cada gota y genera `carga_velocidad.dat` con las columnas `step q1 q2 q v diam sum_of_penalties`.
 
 ### Procesamiento Paralelo
 
@@ -152,6 +156,7 @@ Después de ejecutar el análisis completo, se genera la siguiente estructura:
 nombre_archivo/
 ├── drops.dat            # Gotas detectadas
 ├── drops_sorted.dat     # Gotas ordenadas por calidad
+├── carga_velocidad.dat  # Resumen (step, q1, q2, q, v, diam, penalidad)
 └── graficos/            # Gráficos y análisis estadísticos
     ├── histograma_carga.dat
     ├── histograma_diametro.dat

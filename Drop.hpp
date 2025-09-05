@@ -32,6 +32,7 @@ public:
     double noisePropPenalty; // penalizacion de la porcion de la señal que esta
                              // dentro de [-MINIMUM_CHARGE, MINIMUM_CHARGE]
     int id;                  // ID de la gota
+    int dataOffset;          // paso inicial de la gota en el archivo original
     bool valid;
 
     Drop(bool isPositive, int c1, int c2);
