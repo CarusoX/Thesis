@@ -15,6 +15,10 @@
 \usepackage{longtable}
 \usepackage{fancyhdr}
 \usepackage{setspace}
+\usepackage{caption}
+
+% Configuración para reducir el tamaño de los captions
+\captionsetup{font=small}
 
 % Configuración para reducir espacio en figuras
 \setlength{\textfloatsep}{10pt}
@@ -115,14 +119,14 @@ Las gotas cargadas eléctricamente inducen corrientes tanto en el anillo como en
     \label{fig:corriente_gotas}
 \end{figure}
 
-La adquisición de datos se realiza a una tasa de 5 kHz por canal (5000 datos por segundo). Por limitaciones de hardware, la adquisición de datos no se puede realizar al mismo tiempo que la escritura a disco, por lo que cada segundo se pierden $\sim 50ms$ de datos. Esto debe ser tenido en cuenta luego para analizar los datos obtenidos.
+La recolección de datos se realiza a una tasa de 5 kHz por canal (5000 datos por segundo). Por limitaciones de hardware, no se puede realizar la recolección al mismo tiempo que la escritura a disco, por lo que cada segundo se pierden $\sim 50ms$ de datos. Esto debe ser tenido en cuenta luego para analizar lo obtenido.
 
 \subsection{Procesamiento de Señales}
 \lhead{}
 \rhead{Procesamiento de Señales}
 
 El procesamiento transforma las señales crudas registradas por el instrumento en una lista de gotas con sus propiedades. Para ello se emplean dos programas que se ejecutan de manera secuencial: el primero realiza un preprocesamiento de las señales y el segundo extrae las gotas y calcula sus características.
-El fragmento de la señal que forma parte de una gota extraida por el programa, la denominamos `pulso`. Estos pulsos son reconocibles en la señal gracias a la dinamica producida por la interaccion de la gota con el instrumento de medicion.
+El fragmento de la señal que forma parte de una gota extraida por el programa, la denominamos `pulso'. Estos pulsos son reconocibles en la señal gracias a la dinamica producida por la interaccion de la gota con el instrumento de medicion.
 El flujo general consta de cinco pasos principales:
 
 \begin{enumerate}
@@ -143,7 +147,7 @@ El segundo programa realiza el análisis principal de las señales ya preprocesa
 \lhead{}
 \rhead{Necesidad de Mejoras}
 
-El código actual, aunque funcional, sufre de varios problemas tanto en su diseño como en su rendimiento.
+El código actual, aunque funcional, presenta varios problemas tanto en su diseño como en su rendimiento.
 
 En primer lugar, el código consta de pocos archivos con una cantidad de líneas muy grande, lo que dificulta su mantenimiento y modificación. Cualquier cambio requiere revisar y entender todo el código, ya que las responsabilidades no están bien asignadas. Además, hay muchas variables sin nombres descriptivos y constantes hard-codeadas sin referencia alguna, lo que complica aún más la comprensión.
 
@@ -238,20 +242,19 @@ Por esta razón, la optimización de la complejidad computacional es crucial par
 \lhead{}
 \rhead{Análisis del código existente}
 
-Antes de comenzar a desarrollar el nuevo sistema, fue fundamental analizar el código existente. El programa consta de dos archivos Fortran (`promedio\_general.f` y `buscador\_de\_gotas.f`) donde toda la lógica está implementada directamente en el entorno global del programa, sin modularización alguna. 
+Antes de comenzar a desarrollar el nuevo sistema, fue fundamental analizar el código existente. El programa consta de dos archivos Fortran (`promedio\_general.f' y `buscador\_de\_gotas.f') donde toda la lógica está implementada directamente en el entorno global del programa, sin modularización alguna. 
 
 \subsection{Descripción del algoritmo actual}
-Como se menciono anteriormente, el sistema de procesamiento actual consta de dos programas que se ejecutan
-secuencialmente.
+A continuación se describe el funcionamiento de los dos programas que conforman el sistema actual.
 
 \subsubsection{Programa de preprocesamiento}
 
-El primer programa (`promedio\_general.f`) recibe como entrada las señales crudas registradas por el instrumento y realiza dos operaciones fundamentales:    
+El primer programa (`promedio\_general.f') recibe como entrada las señales crudas registradas por el instrumento y realiza dos operaciones fundamentales:    
 
 \begin{enumerate}
 
 
-\item \textbf{Lectura de datos:} El programa lee los archivos de datos crudos y los convierte en señales. El formato de los archivos es un archivo `.lvm` que contiene 3 columnas: tiempo, señal del anillo y señal de la placa.
+\item \textbf{Lectura de datos:} El programa lee los archivos de datos crudos y los convierte en señales. El formato de los archivos es un archivo `.lvm' que contiene 3 columnas: tiempo, señal del anillo y señal de la placa.
 
 \item \textbf{Rellenado de huecos mediante interpolación:} Debido a las limitaciones de
 hardware mencionadas anteriormente, cada segundo se pierden aproximadamente
@@ -264,13 +267,13 @@ valor. Para esto se ignoran los primeros y últimos 2500 puntos de la señal.
 
 Este proceso elimina el offset de corriente continua que puede variar durante la medición.
 
-\item \textbf{Salida de resultados:} Finalmente, se escriben las señales preprocesadas en un archivo. El formato de salida son 4 columnas: contador de tiempo (entero), señal del anillo resultante, señal de la placa resultante y un booleano que indice si la fila corresponde a un hueco.
+\item \textbf{Salida de resultados:} Finalmente, se escriben las señales preprocesadas en un archivo. El formato de salida son 4 columnas: contador de tiempo (entero), señal del anillo resultante, señal de la placa resultante y un booleano que indica si la fila corresponde a un hueco.
 
 \end{enumerate}
 
 \subsubsection{Programa de detección de gotas}
 
-El segundo programa (`buscador\_de\_gotas.f`) implementa el algoritmo principal de
+El segundo programa (`buscador\_de\_gotas.f') implementa el algoritmo principal de
 detección y análisis. El flujo general consta de las siguientes etapas:
 
 \begin{enumerate}
@@ -278,16 +281,16 @@ detección y análisis. El flujo general consta de las siguientes etapas:
 \item \textbf{Lectura y preprocesamiento de datos:} El programa lee los archivos de datos
 preprocesados con el paso anterior. Se pueden leer hasta 36 archivos, y cada archivo puede contener hasta 13 millones de muestras.
 
-\item \textbf{Detección de pulsos mediante umbrales:} Se implementa un sistema de umbrales que varía dinámicamente desde un valor superior (`c1=2.00`) hasta
-uno inferior (`c2=0.02`) a lo largo de 1000 pasos (`ps=1000`). Esta variación permite
+\item \textbf{Detección de pulsos mediante umbrales:} Se implementa un sistema de umbrales que varía dinámicamente desde un valor superior (`c1=2.00') hasta
+uno inferior (`c2=0.02') a lo largo de 1000 pasos (`ps=1000'). Esta variación permite
 detectar pulsos de diferentes amplitudes.
 Para cada umbral, se buscan pares de puntos consecutivos que superen el umbral en ambas señales (anillo y placa), con una separación máxima de 100 puntos
-(`nn=100`).
+(`nn=100').
 
 (agregar figura)
 
 \item \textbf{Localización y delimitación de pulsos:} Una vez detectado un pulso, se determina su inicio retrocediendo hasta encontrar el punto donde la señal se anula. Se
-calcula el punto medio de la señal del anillo mirando hacia adelante donde se anula, y el punto de quiebre de la señal de la placa mediante análisis de la integral de la misma. (agregar figura)
+calcula el punto medio de la señal del anillo avanzando hasta donde se anule la señal, y el punto de quiebre de la señal de la placa mediante análisis de la integral de la misma. (agregar figura)
 El algoritmo recorta cada pulso considerando un ancho máximo de $4nn$ puntos.
 
 \item \textbf{Cálculo de propiedades físicas:} Para cada pulso detectado, se calculan:
@@ -306,7 +309,7 @@ las gotas válidas del ruido:
 \begin{itemize}
 
 \item \textbf{Filtros de carga:} La carga de la gota tanto en el anillo como en la placa tiene
-que ser mayor a un valor mínimo (`qminima=0.2`) (en valor absoluto).
+que ser mayor a un valor mínimo (`qminima=0.2') (en valor absoluto).
 
 \item \textbf{Filtro de velocidad:} Se verifica que la distancia temporal entre los picos del
 anillo y la placa corresponda a una velocidad de caída físicamente plausible
@@ -320,7 +323,7 @@ ambos canales.
 
 \begin{itemize}
 
-    \item \textbf{Penal1 y Penal2:} Diferencia cuadrática entre la señal real y 2 modelos teóricos distintos
+    \item \textbf{Penal1 y Penal2:} Diferencia cuadrática entre la señal real y dos modelos teóricos distintos
     del pulso.
     Para el pulso del anillo se utilizan dos modelos:
     
@@ -366,23 +369,22 @@ El código existente presenta problemas de diseño que dificultan su comprensió
 
 \begin{itemize}
 
-\item \textbf{Modularización inexistente:} Todo el procesamiento está en el entorno global del programa, que maneja todos los pasos de procesamiento, como la detección de pulsos, cálculo de características, aplicación de filtros, escritura de resultados, etc. Cualquier modificación requiere entender por completo como interactuan las diferentes `partes` del programa.
+\item \textbf{Modularización inexistente:} Todo el procesamiento está en el entorno global del programa, que maneja todos los pasos de procesamiento, como la detección de pulsos, cálculo de características, aplicación de filtros, escritura de resultados, etc. Cualquier modificación requiere entender por completo como interactuan las diferentes `partes' del programa.
 
-\item \textbf{Variables sin contexto semántico:} El código utiliza variables como `s`, `ss`, `i`,
-`j`, `w`, `k`, `l`, `p`, `r`, `x`, `cont`, `contt`, `cc1`, `cc2`, `iii` sin ningún contexto. Es
+\item \textbf{Variables sin contexto semántico:} El código utiliza variables como `s', `ss', `i', `j', `w', `k', `l', `p', `r', `x', `cont', `contt', `cc1', `cc2', `iii' sin ningún contexto. Es
 imposible determinar qué representa cada una sin leer todo el código. Ademas, estan todas definidas en el principio del programa, lo cual hace que sea dificil entender su uso en el resto del código.
     
-\item \textbf{Requiere dividir el conjunto de datos en varias partes}: El consumo de memoria es muy alto, por lo que el programa requiere dividir el conjunto de datos en varias partes y procesarlos secuencialmente. Esto hace que se pierdan algunas gotas, ya que las gotas que quedan en medio de los cortes no se procesan.
+\item \textbf{Requiere dividir el conjunto de datos en varias partes}: El consumo de memoria es muy alto, por lo que el programa requiere dividir el conjunto de datos en varias partes y procesarlos secuencialmente. Esto hace que se pierdan algunas gotas, ya que las que quedan en medio de los cortes no se procesan.
 
-\item \textbf{Lectura de archivos hard-codeada:} El programa requiere cambio cada vez que se quiera procesar un nuevo conjunto de datos, ya que los nombres de los archivos son constantes en el codigo. Ademas, hay un bloque de codigo que permite leer hasta 36 archivos, que se debe comentar o descomentar dependiendo de la cantidad en la que se dividio el conjunto de datos a procesar.
+\item \textbf{Lectura de archivos hard-codeada:} El programa requiere cambio en los nombres de los archivos a procesar, ya que los nombres de estos son constantes en el codigo en vez de ser parametros. Ademas, hay un bloque de codigo que permite leer hasta 36 archivos, que se debe comentar o descomentar dependiendo de la cantidad en la que se dividio el conjunto de datos a procesar.
 
-\item \textbf{Codigo duplicado:} La cantidad de codigo repetido es muy alta. Hay mucha logica la cual solo tiene un cambio en el signo, un cambio en un `if statement` o un cambio en una variable. Esto hace que sea dificil mantener el codigo ya que hay que modificarlo en varios lugares.
+\item \textbf{Codigo duplicado:} La cantidad de codigo repetido es muy alta. Hay mucha logica la cual solo tiene un cambio en el signo, un cambio en un `if statement' o un cambio en una variable. Esto hace que sea dificil mantener el codigo ya que hay que modificarlo en varios lugares.
 
 \end{itemize}
 
 \subsection{Problemas de rendimiento}
 
-Al analizar el rendimiento del código, se encontraron 2 areas de potenciales mejoras:
+Al analizar el rendimiento del código, se encontraron dos areas de potenciales mejoras:
 
 \begin{itemize}
     \item \textbf{Remoción de offset:} El algoritmo de remoción de offset es muy ineficiente. Como se puede observar en la implementacion \ref{lst:codigo_remocion_offset}, para cada punto, se hace una suma de 5001 valores divididos por 5001,
@@ -410,7 +412,7 @@ Al analizar el rendimiento del código, se encontraron 2 areas de potenciales me
     \end{lstlisting}
 
 
-    \item \textbf{Detección de pulsos:} Si analizamos la complejidad de la implentacion de este algoritmo, podemos ver que para cada umbral (1000), se revisa todo el array de la señales. Si 2 puntos consecutivos superan el umbral en la primera señal, se revisa hasta un total de 100 puntos en la segunda señal. Esto resulta en una complejidad $$O(\#umbrales * \#puntos * 100) = O(100000 * \#puntos) = O(\#puntos)$$. Identico al caso anterior, se trata de una complejidad lineal, pero con una constante extremadamente alta.
+    \item \textbf{Detección de pulsos:} Si analizamos la complejidad de la implentacion de este algoritmo, podemos ver que para cada umbral (1000), se revisa todo el array de la señales. Si dos puntos consecutivos superan el umbral en la primera señal, se revisa hasta un total de 100 puntos en la segunda señal. Esto resulta en una complejidad $$O(\#umbrales * \#puntos * 100) = O(100000 * \#puntos) = O(\#puntos)$$. Identico al caso anterior, se trata de una complejidad lineal, pero con una constante extremadamente alta.
 \end{itemize}
 
 \subsection{Motivación de la refactorización}
@@ -432,11 +434,11 @@ invertir tanta cantidad de tiempo y esfuerzo estudiándolo.
 
 \subsection{Problemas descubiertos durante la refactorización}
 
-El programa `promedio\_general.f`, como se menciono anteriormente, se encarga tanto del rellenado de huecos como de la remocion del offset de las señales. Es en esta primera parte donde se descubrio un error en la implementacion.
+El programa `promedio\_general.f', como se menciono anteriormente, se encarga tanto del rellenado de huecos como de la remocion del offset de las señales. Es en esta primera parte donde se descubrio un error en la implementacion.
 
-Basicamente, primero el algoritmo llena los huecos con un valor constante `10`, para luego buscar los bordes de estos huecos y completarlos con una interpolacion lineal. En los comentarios del codigo, se menciona que esta interpolacion lineal se hace entre los promedios de los 1000 puntos anteriores y posteriores al hueco. Sin embargo, en la implementacion, se utiliza los valores de los extremos del huecos.
+Basicamente, primero el algoritmo llena los huecos con un valor constante `10', para luego buscar los bordes de estos huecos y completarlos con una interpolacion lineal. En los comentarios del codigo, se menciona que esta interpolacion lineal se hace entre los promedios de los 1000 puntos anteriores y posteriores al hueco. Sin embargo, en la implementacion, se utiliza los valores de los extremos del huecos.
 
-El código \ref{lst:codigo_error} muestra la implementación del algoritmo de rellenado de huecos. Como se puede observar, los comentarios indican que se debe usar el promedio de 1000 puntos, pero la implementación utiliza directamente los valores de los bordes (`a1`, `a2`, `b1`, `b2`).
+El código \ref{lst:codigo_error} muestra la implementación del algoritmo de rellenado de huecos. Como se puede observar, los comentarios indican que se debe usar el promedio de 1000 puntos, pero la implementación utiliza directamente los valores de los bordes (`a1', `a2', `b1', `b2').
 
 Este error tiene un impacto significativo en los pasos posteriores del procesamiento, particularmente en la remoción del offset. Al rellenar los huecos utilizando una interpolación entre dos valores puntuales, en lugar de promedios de ventanas más amplias, se pueden introducir distorsiones importantes. Esto ocurre especialmente cuando los valores utilizados para la interpolación corresponden a puntos críticos que difieren considerablemente del promedio de la señal en ese momento.
 
@@ -607,7 +609,7 @@ public:
 
 \subsubsection{Extensión a MaxQueue}
 
-Es trivial adaptar la MinQueue para obtener una MaxQueue: simplemente cambiamos la condición de comparación en el bucle while de `$>$` a `$<$`, manteniendo el deque auxiliar en orden decreciente en lugar de creciente.
+Es trivial adaptar la MinQueue para obtener una MaxQueue: simplemente cambiamos la condición de comparación en el bucle while de `$>$' a `$<$', manteniendo el deque auxiliar en orden decreciente en lugar de creciente.
 
 \begin{lstlisting}[language=C++, label=lst:maxqueue_simple]
 void push(int value) {
@@ -629,8 +631,8 @@ Para mantener simultáneamente el mínimo y el máximo, utilizamos dos deques au
 class MaxMinQueue {
 private:
     std::queue<int> mainQueue;
-    std::deque<int> minDeque;  // Orden decreciente
-    std::deque<int> maxDeque;  // Orden creciente
+    std::deque<int> minDeque;  // Orden creciente
+    std::deque<int> maxDeque;  // Orden decreciente
 
 public:
     void push(int value) {
