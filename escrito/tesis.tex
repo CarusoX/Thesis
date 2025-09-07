@@ -7,6 +7,7 @@
 \usepackage{graphicx}
 \usepackage{float}
 \usepackage{listings}
+\usepackage{listingsutf8}
 \usepackage{xcolor}
 \usepackage{hyperref}
 \usepackage{booktabs}
@@ -39,14 +40,17 @@
     keywordstyle=\color{blue},
     commentstyle=\color{green!60!black},
     stringstyle=\color{red},
-    backgroundcolor=\color{gray!10}
+    backgroundcolor=\color{gray!10},
+    extendedchars=true,
+    inputencoding=utf8,
+    literate={ñ}{{\~n}}1 {á}{{\'a}}1 {é}{{\'e}}1 {í}{{\'i}}1 {ó}{{\'o}}1 {ú}{{\'u}}1 {ü}{{\"u}}1
 }
 
 \pagestyle{fancy}
 \pagenumbering{arabic}
 
 % Información del documento
-\title{\textbf{Desarrollo de un Sistema Modular para el Análisis de Gotas Cargadas Eléctricamente en Tormentas}}
+\title{\textbf{Desarrollo de un sistema eficiente para el procesamiento gotas cargadas eléctricamente en tormentas}}
 \author{Estudiante de Licenciatura en Ciencias de la Computación}
 \date{\today}
 
@@ -61,8 +65,18 @@
 \maketitle
 
 \begin{abstract}
-    Despues lo hago al abstract
+    El análisis de gotas cargadas eléctricamente en tormentas requiere procesar grandes volúmenes de datos, pero el código existente presenta limitaciones de diseño y rendimiento. Se desarrolló un sistema modular y optimizado que implementa algoritmos eficientes como ventanas deslizantes y estructuras de datos optimizadas. El sistema de automatización permite ejecutar toda la cadena de análisis con un único comando. Los resultados muestran una reducción del tiempo de procesamiento de 6 horas a 15 minutos para 100 millones de datos, manteniendo la misma precisión en la detección de gotas.
+
+    \textbf{Palabras clave:} gotas cargadas eléctricamente, procesamiento de señales, optimización de algoritmos, C++, Python
 \end{abstract}
+
+\selectlanguage{english}
+\begin{abstract}
+    The analysis of electrically charged droplets in storms requires processing large data volumes, but existing code has design and performance limitations. A modular and optimized system was developed implementing efficient algorithms like sliding windows and optimized data structures. The automation system allows executing the entire analysis chain with a single command. Results show processing time reduction from 6 hours to 15 minutes for 100 million data points, maintaining the same droplet detection accuracy.
+
+    \textbf{Keywords:} electrically charged droplets, signal processing, algorithm optimization, C++, Python
+\end{abstract}
+\selectlanguage{spanish}
 
 \tableofcontents
 \newpage
@@ -161,23 +175,76 @@ El nuevo sistema debe ser capaz de procesar grandes volúmenes de datos de maner
 \lhead{}
 \rhead{Estructura de la Tesis}
 
-Despues la hago
+La estructura de esta tesis está organizada de manera que primero se establece el contexto y la motivación del trabajo, luego se presenta el análisis del sistema existente, y finalmente se describe la solución propuesta y sus resultados. El documento se divide en las siguientes secciones:
 
-\section{Procedimiento}
-\lhead{}
-\rhead{Procedimiento}
+\begin{enumerate}
+    \item Introduce el problema de análisis de gotas cargadas eléctricamente, describe el instrumento de medición utilizado y establece los objetivos del trabajo.
 
-\subsection{Análisis del Código Existente}
+    \item Presenta los conceptos previos necesarios, incluyendo una introducción al análisis de complejidad computacional que fundamenta las optimizaciones posteriores.
+
+    \item Realiza un análisis exhaustivo del código existente, describiendo los algoritmos actuales, identificando problemas de diseño y rendimiento, y motivando la necesidad de refactorización.
+
+    \item Presenta las soluciones técnicas implementadas, incluyendo algoritmos optimizados y estructuras de datos eficientes como la MaxMinQueue.
+
+    \item Describe la implementación en C++ del nuevo sistema modular.
+
+    \item Presenta el sistema de automatización desarrollado en Python.
+
+    \item Muestra los resultados obtenidos, incluyendo comparativas de rendimiento y precisión, seguida de las conclusiones y limitaciones del trabajo.
+\end{enumerate}
+
+\section{Conceptos previos}
+
+\subsection{Análisis de complejidad computacional}
 \lhead{}
-\rhead{Análisis del Código Existente}
+\rhead{Análisis de Complejidad Computacional}
+
+Para evaluar y comparar la eficiencia de los algoritmos utilizados en este trabajo, es fundamental entender cómo se mide el rendimiento computacional. La notación Big-O es una herramienta matemática que permite describir el comportamiento asintótico de un algoritmo en términos de tiempo de ejecución o uso de memoria, en función del tamaño de la entrada.
+
+\subsubsection{Notación Big-O}
+
+La notación Big-O describe el límite superior del crecimiento de una función. Formalmente, decimos que $f(n) = O(g(n))$ si existen constantes positivas $c$ y $n_0$ tales que $f(n) \leq c \cdot g(n)$ para todo $n \geq n_0$.
+
+En el contexto de algoritmos, esto significa que el tiempo de ejecución o el uso de memoria no crecerá más rápido que la función $g(n)$ multiplicada por una constante, independientemente del tamaño de la entrada.
+
+\subsubsection{Clases de complejidad comunes}
+
+Las clases de complejidad más relevantes para este trabajo son:
+
+\begin{itemize}
+    \item \textbf{$O(1)$ - Constante:} El tiempo de ejecución es independiente del tamaño de la entrada. Ejemplo: acceder a un elemento de un arreglo por índice.
+    
+    \item \textbf{$O(\log n)$ - Logarítmica:} El tiempo crece logarítmicamente con el tamaño de la entrada. Ejemplo: búsqueda binaria en un arreglo ordenado.
+    
+    \item \textbf{$O(n)$ - Lineal:} El tiempo es proporcional al tamaño de la entrada. Ejemplo: recorrer todos los elementos de un arreglo.
+    
+    \item \textbf{$O(n \log n)$ - Lineal logarítmica:} El tiempo crece como $n$ multiplicado por $\log n$. Ejemplo: algoritmos de ordenamiento eficientes como merge sort.
+    
+    \item \textbf{$O(n^2)$ - Cuadrática:} El tiempo es proporcional al cuadrado del tamaño de la entrada. Ejemplo: algoritmos de ordenamiento simples como bubble sort.
+\end{itemize}
+
+\subsubsection{Importancia en el contexto de este trabajo}
+
+En el procesamiento de señales, donde se manejan millones de puntos de datos, la diferencia entre algoritmos de complejidad $O(n)$ y $O(n^2)$ puede resultar en diferencias de horas en el tiempo de procesamiento. Por ejemplo, para procesar 100 millones de puntos:
+
+\begin{itemize}
+    \item Un algoritmo $O(n)$ podría completarse en minutos
+    \item Un algoritmo $O(n^2)$ podría requerir días o semanas
+\end{itemize}
+
+Por esta razón, la optimización de la complejidad computacional es crucial para hacer viable el análisis de grandes volúmenes de datos meteorológicos en tiempo razonable.
+
+\section{Análisis del código existente}
+\lhead{}
+\rhead{Análisis del código existente}
 
 Antes de comenzar a desarrollar el nuevo sistema, fue fundamental analizar el código existente. El programa consta de dos archivos Fortran (`promedio\_general.f` y `buscador\_de\_gotas.f`) donde toda la lógica está implementada directamente en el entorno global del programa, sin modularización alguna. 
 
-\subsubsection{Descripción del algoritmo actual}
+\subsection{Descripción del algoritmo actual}
 Como se menciono anteriormente, el sistema de procesamiento actual consta de dos programas que se ejecutan
 secuencialmente.
 
-\subsubsubsection{Programa de preprocesamiento}
+\subsubsection{Programa de preprocesamiento}
 
 El primer programa (`promedio\_general.f`) recibe como entrada las señales crudas registradas por el instrumento y realiza dos operaciones fundamentales:    
 
@@ -201,7 +268,7 @@ Este proceso elimina el offset de corriente continua que puede variar durante la
 
 \end{enumerate}
 
-\subsubsubsection{Programa de detección de gotas}
+\subsubsection{Programa de detección de gotas}
 
 El segundo programa (`buscador\_de\_gotas.f`) implementa el algoritmo principal de
 detección y análisis. El flujo general consta de las siguientes etapas:
@@ -293,7 +360,7 @@ en un archivo, incluyendo posición temporal, cargas, velocidad, diámetro y pun
 
 \end{enumerate}
 
-\subsubsection{Problemas de diseño}
+\subsection{Problemas de diseño}
 
 El código existente presenta problemas de diseño que dificultan su comprensión y mantenimiento:
 
@@ -313,7 +380,40 @@ imposible determinar qué representa cada una sin leer todo el código. Ademas, 
 
 \end{itemize}
 
-\subsubsection{Motivación de la refactorización}
+\subsection{Problemas de rendimiento}
+
+Al analizar el rendimiento del código, se encontraron 2 areas de potenciales mejoras:
+
+\begin{itemize}
+    \item \textbf{Remoción de offset:} El algoritmo de remoción de offset es muy ineficiente. Como se puede observar en la implementacion \ref{lst:codigo_remocion_offset}, para cada punto, se hace una suma de 5001 valores divididos por 5001,
+    resultando en una complejidad $$O(5001n) = O(n)$$. Obviamente se trata de una complejidad lineal, pero no solo que la constante es altisima por el factor de 5001, sino que tambien se realizan 5001 divisiones por cada punto.
+
+    \begin{lstlisting}[language=Fortran, label=lst:codigo_remocion_offset]
+! n = 5000
+! ww es la cantidad de puntos en la señal
+! w1 y w2 son los arreglos de las señales
+        do j=1,ww
+            if ((j.ge.n/2+1).and.(j.le.ww-n/2)) then
+                do k=-n/2,n/2
+                       w1p(j)=w1p(j)+w1(j+k)/(n+1)
+                       w2p(j)=w2p(j)+w2(j+k)/(n+1)            
+                enddo
+                w1a(j)=w1(j)-w1p(j)
+                w2a(j)=w2(j)-w2p(j)
+            else 
+                ind(j)=0
+                w1a(j)=0
+                w2a(j)=0
+            endif	
+            write(30,*) j,w1a(j),w2a(j),ind(j)
+        enddo
+    \end{lstlisting}
+
+
+    \item \textbf{Detección de pulsos:} Si analizamos la complejidad de la implentacion de este algoritmo, podemos ver que para cada umbral (1000), se revisa todo el array de la señales. Si 2 puntos consecutivos superan el umbral en la primera señal, se revisa hasta un total de 100 puntos en la segunda señal. Esto resulta en una complejidad $$O(\#umbrales * \#puntos * 100) = O(100000 * \#puntos) = O(\#puntos)$$. Identico al caso anterior, se trata de una complejidad lineal, pero con una constante extremadamente alta.
+\end{itemize}
+
+\subsection{Motivación de la refactorización}
 
 Todas las problematicas mencionadas anteriormente, motivan a realizar una refactorizacion del codigo. Esta refactorizacion tiene muchos beneficios, entre los cuales:
 
@@ -330,7 +430,7 @@ invertir tanta cantidad de tiempo y esfuerzo estudiándolo.
 
 \end{itemize}
 
-\subsubsection{Problemas descubiertos durante la refactorización}
+\subsection{Problemas descubiertos durante la refactorización}
 
 El programa `promedio\_general.f`, como se menciono anteriormente, se encarga tanto del rellenado de huecos como de la remocion del offset de las señales. Es en esta primera parte donde se descubrio un error en la implementacion.
 
@@ -356,7 +456,7 @@ Este error tiene un impacto significativo en los pasos posteriores del procesami
 * Despues el valor w1(j) y w2(j) los revalua como
 * siguiendo una recta 
 * entre esos dos promedios.
-* Tambien ingresa un indice que vale 1 cunado no hay
+* Tambien ingresa un indice que vale 1 cuando no hay
 * blanco y un 0 cuando si lo hay.
 
       do j=1,ww
@@ -393,97 +493,188 @@ Este error tiene un impacto significativo en los pasos posteriores del procesami
       enddo
 \end{lstlisting}
 
-\subsection{Algoritmos y estructuras de datos utilizadas}
+\section{Algoritmos y estructuras de datos utilizadas}
 \lhead{}
 \rhead{Algoritmos y estructuras de datos utilizadas}
 
-Para abordar las limitaciones del código existente, se utilizaron algoritmos y estructuras de datos eficientes que mantienen la misma o similar funcionalidad pero con un
-rendimiento mejor.
+Para abordar las limitaciones de performance del código existente, se utilizaron algoritmos y estructuras de datos eficientes que mantienen la misma o similar funcionalidad pero con un rendimiento superior.
 
-\subsubsection{Optimización del algoritmo de promedio móvil}
+\subsection{Optimización del algoritmo de promedio móvil}
 
-El código Fortran original implementaba la remoción de offset mediante un promedio
-móvil de 5000 puntos de manera ineficiente. Para cada punto, se calculaba la suma de 5000
-valores y se realizaba una división en cada uno de estos, resultando en una complejidad
-$O(5000n) = O(n)$ pero con una constante extremadamente alta.
+El algoritmo de ventana deslizante (sliding window) es una técnica de optimización utilizada para resolver eficientemente problemas que involucran secuencias contiguas en arreglos. Es particularmente útil cuando se necesita mover una "ventana" de tamaño fijo o dinámico a través de los datos para realizar cálculos o encontrar patrones.
 
-\textbf{Implementación original (ineficiente):} El algoritmo original realizaba las siguientes
-operaciones para cada punto:
+En nuestro caso, el problema de calcular el promedio móvil para remover el offset se ajusta perfectamente a esta técnica: necesitamos mantener una ventana de tamaño fijo que se mueve a través de la señal, calculando el promedio en cada punto. En lugar de recalcular la suma completa cada vez que la ventana se mueve (lo que requeriría sumar todos los elementos nuevamente), podemos mantener una suma acumulada que actualizamos incrementalmente.
 
-Esta implementación presenta varios problemas:
+Si analizamos la implementacion \ref{lst:codigo_promedio_movil}, vemos que el array de datos se recorre una sola vez. En cada iteración, solo se realiza una suma para agregar el nuevo valor a la ventana y una resta para eliminar el valor más antiguo cuando la ventana está completa. De esta manera, la suma total de la ventana se mantiene actualizada de forma incremental, requiriendo solo dos operaciones por iteración independientemente del tamaño de la ventana. El promedio se calcula dividiendo esta suma por el tamaño de la ventana y se resta del punto central. Como resultado, tenemos un algoritmo de complejidad $O(n)$ con una constante muy baja, ya que hacemos una sola division por punto, y dos operaciones para mantener la suma actualizada.
+
+\begin{lstlisting}[language=C++, label=lst:codigo_promedio_movil]
+    double sumSensor1 = 0.0;
+    double sumSensor2 = 0.0;
+    std::vector<double> avgSensor1, avgSensor2;
+    size_t halfWindow = WINDOW_SIZE / 2; // 2500
+    size_t actualWindowSize = halfWindow * 2 + 1; // 5001
+
+    size_t currentSize = 0;
+
+    for (size_t i = 0; i < data.size(); ++i) {
+        sumSensor1 += data[i].sensor1;
+        sumSensor2 += data[i].sensor2;
+        ++currentSize;
+
+        // Si nos excedemos del tamaño de la ventana, restamos el valor mas viejo
+        if (currentSize > actualWindowSize) {
+            sumSensor1 -= data[i - actualWindowSize].sensor1;
+            sumSensor2 -= data[i - actualWindowSize].sensor2;
+            --currentSize;
+        }
+
+        if (currentSize == actualWindowSize) {
+            // Hacemos la division al final
+            double meanSensor1 = sumSensor1 / actualWindowSize;
+            double meanSensor2 = sumSensor2 / actualWindowSize;
+
+            avgSensor1.push_back(data[i - halfWindow].sensor1 - meanSensor1);
+            avgSensor2.push_back(data[i - halfWindow].sensor2 - meanSensor2);
+        }
+    }
+\end{lstlisting}
+
+\subsection{Estructura de datos MinQueue}
+
+La estructura de datos \textit{MinQueue} es una cola que mantiene el elemento mínimo en tiempo constante $O(1)$ para todas las operaciones básicas. Esta estructura es fundamental para resolver eficientemente problemas de ventana deslizante donde necesitamos encontrar el mínimo (o máximo) en una ventana de tamaño fijo que se mueve a través de una secuencia de datos.
+
+\subsubsection{Principio de funcionamiento}
+
+La MinQueue utiliza una cola principal para almacenar los elementos y una cola auxiliar (deque) para mantener los candidatos al mínimo. La clave del algoritmo radica en mantener la cola auxiliar en orden creciente, para que el primer elemento siempre sea el mínimo actual.
+
+\begin{lstlisting}[language=C++, label=lst:minqueue_simple]
+class MinQueue {
+private:
+    std::queue<int> mainQueue;
+    std::deque<int> minDeque;
+
+public:
+    void push(int value) {
+        mainQueue.push(value);
+        
+        // Mantener el deque en orden creciente
+        while (!minDeque.empty() && minDeque.back() > value) {
+            minDeque.pop_back();
+        }
+        minDeque.push_back(value);
+    }
+    
+    int pop() {
+        if (mainQueue.empty()) {
+            throw std::runtime_error("Queue is empty");
+        }
+        
+        int value = mainQueue.front();
+        mainQueue.pop();
+        
+        // Si el elemento que sacamos es el mínimo actual
+        if (value == minDeque.front()) {
+            minDeque.pop_front();
+        }
+        
+        return value;
+    }
+    
+    int min() const {
+        if (minDeque.empty()) {
+            throw std::runtime_error("Queue is empty");
+        }
+        return minDeque.front();
+    }
+    
+    bool empty() const {
+        return mainQueue.empty();
+    }
+};
+\end{lstlisting}
+
+\subsubsection{Análisis de complejidad}
 
 \begin{itemize}
-    \item \textbf{Complejidad:} $O(5000n)$ operaciones, donde la constante 5000 es extremadamente alta
-    \item \textbf{Operaciones repetitivas:} Cada punto recalcula la suma completa de la ventana
-    \item \textbf{Uso de memoria:} No aprovecha la superposición entre ventanas consecutivas
-    \item \textbf{Divisones múltiples:} 5000 divisiones por cada punto procesado
+    \item \textbf{push(value):} $O(1)$ amortizado. Aunque el bucle while puede eliminar múltiples elementos, cada elemento se elimina exactamente una vez durante toda su vida en la cola, por lo que la complejidad amortizada es constante.
+    
+    \item \textbf{pop():} $O(1)$. Solo requiere eliminar el primer elemento de ambas colas.
+    
+    \item \textbf{min():} $O(1)$. El mínimo siempre está en el frente del deque auxiliar.
+    
+    \item \textbf{empty():} $O(1)$. Verificación directa del estado de la cola principal.
 \end{itemize}
 
-\textbf{Implementación optimizada:} El nuevo algoritmo implementa un promedio móvil eficiente que mantiene la misma funcionalidad pero con una complejidad constante mucho
-menor:
+\subsubsection{Extensión a MaxQueue}
 
-\textbf{Análisis de complejidad:} La implementación optimizada mantiene la misma complejidad $O(n)$ pero con una constante dramáticamente reducida:
+Es trivial adaptar la MinQueue para obtener una MaxQueue: simplemente cambiamos la condición de comparación en el bucle while de `$>$` a `$<$`, manteniendo el deque auxiliar en orden decreciente en lugar de creciente.
 
-\begin{itemize}
-    \item \textbf{Operaciones por punto:} Solo 1 suma, 1 resta y 1 división (cuando la ventana está
-    completa)
-    \item \textbf{Complejidad total:} $O(n)$ con constante cercana a 3
-    \item \textbf{Mejora en constante:} De 5000 a 3, una reducción de más de 1600 veces
-\end{itemize}
+\begin{lstlisting}[language=C++, label=lst:maxqueue_simple]
+void push(int value) {
+    mainQueue.push(value);
+    
+    // Mantener el deque en orden decreciente para máximo
+    while (!maxDeque.empty() && maxDeque.back() < value) {
+        maxDeque.pop_back();
+    }
+    maxDeque.push_back(value);
+}
+\end{lstlisting}
 
-\subsubsection{Estructura de datos MaxMinQueue}
+\subsubsection{MaxMinQueue: Manteniendo mínimo y maximo}
 
-Para la detección eficiente de pulsos en las señales, se implementó una estructura de
-datos especializada que permite obtener el máximo y mínimo de una ventana deslizante
-en tiempo constante $O(1)$.
+Para mantener simultáneamente el mínimo y el máximo, utilizamos dos deques auxiliares independientes: uno para el mínimo (orden decreciente) y otro para el máximo (orden creciente). Esta extensión mantiene la complejidad $O(1)$ amortizado para todas las operaciones, aunque requiere el doble de espacio auxiliar.
 
-\textbf{Problema a resolver:} El algoritmo original de detección de pulsos requería encontrar
-el máximo y mínimo en ventanas de diferentes tamaños para cada punto de la señal. Una
-implementación ingenua tendría complejidad $O(w)$ por ventana, donde w es el tamaño de
-la ventana, resultando en una complejidad total de $O(n \times w)$.
+\begin{lstlisting}[language=C++, label=lst:maxminqueue_simple]
+class MaxMinQueue {
+private:
+    std::queue<int> mainQueue;
+    std::deque<int> minDeque;  // Orden decreciente
+    std::deque<int> maxDeque;  // Orden creciente
 
-\textbf{Implementación de MaxMinQueue:} La estructura utiliza dos deques (double-ended
-queues) para mantener los máximos y mínimos de manera eficiente:
+public:
+    void push(int value) {
+        mainQueue.push(value);
+        
+        // Mantener deque de mínimos
+        while (!minDeque.empty() && minDeque.back() > value) {
+            minDeque.pop_back();
+        }
+        minDeque.push_back(value);
+        
+        // Mantener deque de máximos
+        while (!maxDeque.empty() && maxDeque.back() < value) {
+            maxDeque.pop_back();
+        }
+        maxDeque.push_back(value);
+    }
+    
+    int pop() {
+        int value = mainQueue.front();
+        mainQueue.pop();
+        
+        if (value == minDeque.front()) {
+            minDeque.pop_front();
+        }
+        if (value == maxDeque.front()) {
+            maxDeque.pop_front();
+        }
+        
+        return value;
+    }
+    
+    int min() const { return minDeque.front(); }
+    int max() const { return maxDeque.front(); }
+};
+\end{lstlisting}
 
-\textbf{Operación de inserción (push):} La inserción mantiene los deques ordenados para
-garantizar acceso $O(1)$ a máximo y mínimo:
-
-\textbf{Operación de extracción (pop):} La extracción actualiza los deques de máximo y
-mínimo cuando se remueve el elemento correspondiente:
-
-\textbf{Acceso a máximo y mínimo:} Las operaciones de acceso son constantes $O(1)$:
-
-\textbf{Análisis de complejidad:}
-
-\begin{itemize}
-    \item \textbf{Inserción (push):} $O(1)$ amortizado - aunque en el peor caso puede ser $O(w)$, la
-amortización garantiza $O(1)$ por operación
-    \item \textbf{Extracción (pop):} $O(1)$ - solo actualiza contadores y posiblemente remueve un
-    elemento del deque
-    \item \textbf{Acceso a máximo/minimo:} $O(1)$ - siempre accede al primer elemento del deque
-    correspondiente
-    \item \textbf{Memoria:} $O(w)$ donde w es el tamaño de la ventana
-\end{itemize}
-
-\textbf{Aplicación en detección de pulsos:} La MaxMinQueue se utiliza para implementar
-ventanas deslizantes eficientes en la detección de pulsos:
-
-\textbf{Ventajas sobre implementaciónes tradicionales:}
-
-\begin{itemize}
-    \item \textbf{Rendimiento:} Acceso $O(1)$ a máximo y mínimo en lugar de $O(w)$
-    \item \textbf{Escalabilidad:} El rendimiento no se degrada con el tamaño de la ventana
-    \item \textbf{Flexibilidad:} Permite implementar diferentes estrategias de detección
-    \item \textbf{Reutilizabilidad:} Estructura genérica que puede aplicarse a otros problemas
-\end{itemize}
-
-\subsection{Implementación en C++}
+\section{Implementación en C++}
 \lhead{}
 \rhead{Implementación en C++}
 
 Toda la explicacion del codigo de C++
 
-\subsection{Sistema de Automatización}
+\section{Sistema de Automatización}
 \lhead{}
 \rhead{Sistema de Automatización}
 
