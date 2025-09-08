@@ -99,13 +99,13 @@ void find_drops(LVM &lvm, CLI &cli, LVM &findLvm, std::ofstream &outFile) {
         }
         if(!drop.valid) {
           // Marcamos los picos encontrados como usados
-          findLvm.setUsed(drop.u1 + drop.c1, drop.u1 + drop.c1 + 1);
-          findLvm.setUsed(drop.u1 + drop.c2, drop.u1 + drop.c2 + 1);
+          findLvm.setUsed(drop.u1Original + drop.c1, drop.u1Original + drop.c1 + 1);
+          findLvm.setUsed(drop.u1Original + drop.c2, drop.u1Original + drop.c2 + 1);
           continue;
         }
-        findLvm.setUsed(drop.u1, drop.u1 + drop.size() - 1);
+        findLvm.setUsed(drop.u1Original, drop.u1Original + drop.size() - 1);
         drop.id = ++gotas;
-        drop.dataOffset = static_cast<int>(i - findLvm.size() + 1 + drop.u1);
+        drop.dataOffset = static_cast<int>(i - findLvm.size() + 1 + drop.u1Original);
         drop.writeToFile(outFile);
       } while(true);
 

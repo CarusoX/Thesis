@@ -8,6 +8,7 @@ class Drop
 public:
     bool isPositive; // picos positivos
     int c1, c2;      // puntos criticos
+    int u1Original;  // posicion inicial original del primer sensor
     int u1, u2;      // posiciones iniciales
     int p1;          // punto medio del primer sensor
     int p2;          // punto de quiebre de la integral del segundo sensor

@@ -62,8 +62,8 @@ Drop DropFinder::findDrop(const LVM &lvm)
     drop.u2 -= drop.u1;
     drop.p1 = std::min(drop.p1, drop.size() - 1);
     drop.p2 = std::min(drop.p2, drop.size() - 1);
-    // IMPORTANTE: NO AJUSTAMOS U1 simplemente para saber en que indice de la
-    // data original comenzo la gota
+    drop.u1Original = drop.u1;
+    drop.u1 = 0;
     drop.computeStats();
 
     return drop;
