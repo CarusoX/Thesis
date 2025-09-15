@@ -54,7 +54,7 @@
 \pagenumbering{arabic}
 
 % Información del documento
-\title{\textbf{Desarrollo de un sistema eficiente para el procesamiento gotas cargadas eléctricamente en tormentas}}
+\title{\textbf{Desarrollo de un sistema eficiente para el procesamiento de gotas de lluvia cargadas eléctricamente}}
 \author{Estudiante de Licenciatura en Ciencias de la Computación}
 \date{\today}
 
@@ -670,11 +670,27 @@ public:
 };
 \end{lstlisting}
 
-\section{Implementación en C++}
+\section{Cambios en la detección de pulsos}
 \lhead{}
-\rhead{Implementación en C++}
+\rhead{Cambios en la detección de pulsos}
 
-Toda la explicacion del codigo de C++
+Se implemento un nuevo algoritmo de deteccion de pulsos en C++, que reemplaza la busqueda con umbrales adaptativos por una busqueda local e iterativa.
+
+\subsection{Algoritmo basico}
+
+Lo primero a tener en cuenta, es que los pulsos tienen un tamaño maximo fijo `DROP\_SIZE = 400'. Esto nos permite realizar la busqueda en ventanas de tamaño fijo, particularmente de tamaño `2 \times DROP\_SIZE = 800'.
+
+Dada una ventana de datos, el algoritmo busca el punto critico de mayor valor absoluto del sensor del anillo en los primeros `DROP\_SIZE' puntos, al cual llamaremos `c1'. Si no encontramos ninguno mayor al umbral minimo, quiere decir que no hay ningun pulso con el punto critico del anillo en la primera mitad de la ventana.
+
+Si encontramos `c1', entonces deberiamos buscar el punto critico del sensor del plato `nn = 100' puntos hacia adelante, y quedarnos con el de mayor valor absoluto (con el mismo signo que el punto critico del anillo) al cual llamaremos `c2'.
+
+Si no encontramos `c2', tambien podemos concluir que no hay ningun pulso con el punto critico del anillo en la primera mitad de la ventana. En Ambos casos, podemos descartar 400 puntos como cantidatos.
+
+Ahora bien, si encontramos `c1' y `c2', solo resta buscar los puntos de inicio del pulso, el punto medio de la señal del anillo y el punto de quiebre de la señal del plato. Con estos datos, ya podemos calcular todas las propiedades fisicas de la gota, y con ellas, podemos aplicar los filtros de calidad, computar su penalidad y decidir si es un pulso valido o no.
+
+En caso de que el pulso no sea valido, podemos descartar los puntos criticos encontrados, y volver a realizar la busqueda en la misma ventana. Esto puede ayudar en la medida que haya puntos anomalos en la señal.
+
+En caso de que el pulso sea valido, podemos marcar todos los puntos de la ventana como usados, y volver a realizar la busqueda en la misma ventana. Esto nos ayuda a detectar pulsos multiples en la misma ventana si es que los pulsos son muy cortos.
 
 \section{Sistema de Automatización}
 \lhead{}
