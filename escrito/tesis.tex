@@ -99,7 +99,7 @@ En este marco, ya existen instrumentos capaces de realizar estas mediciones, as�
 \lhead{}
 \rhead{Instrumento de Medición}
 
-El dispositivo utilizado consiste en un anillo de inducción de latón de 6 cm de diámetro y 1.5 cm de longitud, posicionado a 5.7 cm por encima de una placa plana de aluminio de 20 cm de diámetro. Tanto el anillo como la placa están conectados eléctricamente a amplificadores de corriente de alta ganancia con una amplificación de 5 $\times$ 10$^8$ V/A. Para proteger contra interferencias electromagnéticas, el anillo, la placa y los amplificadores están encerrados dentro de un contenedor metálico que actúa como jaula de Faraday. La figura \ref{fig:instrumento_medicion} muestra el dispositivo.
+El dispositivo utilizado consiste en un anillo de inducción de latón de 6 cm de diámetro y 1.5 cm de longitud, posicionado a 5.7 cm por encima de una placa plana de aluminio de 20 cm de diámetro. Tanto el anillo como la placa están conectados eléctricamente a amplificadores de corriente de alta ganancia con una amplificación de 5 $\cdot$ 10$^8$ V/A. Para proteger contra interferencias electromagnéticas, el anillo, la placa y los amplificadores están encerrados dentro de un contenedor metálico que actúa como jaula de Faraday. La figura \ref{fig:instrumento_medicion} muestra el dispositivo.
 
 \begin{figure}[!hb]
     \centering
@@ -678,7 +678,7 @@ Se implemento un nuevo algoritmo de deteccion de pulsos en C++, que reemplaza la
 
 \subsection{Algoritmo básico}
 
-El nuevo algoritmo de detección de pulsos se basa en una estrategia de búsqueda local e iterativa que aprovecha el conocimiento previo sobre las características físicas de las gotas. La premisa fundamental es que los pulsos tienen un tamaño máximo fijo de \texttt{DROP\_SIZE = 400} puntos, lo que permite realizar la búsqueda en ventanas de tamaño fijo de \texttt{2 \times DROP\_SIZE = 800} puntos.
+El nuevo algoritmo de detección de pulsos se basa en una estrategia de búsqueda local e iterativa que aprovecha el conocimiento previo sobre las características físicas de las gotas. La premisa fundamental es que los pulsos tienen un tamaño máximo fijo de \texttt{DROP\_SIZE = 400} puntos, lo que permite realizar la búsqueda en ventanas de tamaño fijo de \texttt{2 $\times$ DROP\_SIZE = 800} puntos.
 
 El algoritmo funciona de la siguiente manera:
 
@@ -711,11 +711,11 @@ La detección de puntos críticos es el núcleo del algoritmo y se basa en una e
 Antes de la búsqueda de puntos críticos, el algoritmo preprocesa los datos de los sensores para calcular un \texttt{value} para cada punto. Este valor se calcula de la siguiente manera:
 
 \begin{itemize}
-    \item \textbf{Valor del sensor del anillo:} Para cada punto $i$, se calcula el valor como el mínimo (para pulsos positivos) o máximo (para pulsos negativos) entre los puntos $i$ e $i+1$ del sensor del anillo.
+    \item \textbf{Valor del sensor del anillo:} Para cada punto \texttt{i}, se calcula el valor como el mínimo (para pulsos positivos) o máximo (para pulsos negativos) entre los puntos \texttt{i} e \texttt{i+1} del sensor del anillo.
     
     \item \textbf{Valor del sensor de la placa:} De manera similar, se calcula el valor correspondiente para el sensor de la placa.
     
-    \item \textbf{Exclusión de puntos descartados:} Si cualquiera de los puntos $i$ o $i+1$ está marcado como descartado, el valor se establece en 0, excluyendo efectivamente ese punto de la búsqueda.
+    \item \textbf{Exclusión de puntos descartados:} Si cualquiera de los puntos \texttt{i} o \texttt{i+1} está marcado como descartado, el valor se establece en 0, excluyendo efectivamente ese punto de la búsqueda.
 \end{itemize}
 
 \subsubsection{Búsqueda iterativa con MaxMinQueue}
@@ -727,9 +727,9 @@ El algoritmo utiliza una \texttt{MaxMinQueue} para mantener una ventana deslizan
     
     \item \textbf{Actualización de la cola:} En cada iteración, se agrega el valor actual del sensor de la placa a la cola. Si la cola excede \texttt{nn} elementos, se elimina el elemento más antiguo.
     
-    \item \textbf{Obtención del mejor valor:} Para cada posición $i < \texttt{DROP\_SIZE}$ del sensor del anillo, se obtiene el mejor valor de la cola (máximo para pulsos positivos, mínimo para pulsos negativos).
+    \item \textbf{Obtención del mejor valor:} Para cada posición \texttt{i < DROP\_SIZE} del sensor del anillo, se obtiene el mejor valor de la cola (máximo para pulsos positivos, mínimo para pulsos negativos).
     
-    \item \textbf{Cálculo del valor combinado:} Se calcula un valor combinado tomando el mínimo (para pulsos positivos) o máximo (para pulsos negativos) entre el valor del sensor del anillo en la posición $i$ y el mejor valor del sensor de la placa de la cola.
+    \item \textbf{Cálculo del valor combinado:} Se calcula un valor combinado tomando el mínimo (para pulsos positivos) o máximo (para pulsos negativos) entre el valor del sensor del anillo en la posición \texttt{i} y el mejor valor del sensor de la placa de la cola.
 \end{itemize}
 
 \subsubsection{Selección del mejor candidato}
