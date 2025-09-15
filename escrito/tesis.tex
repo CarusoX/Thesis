@@ -702,6 +702,53 @@ El algoritmo funciona de la siguiente manera:
 
 Esta estrategia iterativa permite un procesamiento más eficiente y robusto, ya que aprovecha la estructura conocida de los pulsos y maneja adecuadamente los casos de pulsos múltiples y señales con ruido.
 
+\subsection{Detección de puntos críticos}
+
+La detección de puntos críticos es el núcleo del algoritmo y se basa en una estrategia de búsqueda iterativa que utiliza la estructura de datos \texttt{MaxMinQueue} para encontrar eficientemente los mejores candidatos.
+
+\subsubsection{Preprocesamiento de valores}
+
+Antes de la búsqueda de puntos críticos, el algoritmo preprocesa los datos de los sensores para calcular un \texttt{value} para cada punto. Este valor se calcula de la siguiente manera:
+
+\begin{itemize}
+    \item \textbf{Valor del sensor del anillo:} Para cada punto $i$, se calcula el valor como el mínimo (para pulsos positivos) o máximo (para pulsos negativos) entre los puntos $i$ e $i+1$ del sensor del anillo.
+    
+    \item \textbf{Valor del sensor de la placa:} De manera similar, se calcula el valor correspondiente para el sensor de la placa.
+    
+    \item \textbf{Exclusión de puntos descartados:} Si cualquiera de los puntos $i$ o $i+1$ está marcado como descartado, el valor se establece en 0, excluyendo efectivamente ese punto de la búsqueda.
+\end{itemize}
+
+\subsubsection{Búsqueda iterativa con MaxMinQueue}
+
+El algoritmo utiliza una \texttt{MaxMinQueue} para mantener una ventana deslizante de los últimos \texttt{nn = 100} valores del sensor de la placa. La búsqueda se realiza de la siguiente manera:
+
+\begin{itemize}
+    \item \textbf{Inicialización:} Se inicializa una \texttt{MaxMinQueue} vacía y se comienza la búsqueda desde el final de la ventana hacia el inicio.
+    
+    \item \textbf{Actualización de la cola:} En cada iteración, se agrega el valor actual del sensor de la placa a la cola. Si la cola excede \texttt{nn} elementos, se elimina el elemento más antiguo.
+    
+    \item \textbf{Obtención del mejor valor:} Para cada posición $i < \texttt{DROP\_SIZE}$ del sensor del anillo, se obtiene el mejor valor de la cola (máximo para pulsos positivos, mínimo para pulsos negativos).
+    
+    \item \textbf{Cálculo del valor combinado:} Se calcula un valor combinado tomando el mínimo (para pulsos positivos) o máximo (para pulsos negativos) entre el valor del sensor del anillo en la posición $i$ y el mejor valor del sensor de la placa de la cola.
+\end{itemize}
+
+\subsubsection{Selección del mejor candidato}
+
+El algoritmo mantiene un registro del mejor candidato encontrado hasta el momento:
+
+\begin{itemize}
+    \item \textbf{Criterio de selección:} Se selecciona el candidato con el mayor valor absoluto que supere el umbral mínimo (\texttt{MINIMUM\_THRESHOLD = 0.02}).
+    
+    \item \textbf{Validación de polaridad:} Se verifica que el valor tenga la polaridad correcta (positivo para pulsos positivos, negativo para pulsos negativos).
+    
+    \item \textbf{Actualización del mejor candidato:} Si el candidato actual es mejor que el anterior, se actualiza la información del mejor candidato, incluyendo las posiciones de los puntos críticos \texttt{c1} y \texttt{c2}.
+\end{itemize}
+
+\subsubsection{Consideraciones sobre puntos descartados}
+
+Es importante entender que los primeros \texttt{nn = 100} puntos de cada ventana pueden estar marcados como descartados, ya sea porque pertenecen al final de un pulso o porque no pertenecen a ninguno. Esto se hace porque pueden contener el inicio de un pulso que se está procesando en la ventana actual.
+
+
 \section{Sistema de Automatización}
 \lhead{}
 \rhead{Sistema de Automatización}
