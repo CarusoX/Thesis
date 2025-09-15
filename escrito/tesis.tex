@@ -133,15 +133,15 @@ El flujo general consta de cinco pasos principales:
     \item Rellenado de huecos en los datos.
     \item Remoción del offset de las señales.
     \item Búsqueda de pulsos en las señales.
-    \item Aplicación de filtros de calidad para extraer las gotas.
-    \item Cálculo de propiedades de las gotas.
+    \item Aplicación de filtros de calidad para extraer los pulsos.
+    \item Cálculo de propiedades de los pulsos.
 \end{enumerate}
 
 Para el procesamiento de los datos se han desarrollado dos programas en Fortran que trabajan de manera secuencial.
 
 El primer programa se encarga del preprocesamiento de los datos, específicamente del rellenado de huecos mediante interpolación lineal y de la remoción del offset de las señales.
 
-El segundo programa realiza el análisis principal de las señales ya preprocesadas. Implementa el algoritmo de detección de pulsos, aplica filtros para separar las gotas válidas y calcula sus propiedades físicas, incluyendo tamaño, carga eléctrica y velocidad de caída.
+El segundo programa realiza el análisis principal de las señales ya preprocesadas. Implementa el algoritmo de detección de pulsos, aplica filtros para separar los pulsos válidos y calcula sus propiedades físicas, incluyendo tamaño, carga eléctrica y velocidad de caída.
 
 \subsection{Necesidad de Mejoras}
 \lhead{}
@@ -151,7 +151,7 @@ El código actual, aunque funcional, presenta varios problemas tanto en su dise�
 
 En primer lugar, el código consta de pocos archivos con una cantidad de líneas muy grande, lo que dificulta su mantenimiento y modificación. Cualquier cambio requiere revisar y entender todo el código, ya que las responsabilidades no están bien asignadas. Además, hay muchas variables sin nombres descriptivos y constantes hard-codeadas sin referencia alguna, lo que complica aún más la comprensión.
 
-En segundo lugar, para grandes volúmenes de datos, la ejecución es muy lenta. Por ejemplo, para procesar datos de una tormenta de 5 horas de duración (aproximadamente 100M de datos), el programa tarda alrededor de 6 horas en completarse. A esto se suma un consumo de memoria excesivamente alto, lo que obliga a procesar los datos de a partes. A su vez el algoritmo actual no tiene en cuenta las gotas que quedan en medio de estos cortes, resultando en la pérdida de algunos datos.
+En segundo lugar, para grandes volúmenes de datos, la ejecución es muy lenta. Por ejemplo, para procesar datos de una tormenta de 5 horas de duración (aproximadamente 100M de datos), el programa tarda alrededor de 6 horas en completarse. A esto se suma un consumo de memoria excesivamente alto, lo que obliga a procesar los datos de a partes. A su vez el algoritmo actual no tiene en cuenta los pulsos que quedan en medio de estos cortes, resultando en la pérdida de algunos datos.
 
 \subsection{Objetivos}
 \lhead{}
@@ -161,14 +161,14 @@ En segundo lugar, para grandes volúmenes de datos, la ejecución es muy lenta. 
 
 Desarrollar un sistema modular y automatizado para el análisis de datos de gotas cargadas eléctricamente que mejore significativamente la eficiencia, mantenibilidad y escalabilidad del código existente, facilitando la obtención de nuevos resultados.
 
-El nuevo sistema debe ser capaz de procesar grandes volúmenes de datos de manera eficiente y, como mínimo, detectar la misma cantidad de gotas que el código original, intentando incrementarla en lo posible.
+El nuevo sistema debe ser capaz de procesar grandes volúmenes de datos de manera eficiente y, como mínimo, detectar la misma cantidad de pulsos que el código original, intentando incrementarla en lo posible.
 
 \subsubsection{Objetivos Específicos}
 
 \begin{enumerate}
     \item \textbf{Diseñar una arquitectura modular} que separe las etapas del procesamiento en al menos tres componentes independientes y reutilizables.
 
-    \item \textbf{Optimizar el rendimiento y el uso de memoria} del algoritmo de detección de gotas para manejar aproximadamente 100 millones de muestras utilizando menos de 2 GB de memoria y reduciendo el tiempo de análisis de una tormenta de 5 horas de 6 horas a aproximadamente 15 minutos, asegurando al menos la misma cantidad de gotas detectadas que el programa original.
+    \item \textbf{Optimizar el rendimiento y el uso de memoria} del algoritmo de detección de pulsos para manejar aproximadamente 100 millones de muestras utilizando menos de 2 GB de memoria y reduciendo el tiempo de análisis de una tormenta de 5 horas de 6 horas a aproximadamente 15 minutos, asegurando al menos la misma cantidad de pulsos detectados que el programa original.
 
     \item \textbf{Desarrollar un sistema de automatización} que permita ejecutar la cadena completa de análisis con un único comando y sin intervención manual.
 
@@ -271,7 +271,7 @@ Este proceso elimina el offset de corriente continua que puede variar durante la
 
 \end{enumerate}
 
-\subsubsection{Programa de detección de gotas}
+\subsubsection{Programa de detección de pulsos}
 
 El segundo programa (`buscador\_de\_gotas.f') implementa el algoritmo principal de
 detección y análisis. El flujo general consta de las siguientes etapas:
@@ -304,7 +304,7 @@ El algoritmo recorta cada pulso considerando un ancho máximo de $4nn$ puntos.
 \end{itemize}
 
 \item \textbf{Aplicación de filtros de calidad:} Se implementan filtros secuenciales para separar
-las gotas válidas del ruido:
+los pulsos válidos del ruido:
 
 \begin{itemize}
 
@@ -315,7 +315,7 @@ que ser mayor a un valor mínimo (`qminima=0.2') (en valor absoluto).
 anillo y la placa corresponda a una velocidad de caída físicamente plausible
 (entre 0.7125 y 11.4 m/s).
 
-\item \textbf{Filtro de signo:} Se verifica que la carga de la gota sea del mismo signo en
+\item \textbf{Filtro de signo:} Se verifica que la carga del pulso sea del mismo signo en
 ambos canales.
 \end{itemize}
 
@@ -356,9 +356,9 @@ ambos canales.
 señal de la placa y el anillo. Se observó experimentalmente que el ancho del pulso de la placa es aproximadamente el 79\% del ancho del pulso del anillo.
     \item \textbf{Penal5:} Proporción de señal en el rango de ruido (entre -0.02 y 0.02). Este valor 0.02 (tambien usado en la deteccion por umbrales)fue obtenido mediante inspección visual.
 \end{itemize}
-    La suma de estas penalizaciones determina el orden de calidad de las gotas detectadas, permitiendo clasificar las gotas según su calidad.
+    La suma de estas penalizaciones determina el orden de calidad de los pulsos detectados, permitiendo clasificar los pulsos según su calidad.
 
-\item \textbf{Salida de resultados:} Finalmente, se escriben los datos de todas las gotas válidas
+\item \textbf{Salida de resultados:} Finalmente, se escriben los datos de todos los pulsos válidos
 en un archivo, incluyendo posición temporal, cargas, velocidad, diámetro y puntuación de calidad.
 
 \end{enumerate}
@@ -374,7 +374,7 @@ El código existente presenta problemas de diseño que dificultan su comprensió
 \item \textbf{Variables sin contexto semántico:} El código utiliza variables como `s', `ss', `i', `j', `w', `k', `l', `p', `r', `x', `cont', `contt', `cc1', `cc2', `iii' sin ningún contexto. Es
 imposible determinar qué representa cada una sin leer todo el código. Ademas, estan todas definidas en el principio del programa, lo cual hace que sea dificil entender su uso en el resto del código.
     
-\item \textbf{Requiere dividir el conjunto de datos en varias partes}: El consumo de memoria es muy alto, por lo que el programa requiere dividir el conjunto de datos en varias partes y procesarlos secuencialmente. Esto hace que se pierdan algunas gotas, ya que las que quedan en medio de los cortes no se procesan.
+\item \textbf{Requiere dividir el conjunto de datos en varias partes}: El consumo de memoria es muy alto, por lo que el programa requiere dividir el conjunto de datos en varias partes y procesarlos secuencialmente. Esto hace que se pierdan algunos pulsos, ya que los que quedan en medio de los cortes no se procesan.
 
 \item \textbf{Lectura de archivos hard-codeada:} El programa requiere cambio en los nombres de los archivos a procesar, ya que los nombres de estos son constantes en el codigo en vez de ser parametros. Ademas, hay un bloque de codigo que permite leer hasta 36 archivos, que se debe comentar o descomentar dependiendo de la cantidad en la que se dividio el conjunto de datos a procesar.
 
@@ -676,21 +676,31 @@ public:
 
 Se implemento un nuevo algoritmo de deteccion de pulsos en C++, que reemplaza la busqueda con umbrales adaptativos por una busqueda local e iterativa.
 
-\subsection{Algoritmo basico}
+\subsection{Algoritmo básico}
 
-Lo primero a tener en cuenta, es que los pulsos tienen un tamaño maximo fijo `DROP\_SIZE = 400'. Esto nos permite realizar la busqueda en ventanas de tamaño fijo, particularmente de tamaño `2 \times DROP\_SIZE = 800'.
+El nuevo algoritmo de detección de pulsos se basa en una estrategia de búsqueda local e iterativa que aprovecha el conocimiento previo sobre las características físicas de las gotas. La premisa fundamental es que los pulsos tienen un tamaño máximo fijo de \texttt{DROP\_SIZE = 400} puntos, lo que permite realizar la búsqueda en ventanas de tamaño fijo de \texttt{2 \times DROP\_SIZE = 800} puntos.
 
-Dada una ventana de datos, el algoritmo busca el punto critico de mayor valor absoluto del sensor del anillo en los primeros `DROP\_SIZE' puntos, al cual llamaremos `c1'. Si no encontramos ninguno mayor al umbral minimo, quiere decir que no hay ningun pulso con el punto critico del anillo en la primera mitad de la ventana.
+El algoritmo funciona de la siguiente manera:
 
-Si encontramos `c1', entonces deberiamos buscar el punto critico del sensor del plato `nn = 100' puntos hacia adelante, y quedarnos con el de mayor valor absoluto (con el mismo signo que el punto critico del anillo) al cual llamaremos `c2'.
+\begin{enumerate}
+    \item \textbf{Búsqueda del punto crítico del anillo:} En una ventana de datos, se busca el punto crítico de mayor valor absoluto del sensor del anillo en los primeros \texttt{DROP\_SIZE} puntos, denominado \texttt{c1}. Si no se encuentra ningún punto que supere el umbral mínimo, se concluye que no existe un pulso con punto crítico del anillo en la primera mitad de la ventana.
+    
+    \item \textbf{Búsqueda del punto crítico de la placa:} Si se encuentra \texttt{c1}, se busca el punto crítico del sensor de la placa en los siguientes \texttt{nn = 100} puntos hacia adelante, seleccionando el de mayor valor absoluto que tenga el mismo signo que el punto crítico del anillo, denominado \texttt{c2}.
+    
+    \item \textbf{Validación de la detección:} Si no se encuentra \texttt{c2}, se concluye que no hay un pulso válido en la primera mitad de la ventana. En ambos casos (ausencia de \texttt{c1} o \texttt{c2}), se descartan 400 puntos como candidatos y se avanza la ventana.
+    
+    \item \textbf{Análisis del pulso detectado:} Si se encuentran tanto \texttt{c1} como \texttt{c2}, se procede a encontrar los puntos de inicio del pulso, el punto medio de la señal del anillo y el punto de quiebre de la señal de la placa. Con estos datos se calculan todas las propiedades físicas de la gota.
+    
+    \item \textbf{Aplicación de filtros de calidad:} Se aplican los filtros de calidad, se computa la penalización y se determina si el pulso es válido.
+    
+    \item \textbf{Manejo de resultados:} 
+    \begin{itemize}
+        \item Si el pulso no es válido, se descartan los puntos críticos encontrados y se reinicia la búsqueda en la misma ventana, lo que ayuda a manejar puntos anómalos en la señal.
+        \item Si el pulso es válido, se marcan todos los puntos de la ventana como utilizados y se reinicia la búsqueda en la misma ventana, permitiendo detectar pulsos múltiples cuando estos son muy cortos.
+    \end{itemize}
+\end{enumerate}
 
-Si no encontramos `c2', tambien podemos concluir que no hay ningun pulso con el punto critico del anillo en la primera mitad de la ventana. En Ambos casos, podemos descartar 400 puntos como cantidatos.
-
-Ahora bien, si encontramos `c1' y `c2', solo resta buscar los puntos de inicio del pulso, el punto medio de la señal del anillo y el punto de quiebre de la señal del plato. Con estos datos, ya podemos calcular todas las propiedades fisicas de la gota, y con ellas, podemos aplicar los filtros de calidad, computar su penalidad y decidir si es un pulso valido o no.
-
-En caso de que el pulso no sea valido, podemos descartar los puntos criticos encontrados, y volver a realizar la busqueda en la misma ventana. Esto puede ayudar en la medida que haya puntos anomalos en la señal.
-
-En caso de que el pulso sea valido, podemos marcar todos los puntos de la ventana como usados, y volver a realizar la busqueda en la misma ventana. Esto nos ayuda a detectar pulsos multiples en la misma ventana si es que los pulsos son muy cortos.
+Esta estrategia iterativa permite un procesamiento más eficiente y robusto, ya que aprovecha la estructura conocida de los pulsos y maneja adecuadamente los casos de pulsos múltiples y señales con ruido.
 
 \section{Sistema de Automatización}
 \lhead{}
