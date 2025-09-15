@@ -753,7 +753,38 @@ Es importante entender que los primeros \texttt{nn = 100} puntos de cada ventana
 \lhead{}
 \rhead{Sistema de Automatización}
 
-Toda la explicacion del codigo de Python
+Para cumplir con el objetivo de desarrollar un sistema de automatización que permita ejecutar la cadena completa de análisis con un único comando, se implementó un script en Python (\texttt{run.py}) que orquesta todo el proceso de análisis.
+
+\subsection{Funcionalidades Principales}
+
+El sistema automatiza las siguientes tareas:
+
+\begin{itemize}
+    \item \textbf{Compilación automática:} Compila todos los programas C++ necesarios usando el sistema \texttt{make}
+    
+    \item \textbf{Cadena de procesamiento:} Ejecuta secuencialmente \texttt{drop\_finder}, \texttt{drop\_sorter}, \texttt{drop\_chart} y \texttt{carga\_velocidad} para cada archivo de datos
+    
+    \item \textbf{Procesamiento paralelo:} Permite procesar múltiples archivos simultáneamente utilizando múltiples procesos
+    
+    \item \textbf{Control de ejecución:} Incluye opciones para reiniciar desde pasos específicos y manejo de errores
+\end{itemize}
+
+\subsection{Interfaz de Usuario}
+
+El sistema se ejecuta desde la línea de comandos con la siguiente sintaxis:
+
+\begin{verbatim}
+python run.py archivo1.lvm archivo2.lvm [opciones]
+\end{verbatim}
+
+Las opciones principales incluyen:
+\begin{itemize}
+    \item \texttt{--clean}: Limpiar compilaciones previas
+    \item \texttt{--from-step N}: Reiniciar desde el paso N
+    \item \texttt{--processes N}: Usar N procesos paralelos
+\end{itemize}
+
+Este sistema elimina la necesidad de ejecutar manualmente cada programa por separado y permite el procesamiento eficiente de grandes volúmenes de datos, simplificando el proceso de análisis.
 
 \section{Resultados}
 
