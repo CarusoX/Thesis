@@ -2,7 +2,7 @@
 
 # Compilador de LaTeX
 LATEX = pdflatex
-BIBTEX = bibtex
+BIBTEX = biber
 
 # Archivo principal
 MAIN = tesis
@@ -20,13 +20,11 @@ all: $(MAIN).pdf
 $(MAIN).pdf: $(MAIN).tex
 	@echo "Compilando tesis..."
 	$(LATEX) $(LATEX_OPTS) $(MAIN).tex
-	$(LATEX) $(LATEX_OPTS) $(MAIN).tex
 	@echo "Tesis compilada exitosamente: $(MAIN).pdf"
 
 # Compilar con bibliografía (si se agrega)
 bib: $(MAIN).tex
 	@echo "Compilando tesis con bibliografía..."
-	$(LATEX) $(LATEX_OPTS) $(MAIN).tex
 	$(BIBTEX) $(MAIN)
 	$(LATEX) $(LATEX_OPTS) $(MAIN).tex
 	$(LATEX) $(LATEX_OPTS) $(MAIN).tex

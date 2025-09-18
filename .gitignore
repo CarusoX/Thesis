@@ -9,3 +9,7 @@ references/LabVIEW
 *.log
 *.out
 *.toc
+*.bbl
+*.blg
+*.xml
+*.bcf

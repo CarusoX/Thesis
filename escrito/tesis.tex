@@ -17,6 +17,8 @@
 \usepackage{setspace}
 \usepackage{caption}
 
+\usepackage[backend=biber,style=numeric,sorting=nyt]{biblatex}
+
 % Configuración para reducir el tamaño de los captions
 \captionsetup{font=small}
 
@@ -49,6 +51,38 @@
     inputencoding=utf8,
     literate={ñ}{{\~n}}1 {á}{{\'a}}1 {é}{{\'e}}1 {í}{{\'i}}1 {ó}{{\'o}}1 {ú}{{\'u}}1 {ü}{{\"u}}1
 }
+
+\begin{filecontents*}{bibliografia.bib}
+    @article{avila2022,
+      author  = {Ávila, Eldo and Martínez, Lucía and Pereyra, Rodolfo and Lang, Timothy and Deierling, Wiebke and Wingo, Matthew and Melo, Gregory and Medina, Bruno},
+      title   = {Measurements of size and electrical charges carried by precipitation particles during RELAMPAGO field campaign},
+      journal = {Earth and Space Science},
+      year    = {2022},
+      volume  = {9},
+      pages   = {e2022EA002407},
+      doi     = {10.1029/2022EA002407}
+    }
+    @article{martinez2023,
+      author  = {Martínez, Lucía B. and Pereyra, Rodolfo G. and Ávila, Eldo E.},
+      title   = {Comparisons of raindrop size distributions measured by an optical disdrometer and electrically charged raindrops},
+      journal = {Journal of Geophysical Research: Atmospheres},
+      year    = {2023},
+      volume  = {128},
+      pages   = {e2022JD038396},
+      doi     = {10.1029/2022JD038396}
+    }
+    @article{pereyra2025,
+      author  = {Pereyra, Rodolfo G. and Martínez, Lucía B. and Ávila, Eldo E.},
+      title   = {New experimental device for measuring electrical charge of precipitation particles},
+      journal = {Atmósfera},
+      year    = {2025},
+      volume  = {39},
+      pages   = {283--295},
+      doi     = {10.20937/ATM.53446}
+    }
+    \end{filecontents*}
+    
+    \addbibresource{bibliografia.bib}
 
 \pagestyle{fancy}
 \pagenumbering{arabic}
@@ -89,11 +123,11 @@
 \lhead{}
 \rhead{Introducción}
 
-Las gotas de lluvia pueden transportar carga eléctrica, la cual se adquiere principalmente a través de procesos microfísicos dentro de la nube, como las colisiones entre distintos hidrometeoros (granizo, graupel, copos de nieve, cristales de hielo). El signo y la magnitud de estas cargas están estrechamente relacionados las condiciones internas de la tormenta, como la temperatura, el viento, las particular presentes, etc. Al mismo tiempo, la distribución de tamaños de las gotas brinda información sobre la microfísica de la precipitación y resulta esencial para estimar la lluvia, alimentar modelos numéricos, interpretar mediciones de radares y estudiar procesos como la erosión de suelos o crecidas.
+Las gotas de lluvia pueden transportar carga eléctrica, la cual se adquiere principalmente a través de procesos microfísicos dentro de la nube, como las colisiones entre distintos hidrometeoros (granizo, graupel, copos de nieve, cristales de hielo). El signo y la magnitud de esa carga dependen fuertemente de las condiciones termodinámicas y microfísicas internas de la tormenta, tal como describe el mecanismo no-inductivo (NIM) \cite{avila2022}. Al mismo tiempo, la distribución de tamaños de las gotas (RSD) concentra información clave para estimar precipitación, alimentar modelos numéricos, interpretar teledetección/radar meteorológico y analizar procesos como erosión, escorrentía y crecidas \cite{martinez2023}.
 
 En este sentido, medir y analizar simultáneamente el tamaño y la carga de las gotas resulta fundamental, ya que nos permite recopilar información que no solo ayuda a comprender la física de las tormentas, sino que también es útil para mejorar herramientas de pronóstico y para el estudio de fenómenos atmosféricos.
 
-En este marco, ya existen instrumentos capaces de realizar estas mediciones, así como programas para procesarlas. Sin embargo, el código disponible actualmente presenta limitaciones tanto en diseño como en rendimiento: está poco modularizado, resulta difícil de mantener y su desempeño es insuficiente para procesar de manera eficiente grandes volúmenes de datos. En esta tesis se propone un nuevo sistema de análisis que resuelve esas limitaciones, mejorando la eficiencia, la escalabilidad y la mantenibilidad del software, y facilitando así la obtención de resultados más completos y confiables.
+En este marco, ya existen instrumentos capaces de realizar estas mediciones, como el descripto en \cite{pereyra2025}, así como programas para procesarlas. Sin embargo, el código disponible actualmente presenta limitaciones tanto en diseño como en rendimiento: está poco modularizado, resulta difícil de mantener y su desempeño es insuficiente para procesar de manera eficiente grandes volúmenes de datos. En esta tesis se propone un nuevo sistema de análisis que resuelve esas limitaciones, mejorando la eficiencia, la escalabilidad y la mantenibilidad del software, y facilitando así la obtención de resultados más completos y confiables.
 
 \subsection{Instrumento de Medición}
 \lhead{}
@@ -236,6 +270,12 @@ En el procesamiento de señales, donde se manejan millones de puntos de datos, l
     \item Un algoritmo $O(n^2)$ podría requerir días o semanas
 \end{itemize}
 
+\begin{figure}[!hb]
+    \centering
+    \includegraphics[width=0.8\textwidth]{figures/complejidades_algoritmicas.png}
+    \caption{Gráfico comparativo de numero de operaciones vs tamaño de datos para diferentes complejidades algorítmicas, en escala logarítmica. }
+\end{figure}
+
 Por esta razón, la optimización de la complejidad computacional es crucial para hacer viable el análisis de grandes volúmenes de datos meteorológicos en tiempo razonable.
 
 \section{Análisis del código existente}
@@ -285,23 +325,51 @@ preprocesados con el paso anterior. Se pueden leer hasta 36 archivos, y cada arc
 uno inferior (`c2=0.02') a lo largo de 1000 pasos (`ps=1000'). Esta variación permite
 detectar pulsos de diferentes amplitudes.
 Para cada umbral, se buscan pares de puntos consecutivos que superen el umbral en ambas señales (anillo y placa), con una separación máxima de 100 puntos
-(`nn=100').
+(`nn=100'). En la figura \ref{fig:sensores_gota} se puede observar un pulso de ejemplo detectado con este algoritmo.
 
-(agregar figura)
+\begin{figure}[!hb]
+    \centering
+    \includegraphics[width=0.9\textwidth]{figures/sensores_gota.png}
+    \caption{Ejemplo de detección de pulsos mediante umbrales adaptativos. }
+    \label{fig:sensores_gota}
+\end{figure}
 
 \item \textbf{Localización y delimitación de pulsos:} Una vez detectado un pulso, se determina su inicio retrocediendo hasta encontrar el punto donde la señal se anula. Se
-calcula el punto medio de la señal del anillo avanzando hasta donde se anule la señal, y el punto de quiebre de la señal de la placa mediante análisis de la integral de la misma. (agregar figura)
-El algoritmo recorta cada pulso considerando un ancho máximo de $4nn$ puntos.
+calcula el punto medio de la señal del anillo avanzando hasta donde se anule la señal, y el punto de quiebre de la señal de la placa mediante análisis de la integral de la misma. En la figura \ref{fig:analisis_gota} se pueden observar estos puntos relevantes.
+El algoritmo recorta cada pulso en base a la localización de estos puntos, considerando un ancho máximo de $4nn$ puntos.
+
+\begin{figure}[!hb]
+    \centering
+    \includegraphics[width=0.9\textwidth]{figures/analisis_gota.png}
+    \caption{Puntos relevantes del pulso detectado. }
+    \label{fig:analisis_gota}
+\end{figure}
+
 
 \item \textbf{Cálculo de propiedades físicas:} Para cada pulso detectado, se calculan:
 
 \begin{itemize}
     \item Carga eléctrica: Se integra la señal de ambos canales y se aplica el factor de
-    conversión correspondiente a la amplificación del instrumento. La integración de la señal se fundamenta en el principio físico de que la carga eléctrica inducida en un conductor es proporcional a la integral temporal de la corriente que fluye a través de él. (agregar figura)
+    conversión correspondiente a la amplificación del instrumento. La integración de la señal se fundamenta en el principio físico de que la carga eléctrica inducida en un conductor es proporcional a la integral temporal de la corriente que fluye a través de él. En la figura \ref{fig:calculo_carga_electrica} se puede observar el cálculo de carga eléctrica mediante integración de señales del anillo y placa. (agregar referencia, {principios de inducción electromagnética})
     \item Velocidad de caída: Se determina mediante la separación conocida entre
-    anillo y placa (5.7 cm) dividida por el tiempo que hay entre los picos de la señal del anillo y la placa.
-    \item Diámetro: Se obtiene interpolando en una tabla velocidad-diámetro precalculada.
+    anillo y placa (5.7 cm) dividida por el tiempo que hay entre el punto medio de la señal del anillo y el punto de quiebre de la señal de la placa.
+    \item Diámetro: Se obtiene interpolando en una tabla velocidad-diámetro precalculada. En la figura \ref{fig:relacion_velocidad_diametro} se puede observar la relación velocidad-diámetro para gotas de lluvia. (agregar referencia, {relaciones velocidad-diámetro para gotas de lluvia})
 \end{itemize}
+
+\begin{figure}[!hb]
+    \centering
+    \includegraphics[width=0.9\textwidth]{figures/calculo_carga_electrica.png}
+    \caption{Cálculo de carga eléctrica mediante integración de señales del anillo y placa. Se debe tener en cuenta que la integral es de signo opuesto ya que la señal es inversora.}
+    \label{fig:calculo_carga_electrica}
+\end{figure}
+
+\begin{figure}[!hb]
+    \centering
+    \includegraphics[width=0.9\textwidth]{figures/relacion_velocidad_diametro.png}
+    \caption{Relación velocidad-diámetro para gotas de lluvia.}
+    \label{fig:relacion_velocidad_diametro}
+\end{figure}
+
 
 \item \textbf{Aplicación de filtros de calidad:} Se implementan filtros secuenciales para separar
 los pulsos válidos del ruido:
@@ -319,11 +387,11 @@ anillo y la placa corresponda a una velocidad de caída físicamente plausible
 ambos canales.
 \end{itemize}
 
-\item \textbf{Sistema de penalización y ordenamiento:} Se implementa un sistema de puntuación que evalúa la calidad de cada detección mediante cinco criterios:
+\item \textbf{Sistema de evaluación y ordenamiento:} Se implementa un sistema de puntuación que evalúa la calidad de cada detección mediante cinco criterios:
 
 \begin{itemize}
 
-    \item \textbf{Penal1 y Penal2:} Diferencia cuadrática entre la señal real y dos modelos teóricos distintos
+    \item \textbf{Eval1 y Eval2:} Diferencia cuadrática entre la señal real y dos modelos teóricos distintos
     del pulso.
     Para el pulso del anillo se utilizan dos modelos:
     
@@ -349,14 +417,21 @@ ambos canales.
 
     Estos modelos fueron obtenidos ajustando parámetros mediante inspección visual.
 
-    (agregar figura)
+    En la figura \ref{fig:comparacion_modelos_teoricos} se puede observar la comparación entre señales reales y modelos teóricos para pulsos del anillo y placa.
 
-    \item \textbf{Penal3:} Desviación de la proporción esperada entre cargas del anillo y la placa. Se observó experimentalmente que la carga medida en el anillo es aproximadamente el 87\% de la carga medida en la placa.
-    \item \textbf{Penal4:} Desviación de la proporción esperada del ancho entre los picos de la
+    \begin{figure}[!hb]
+        \centering
+        \includegraphics[width=0.9\textwidth]{figures/comparacion_modelos_teoricos.png}
+        \caption{Comparación entre señales reales (integrales) y modelos teóricos para pulsos del anillo y placa.}
+        \label{fig:comparacion_modelos_teoricos}
+    \end{figure}
+
+    \item \textbf{Eval3:} Desviación de la proporción esperada entre cargas del anillo y la placa. Se observó experimentalmente que la carga medida en el anillo es aproximadamente el 87\% de la carga medida en la placa.
+    \item \textbf{Eval4:} Desviación de la proporción esperada del ancho entre los picos de la
 señal de la placa y el anillo. Se observó experimentalmente que el ancho del pulso de la placa es aproximadamente el 79\% del ancho del pulso del anillo.
-    \item \textbf{Penal5:} Proporción de señal en el rango de ruido (entre -0.02 y 0.02). Este valor 0.02 (tambien usado en la deteccion por umbrales)fue obtenido mediante inspección visual.
+    \item \textbf{Eval5:} Proporción de señal en el rango de ruido (entre -0.02 y 0.02). Este valor 0.02 (tambien usado en la deteccion por umbrales)fue obtenido mediante inspección visual.
 \end{itemize}
-    La suma de estas penalizaciones determina el orden de calidad de los pulsos detectados, permitiendo clasificar los pulsos según su calidad.
+    La suma de estas evaluaciones determina el orden de calidad de los pulsos detectados, permitiendo clasificar los pulsos según su calidad.
 
 \item \textbf{Salida de resultados:} Finalmente, se escriben los datos de todos los pulsos válidos
 en un archivo, incluyendo posición temporal, cargas, velocidad, diámetro y puntuación de calidad.
@@ -691,12 +766,12 @@ El algoritmo funciona de la siguiente manera:
     
     \item \textbf{Análisis del pulso detectado:} Si se encuentran tanto \texttt{c1} como \texttt{c2}, se procede a encontrar los puntos de inicio del pulso, el punto medio de la señal del anillo y el punto de quiebre de la señal de la placa. Con estos datos se calculan todas las propiedades físicas de la gota.
     
-    \item \textbf{Aplicación de filtros de calidad:} Se aplican los filtros de calidad, se computa la penalización y se determina si el pulso es válido.
+    \item \textbf{Aplicación de filtros de calidad:} Se aplican los filtros de calidad, se computa la evaluación y se determina si el pulso es válido.
     
     \item \textbf{Manejo de resultados:} 
     \begin{itemize}
         \item Si el pulso no es válido, se descartan los puntos críticos encontrados y se reinicia la búsqueda en la misma ventana, lo que ayuda a manejar puntos anómalos en la señal.
-        \item Si el pulso es válido, se marcan todos los puntos de la ventana como utilizados y se reinicia la búsqueda en la misma ventana, permitiendo detectar pulsos múltiples cuando estos son muy cortos.
+        \item Si el pulso es válido, se marcan todos los puntos del pulso como utilizados y se reinicia la búsqueda en la misma ventana, permitiendo detectar pulsos múltiples cuando estos son muy cortos.
     \end{itemize}
 \end{enumerate}
 
@@ -718,6 +793,8 @@ Antes de la búsqueda de puntos críticos, el algoritmo preprocesa los datos de 
     \item \textbf{Exclusión de puntos descartados:} Si cualquiera de los puntos \texttt{i} o \texttt{i+1} está marcado como descartado, el valor se establece en 0, excluyendo efectivamente ese punto de la búsqueda.
 \end{itemize}
 
+Este paso se puede implementar con una sola iteración sobre la ventana, resultando en una complejidad de $O(n)$, donde $n$ es el tamaño de la ventana.
+
 \subsubsection{Búsqueda iterativa con MaxMinQueue}
 
 El algoritmo utiliza una \texttt{MaxMinQueue} para mantener una ventana deslizante de los últimos \texttt{nn = 100} valores del sensor de la placa. La búsqueda se realiza de la siguiente manera:
@@ -731,6 +808,8 @@ El algoritmo utiliza una \texttt{MaxMinQueue} para mantener una ventana deslizan
     
     \item \textbf{Cálculo del valor combinado:} Se calcula un valor combinado tomando el mínimo (para pulsos positivos) o máximo (para pulsos negativos) entre el valor del sensor del anillo en la posición \texttt{i} y el mejor valor del sensor de la placa de la cola.
 \end{itemize}
+
+Si analizamos la complejidad de este paso, vemos que es $O(n)$ donde $n$ es el tamaño de la ventana, ya que se realiza una sola iteración sobre la ventana, y mientras se van realizando operaciones de complejidad constante amortizada sobre la MaxMinQueue.
 
 \subsubsection{Selección del mejor candidato}
 
@@ -748,6 +827,17 @@ El algoritmo mantiene un registro del mejor candidato encontrado hasta el moment
 
 Es importante entender que los primeros \texttt{nn = 100} puntos de cada ventana pueden estar marcados como descartados, ya sea porque pertenecen al final de un pulso o porque no pertenecen a ninguno. Esto se hace porque pueden contener el inicio de un pulso que se está procesando en la ventana actual.
 
+\subsubsection{Evaluación del mejor candidato}
+
+Una vez obtenido el mejor candidato, aplicamos los mismos filtros de calidad que en el algoritmo anterior, y calculamos las propiedades físicas de la gota. Debido a la escasez de pulsos en cuanto a la totalidad de los datos, el tiempo de ejecucion de este paso es despreciable.
+
+\subsubsection{Manejo de resultados}
+
+Si encontramos un pulso valido, lo escribimos en el archivo de resultados, y marcamos como utilizados todos los puntos del pulso.
+
+Si encontramos un pulso invalido, se descartan los puntos críticos encontrados (se marcan como utilizados).
+
+La ventana no se avanza hasta que, o bien todos los puntos hayan sido utilizados, o bien no se haya encontrado ningun punto critico para algun pulso (esto puede pasar si la señal se encuentra por debajo del umbral minimo). Cuando alguna de estas condiciones se cumpla, la ventana se avanzara como minimo 300 puntos (dado que los primeros 100 puntos permitimos que esten marcados como utilizados). Esto nos da como resultado una cantidad total de ventanas $O(n / 300) = O(n)$, donde $n$ es la cantidad total de puntos en la señal.
 
 \section{Sistema de Automatización}
 \lhead{}
@@ -788,9 +878,9 @@ Este sistema elimina la necesidad de ejecutar manualmente cada programa por sepa
 
 \section{Resultados}
 
-- Comparativas de tiempo
-- Comparativas de memoria
-- Comparativas de cantidad de gotas detectadas
+- Comparativas de tiempo (agregar figura, {Gráfico comparativo de tiempos de procesamiento entre el sistema original y el nuevo})
+- Comparativas de memoria (agregar figura, {Gráfico comparativo de uso de memoria entre ambos sistemas})
+- Comparativas de cantidad de gotas detectadas (agregar figura, {Gráfico comparativo de precisión en detección de gotas})
 
 Señalar todos los objetivos cumplidos en base a los planteados
 
@@ -806,8 +896,6 @@ Veremos
 
 \section{Referencias}
 
-\begin{enumerate}
-    \item Despues las hago
-\end{enumerate}
+\printbibliography
 
 \end{document}
