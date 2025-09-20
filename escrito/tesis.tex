@@ -127,32 +127,33 @@ Las gotas de lluvia pueden transportar carga eléctrica, la cual se adquiere pri
 
 En este sentido, medir y analizar simultáneamente el tamaño y la carga de las gotas resulta fundamental, ya que nos permite recopilar información que no solo ayuda a comprender la física de las tormentas, sino que también es útil para mejorar herramientas de pronóstico y para el estudio de fenómenos atmosféricos.
 
-En este marco, ya existen instrumentos capaces de realizar estas mediciones, como el descripto en \cite{pereyra2025}, así como programas para procesarlas. Sin embargo, el código disponible actualmente presenta limitaciones tanto en diseño como en rendimiento: está poco modularizado, resulta difícil de mantener y su desempeño es insuficiente para procesar de manera eficiente grandes volúmenes de datos. En esta tesis se propone un nuevo sistema de análisis que resuelve esas limitaciones, mejorando la eficiencia, la escalabilidad y la mantenibilidad del software, y facilitando así la obtención de resultados más completos y confiables.
+En este marco, ya existen instrumentos capaces de realizar estas mediciones, como el descripto en `New experimental device for measuring electrical charge of precipitation particles' \cite{pereyra2025}, así como programas para procesarlas. Sin embargo, el código disponible actualmente presenta limitaciones tanto en diseño como en rendimiento: está poco modularizado, resulta difícil de mantener y su desempeño es insuficiente para procesar de manera eficiente grandes volúmenes de datos. En esta tesis se propone un nuevo sistema de análisis que resuelve esas limitaciones, mejorando la eficiencia, la escalabilidad y la mantenibilidad del software, y facilitando así la obtención de resultados más completos y confiables.
 
 \subsection{Instrumento de Medición}
 \lhead{}
 \rhead{Instrumento de Medición}
 
-El dispositivo utilizado consiste en un anillo de inducción de latón de 6 cm de diámetro y 1.5 cm de longitud, posicionado a 5.7 cm por encima de una placa plana de aluminio de 20 cm de diámetro. Tanto el anillo como la placa están conectados eléctricamente a amplificadores de corriente de alta ganancia con una amplificación de 5 $\cdot$ 10$^8$ V/A. Para proteger contra interferencias electromagnéticas, el anillo, la placa y los amplificadores están encerrados dentro de un contenedor metálico que actúa como jaula de Faraday. La figura \ref{fig:instrumento_medicion} muestra el dispositivo.
+El dispositivo utilizado consiste en un anillo de inducción de latón de 6 cm de diámetro y 1.5 cm de longitud, posicionado a 5.7 cm por encima de una placa plana de aluminio de 20 cm de diámetro. Tanto el anillo como la placa están conectados eléctricamente a amplificadores de corriente de alta ganancia con una amplificación de 5 $\cdot$ 10$^8$ V/A. Para proteger contra interferencias electromagnéticas, el anillo, la placa y los amplificadores están encerrados dentro de un contenedor metálico que actúa como jaula de Faraday. A su vez, los amplificadores están protegidos contra daños por agua al estar asegurados dentro de un recinto impermeable. La figura \ref{fig:instrumento_medicion} muestra el dispositivo.
 
-\begin{figure}[!hb]
+\begin{figure}[H]
     \centering
     \includegraphics[width=0.7\textwidth]{figures/instrumento_de_medicion.png}
     \caption{(a) Diagrama del dispositivo de medición; (b) circuito amplificador inversor de corriente; (c) fotografía del dispositivo en el techo de la Facultad de Matemática, Astronomía, Física y Computación, Universidad Nacional de Córdoba.}
     \label{fig:instrumento_medicion}
 \end{figure}
 
-Los amplificadores están protegidos contra daños por agua al estar asegurados dentro de un recinto impermeable. La jaula de Faraday presenta una abertura ligeramente mayor que el anillo, permitiendo que las gotas de lluvia entren únicamente a través del anillo de inducción. Toda el agua que llega a la placa se drena a través de sus lados y se recolecta en un contenedor de aluminio, que también está situado dentro de la jaula de Faraday pero eléctricamente aislado de ella.
+La jaula de Faraday presenta una abertura ligeramente mayor que el anillo, permitiendo que las gotas de lluvia entren únicamente a través del anillo de inducción. Toda el agua que llega a la placa se drena a través de sus lados y se recolecta en un contenedor de aluminio, que también está situado dentro de la jaula de Faraday pero eléctricamente aislado de ella.
 
 Las gotas cargadas eléctricamente inducen corrientes tanto en el anillo como en la placa. Al caer una gota, primero se acerca al anillo. Al hacerlo, se induce una corriente de la polaridad opuesta a la carga de la gota. Luego, al alejarse, esta polaridad se invierte. Mientras tanto, la gota se acerca a la placa, induciendo también una corriente de polaridad opuesta a la carga de la gota, lo cual culmina en una meseta en la corriente dado que la placa de aluminio absorbe el impacto de la gota y se le transfiere toda la carga a la placa, la cual se disipa en el tiempo. La figura \ref{fig:corriente_gotas} muestra la dinamica de este proceso con el registro de una gota.
 
-\begin{figure}[!hb]
+\begin{figure}[H]
     \centering
     \includegraphics[width=0.7\textwidth]{figures/corriente_gotas.png}
     \caption{Corriente inducida por una gota cargada negativamente en el anillo (puntos solidos) y la placa (puntos huecos).}
     \label{fig:corriente_gotas}
 \end{figure}
 
+% TODO: revisar separacion de \sim
 La recolección de datos se realiza a una tasa de 5 kHz por canal (5000 datos por segundo). Por limitaciones de hardware, no se puede realizar la recolección al mismo tiempo que la escritura a disco, por lo que cada segundo se pierden $\sim 50ms$ de datos. Esto debe ser tenido en cuenta luego para analizar lo obtenido.
 
 \subsection{Procesamiento de Señales}
@@ -160,7 +161,9 @@ La recolección de datos se realiza a una tasa de 5 kHz por canal (5000 datos po
 \rhead{Procesamiento de Señales}
 
 El procesamiento transforma las señales crudas registradas por el instrumento en una lista de gotas con sus propiedades. Para ello se emplean dos programas que se ejecutan de manera secuencial: el primero realiza un preprocesamiento de las señales y el segundo extrae las gotas y calcula sus características.
+
 El fragmento de la señal que forma parte de una gota extraida por el programa, la denominamos `pulso'. Estos pulsos son reconocibles en la señal gracias a la dinamica producida por la interaccion de la gota con el instrumento de medicion.
+
 El flujo general consta de cinco pasos principales:
 
 \begin{enumerate}
@@ -185,7 +188,7 @@ El código actual, aunque funcional, presenta varios problemas tanto en su dise�
 
 En primer lugar, el código consta de pocos archivos con una cantidad de líneas muy grande, lo que dificulta su mantenimiento y modificación. Cualquier cambio requiere revisar y entender todo el código, ya que las responsabilidades no están bien asignadas. Además, hay muchas variables sin nombres descriptivos y constantes hard-codeadas sin referencia alguna, lo que complica aún más la comprensión.
 
-En segundo lugar, para grandes volúmenes de datos, la ejecución es muy lenta. Por ejemplo, para procesar datos de una tormenta de 5 horas de duración (aproximadamente 100M de datos), el programa tarda alrededor de 6 horas en completarse. A esto se suma un consumo de memoria excesivamente alto, lo que obliga a procesar los datos de a partes. A su vez el algoritmo actual no tiene en cuenta los pulsos que quedan en medio de estos cortes, resultando en la pérdida de algunos datos.
+En segundo lugar, para grandes volúmenes de datos, la ejecución es muy lenta. Por ejemplo, para procesar datos de una tormenta de 5 horas de duración (aproximadamente 100 millones de datos), el programa tarda alrededor de 6 horas en completarse. A esto se suma un consumo de memoria excesivamente alto, lo que obliga a procesar los datos de a partes. A su vez el algoritmo actual no tiene en cuenta los pulsos que quedan en medio de estos cortes, resultando en la pérdida de algunos datos.
 
 \subsection{Objetivos}
 \lhead{}
@@ -202,7 +205,7 @@ El nuevo sistema debe ser capaz de procesar grandes volúmenes de datos de maner
 \begin{enumerate}
     \item \textbf{Diseñar una arquitectura modular} que separe las etapas del procesamiento en al menos tres componentes independientes y reutilizables.
 
-    \item \textbf{Optimizar el rendimiento y el uso de memoria} del algoritmo de detección de pulsos para manejar aproximadamente 100 millones de muestras utilizando menos de 2 GB de memoria y reduciendo el tiempo de análisis de una tormenta de 5 horas de 6 horas a aproximadamente 15 minutos, asegurando al menos la misma cantidad de pulsos detectados que el programa original.
+    \item \textbf{Optimizar el rendimiento y el uso de memoria} del algoritmo de detección de pulsos para manejar aproximadamente 100 millones de muestras (que corresponden a una tormenta de 5 horas de duración) utilizando menos de 2 GB de memoria y reduciendo el tiempo de análisis de 6 horas a aproximadamente 15 minutos, asegurando al menos la misma cantidad de pulsos detectados que el programa original.
 
     \item \textbf{Desarrollar un sistema de automatización} que permita ejecutar la cadena completa de análisis con un único comando y sin intervención manual.
 
@@ -222,9 +225,9 @@ La estructura de esta tesis está organizada de manera que primero se establece 
 
     \item Realiza un análisis exhaustivo del código existente, describiendo los algoritmos actuales, identificando problemas de diseño y rendimiento, y motivando la necesidad de refactorización.
 
-    \item Presenta las soluciones técnicas implementadas, incluyendo algoritmos optimizados y estructuras de datos eficientes como la MaxMinQueue.
+    \item Presenta los algoritmos optimizados y estructuras de datos eficientes utilizados en el nuevo sistema.
 
-    \item Describe la implementación en C++ del nuevo sistema modular.
+    \item Describe el nuevo algoritmo de deteccion de pulsos implementado.
 
     \item Presenta el sistema de automatización desarrollado en Python.
 
@@ -261,20 +264,23 @@ Las clases de complejidad más relevantes para este trabajo son:
     \item \textbf{$O(n^2)$ - Cuadrática:} El tiempo es proporcional al cuadrado del tamaño de la entrada. Ejemplo: algoritmos de ordenamiento simples como bubble sort.
 \end{itemize}
 
+En la figura \ref{fig:complejidades_algoritmicas} se puede observar un gráfico comparativo de numero de operaciones vs tamaño de datos para diferentes complejidades algorítmicas
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{figures/complejidades_algoritmicas.png}
+    \caption{Gráfico comparativo de numero de operaciones vs tamaño de datos para diferentes complejidades algorítmicas, en escala logarítmica. }
+    \label{fig:complejidades_algoritmicas}
+\end{figure}
+
 \subsubsection{Importancia en el contexto de este trabajo}
 
 En el procesamiento de señales, donde se manejan millones de puntos de datos, la diferencia entre algoritmos de complejidad $O(n)$ y $O(n^2)$ puede resultar en diferencias de horas en el tiempo de procesamiento. Por ejemplo, para procesar 100 millones de puntos:
 
 \begin{itemize}
-    \item Un algoritmo $O(n)$ podría completarse en minutos
+    \item Un algoritmo $O(n)$ podría completarse en segundos
     \item Un algoritmo $O(n^2)$ podría requerir días o semanas
 \end{itemize}
-
-\begin{figure}[!hb]
-    \centering
-    \includegraphics[width=0.8\textwidth]{figures/complejidades_algoritmicas.png}
-    \caption{Gráfico comparativo de numero de operaciones vs tamaño de datos para diferentes complejidades algorítmicas, en escala logarítmica. }
-\end{figure}
 
 Por esta razón, la optimización de la complejidad computacional es crucial para hacer viable el análisis de grandes volúmenes de datos meteorológicos en tiempo razonable.
 
@@ -327,21 +333,21 @@ detectar pulsos de diferentes amplitudes.
 Para cada umbral, se buscan pares de puntos consecutivos que superen el umbral en ambas señales (anillo y placa), con una separación máxima de 100 puntos
 (`nn=100'). En la figura \ref{fig:sensores_gota} se puede observar un pulso de ejemplo detectado con este algoritmo.
 
-\begin{figure}[!hb]
+\begin{figure}[H]
     \centering
     \includegraphics[width=0.9\textwidth]{figures/sensores_gota.png}
-    \caption{Ejemplo de detección de pulsos mediante umbrales adaptativos. }
+    \caption{En la figura se puede observar un pulso, junto con los maximos consecutivos de cada sensor. Ademas se observan distintos valores de umbrales, y se marca el umbral que encuentra el pulso. }
     \label{fig:sensores_gota}
 \end{figure}
 
 \item \textbf{Localización y delimitación de pulsos:} Una vez detectado un pulso, se determina su inicio retrocediendo hasta encontrar el punto donde la señal se anula. Se
-calcula el punto medio de la señal del anillo avanzando hasta donde se anule la señal, y el punto de quiebre de la señal de la placa mediante análisis de la integral de la misma. En la figura \ref{fig:analisis_gota} se pueden observar estos puntos relevantes.
+calcula el punto medio de la señal del anillo avanzando hasta donde se anula la señal, y el punto de quiebre de la señal de la placa mediante análisis de la integral de la misma. En la figura \ref{fig:analisis_gota} se pueden observar estos puntos relevantes.
 El algoritmo recorta cada pulso en base a la localización de estos puntos, considerando un ancho máximo de $4nn$ puntos.
 
-\begin{figure}[!hb]
+\begin{figure}[H]
     \centering
     \includegraphics[width=0.9\textwidth]{figures/analisis_gota.png}
-    \caption{Puntos relevantes del pulso detectado. }
+    \caption{La figura muestra en el eje x los maximos consecutivos de cada sensor (c1 y c2). Tanto desde c1 como c2, podemos retroceder hasta encontrar el punto donde se anula la señal (u1 y u2 respectivamente) para encontrar los puntos de inicio de cada señal. Finalmente, desde c1 y c2, podemos avanzar para encontrar el punto medio de la señal del anillo (p1) y el punto de quiebre de la señal de la placa (p2) respectivamente.}
     \label{fig:analisis_gota}
 \end{figure}
 
@@ -353,17 +359,18 @@ El algoritmo recorta cada pulso en base a la localización de estos puntos, cons
     conversión correspondiente a la amplificación del instrumento. La integración de la señal se fundamenta en el principio físico de que la carga eléctrica inducida en un conductor es proporcional a la integral temporal de la corriente que fluye a través de él. En la figura \ref{fig:calculo_carga_electrica} se puede observar el cálculo de carga eléctrica mediante integración de señales del anillo y placa. (agregar referencia, {principios de inducción electromagnética})
     \item Velocidad de caída: Se determina mediante la separación conocida entre
     anillo y placa (5.7 cm) dividida por el tiempo que hay entre el punto medio de la señal del anillo y el punto de quiebre de la señal de la placa.
-    \item Diámetro: Se obtiene interpolando en una tabla velocidad-diámetro precalculada. En la figura \ref{fig:relacion_velocidad_diametro} se puede observar la relación velocidad-diámetro para gotas de lluvia. (agregar referencia, {relaciones velocidad-diámetro para gotas de lluvia})
+    % TODO: maybe referencia aca?
+    \item Diámetro: Se obtiene interpolando en una tabla velocidad-diámetro precalculada. En la figura \ref{fig:relacion_velocidad_diametro} se puede observar la relación velocidad-diámetro para gotas de lluvia.
 \end{itemize}
 
-\begin{figure}[!hb]
+\begin{figure}[H]
     \centering
     \includegraphics[width=0.9\textwidth]{figures/calculo_carga_electrica.png}
     \caption{Cálculo de carga eléctrica mediante integración de señales del anillo y placa. Se debe tener en cuenta que la integral es de signo opuesto ya que la señal es inversora.}
     \label{fig:calculo_carga_electrica}
 \end{figure}
 
-\begin{figure}[!hb]
+\begin{figure}[H]
     \centering
     \includegraphics[width=0.9\textwidth]{figures/relacion_velocidad_diametro.png}
     \caption{Relación velocidad-diámetro para gotas de lluvia.}
@@ -391,7 +398,7 @@ ambos canales.
 
 \begin{itemize}
 
-    \item \textbf{Eval1 y Eval2:} Diferencia cuadrática entre la señal real y dos modelos teóricos distintos
+    \item \textbf{Eval1 y Eval2:} Diferencia cuadrática entre la integral de la señal real y dos modelos teóricos distintos
     del pulso.
     Para el pulso del anillo se utilizan dos modelos:
     
@@ -419,17 +426,17 @@ ambos canales.
 
     En la figura \ref{fig:comparacion_modelos_teoricos} se puede observar la comparación entre señales reales y modelos teóricos para pulsos del anillo y placa.
 
-    \begin{figure}[!hb]
+    \begin{figure}[H]
         \centering
         \includegraphics[width=0.9\textwidth]{figures/comparacion_modelos_teoricos.png}
         \caption{Comparación entre señales reales (integrales) y modelos teóricos para pulsos del anillo y placa.}
         \label{fig:comparacion_modelos_teoricos}
     \end{figure}
 
-    \item \textbf{Eval3:} Desviación de la proporción esperada entre cargas del anillo y la placa. Se observó experimentalmente que la carga medida en el anillo es aproximadamente el 87\% de la carga medida en la placa.
+    \item \textbf{Eval3:} Desviación de la proporción esperada entre cargas del anillo y la placa. Experimentalmente se observo que la carga medida en el anillo es aproximadamente el 87\% de la carga medida en la placa, por lo que se mide la desviacion de esta proporcion.
     \item \textbf{Eval4:} Desviación de la proporción esperada del ancho entre los picos de la
-señal de la placa y el anillo. Se observó experimentalmente que el ancho del pulso de la placa es aproximadamente el 79\% del ancho del pulso del anillo.
-    \item \textbf{Eval5:} Proporción de señal en el rango de ruido (entre -0.02 y 0.02). Este valor 0.02 (tambien usado en la deteccion por umbrales)fue obtenido mediante inspección visual.
+señal de la placa y el anillo. Experimentalmente se observo que el ancho del pulso de la placa es aproximadamente el 79\% del ancho del pulso del anillo, por lo que se mide la desviacion de esta proporcion.
+    \item \textbf{Eval5:} Proporción de señal en el rango de ruido (entre -0.02 y 0.02). Este valor 0.02 (tambien usado en la deteccion por umbrales) fue obtenido mediante inspección visual.
 \end{itemize}
     La suma de estas evaluaciones determina el orden de calidad de los pulsos detectados, permitiendo clasificar los pulsos según su calidad.
 
@@ -462,8 +469,9 @@ imposible determinar qué representa cada una sin leer todo el código. Ademas, 
 Al analizar el rendimiento del código, se encontraron dos areas de potenciales mejoras:
 
 \begin{itemize}
+    % TODO: fix reference to listing
     \item \textbf{Remoción de offset:} El algoritmo de remoción de offset es muy ineficiente. Como se puede observar en la implementacion \ref{lst:codigo_remocion_offset}, para cada punto, se hace una suma de 5001 valores divididos por 5001,
-    resultando en una complejidad $$O(5001n) = O(n)$$. Obviamente se trata de una complejidad lineal, pero no solo que la constante es altisima por el factor de 5001, sino que tambien se realizan 5001 divisiones por cada punto.
+    resultando en una complejidad $$O(5001n) = O(n)$$ Obviamente se trata de una complejidad lineal, pero no solo que la constante es altisima por el factor de 5001, sino que tambien se realizan 5001 divisiones por cada punto, que no es la operacion mas eficiente en un procesador.
 
     \begin{lstlisting}[language=Fortran, label=lst:codigo_remocion_offset]
 ! n = 5000
@@ -487,7 +495,7 @@ Al analizar el rendimiento del código, se encontraron dos areas de potenciales 
     \end{lstlisting}
 
 
-    \item \textbf{Detección de pulsos:} Si analizamos la complejidad de la implentacion de este algoritmo, podemos ver que para cada umbral (1000), se revisa todo el array de la señales. Si dos puntos consecutivos superan el umbral en la primera señal, se revisa hasta un total de 100 puntos en la segunda señal. Esto resulta en una complejidad $$O(\#umbrales * \#puntos * 100) = O(100000 * \#puntos) = O(\#puntos)$$. Identico al caso anterior, se trata de una complejidad lineal, pero con una constante extremadamente alta.
+    \item \textbf{Detección de pulsos:} Si analizamos la complejidad de la implentacion de este algoritmo, podemos ver que para cada umbral (1000 umbrales), se revisa todo el array de la señales. Si dos puntos consecutivos superan el umbral en la primera señal, se revisa hasta un total de 100 puntos en la segunda señal. Esto resulta en una complejidad $$O(\#umbrales * \#puntos * 100) = O(100000 * \#puntos) = O(\#puntos)$$ Identico al caso anterior, se trata de una complejidad lineal, pero con una constante extremadamente alta.
 \end{itemize}
 
 \subsection{Motivación de la refactorización}
@@ -513,6 +521,7 @@ El programa `promedio\_general.f', como se menciono anteriormente, se encarga ta
 
 Basicamente, primero el algoritmo llena los huecos con un valor constante `10', para luego buscar los bordes de estos huecos y completarlos con una interpolacion lineal. En los comentarios del codigo, se menciona que esta interpolacion lineal se hace entre los promedios de los 1000 puntos anteriores y posteriores al hueco. Sin embargo, en la implementacion, se utiliza los valores de los extremos del huecos.
 
+% TODO: fix reference to listing
 El código \ref{lst:codigo_error} muestra la implementación del algoritmo de rellenado de huecos. Como se puede observar, los comentarios indican que se debe usar el promedio de 1000 puntos, pero la implementación utiliza directamente los valores de los bordes (`a1', `a2', `b1', `b2').
 
 Este error tiene un impacto significativo en los pasos posteriores del procesamiento, particularmente en la remoción del offset. Al rellenar los huecos utilizando una interpolación entre dos valores puntuales, en lugar de promedios de ventanas más amplias, se pueden introducir distorsiones importantes. Esto ocurre especialmente cuando los valores utilizados para la interpolación corresponden a puntos críticos que difieren considerablemente del promedio de la señal en ese momento.
@@ -802,9 +811,9 @@ El algoritmo utiliza una \texttt{MaxMinQueue} para mantener una ventana deslizan
 \begin{itemize}
     \item \textbf{Inicialización:} Se inicializa una \texttt{MaxMinQueue} vacía y se comienza la búsqueda desde el final de la ventana hacia el inicio.
     
-    \item \textbf{Actualización de la cola:} En cada iteración, se agrega el valor actual del sensor de la placa a la cola. Si la cola excede \texttt{nn} elementos, se elimina el elemento más antiguo.
+    \item \textbf{Actualización de la cola:} En cada iteración, se agrega el \texttt{value} actual del sensor de la placa a la cola. Si la cola excede \texttt{nn} elementos, se elimina el elemento más antiguo.
     
-    \item \textbf{Obtención del mejor valor:} Para cada posición \texttt{i < DROP\_SIZE} del sensor del anillo, se obtiene el mejor valor de la cola (máximo para pulsos positivos, mínimo para pulsos negativos).
+    \item \textbf{Obtención del mejor valor:} Para cada posición \texttt{i <\ DROP\_SIZE} del sensor del anillo, se obtiene el mejor valor de la cola (máximo para pulsos positivos, mínimo para pulsos negativos).
     
     \item \textbf{Cálculo del valor combinado:} Se calcula un valor combinado tomando el mínimo (para pulsos positivos) o máximo (para pulsos negativos) entre el valor del sensor del anillo en la posición \texttt{i} y el mejor valor del sensor de la placa de la cola.
 \end{itemize}
@@ -893,8 +902,6 @@ Despues vemos
 \section{Conclusiones}
 
 Veremos 
-
-\section{Referencias}
 
 \printbibliography
 
