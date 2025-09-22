@@ -153,8 +153,7 @@ Las gotas cargadas eléctricamente inducen corrientes tanto en el anillo como en
     \label{fig:corriente_gotas}
 \end{figure}
 
-% TODO: revisar separacion de \sim
-La recolección de datos se realiza a una tasa de 5 kHz por canal (5000 datos por segundo). Por limitaciones de hardware, no se puede realizar la recolección al mismo tiempo que la escritura a disco, por lo que cada segundo se pierden $\sim 50ms$ de datos. Esto debe ser tenido en cuenta luego para analizar lo obtenido.
+La recolección de datos se realiza a una tasa de 5 kHz por canal (5000 datos por segundo). Por limitaciones de hardware, no se puede realizar la recolección al mismo tiempo que la escritura a disco, por lo que cada segundo se pierden aproximadamente $50ms$ de datos. Esto debe ser tenido en cuenta luego para analizar lo obtenido.
 
 \subsection{Procesamiento de Señales}
 \lhead{}
@@ -359,8 +358,7 @@ El algoritmo recorta cada pulso en base a la localización de estos puntos, cons
     conversión correspondiente a la amplificación del instrumento. La integración de la señal se fundamenta en el principio físico de que la carga eléctrica inducida en un conductor es proporcional a la integral temporal de la corriente que fluye a través de él. En la figura \ref{fig:calculo_carga_electrica} se puede observar el cálculo de carga eléctrica mediante integración de señales del anillo y placa. (agregar referencia, {principios de inducción electromagnética})
     \item Velocidad de caída: Se determina mediante la separación conocida entre
     anillo y placa (5.7 cm) dividida por el tiempo que hay entre el punto medio de la señal del anillo y el punto de quiebre de la señal de la placa.
-    % TODO: maybe referencia aca?
-    \item Diámetro: Se obtiene interpolando en una tabla velocidad-diámetro precalculada. En la figura \ref{fig:relacion_velocidad_diametro} se puede observar la relación velocidad-diámetro para gotas de lluvia.
+    \item Diámetro: Se obtiene interpolando en una tabla velocidad-diámetro precalculada. En la figura \ref{fig:relacion_velocidad_diametro} se puede observar la relación velocidad-diámetro para gotas de lluvia. (agregar referencia, {como se calculo esta tabla})
 \end{itemize}
 
 \begin{figure}[H]
@@ -765,24 +763,23 @@ El nuevo algoritmo de detección de pulsos se basa en una estrategia de búsqued
 El algoritmo funciona de la siguiente manera:
 
 \begin{enumerate}
-    \item \textbf{Búsqueda del punto crítico del anillo:} En una ventana de datos, se busca el punto crítico de mayor valor absoluto del sensor del anillo en los primeros \texttt{DROP\_SIZE} puntos, denominado \texttt{c1}. Si no se encuentra ningún punto que supere el umbral mínimo, se concluye que no existe un pulso con punto crítico del anillo en la primera mitad de la ventana.
+    \item \textbf{Búsqueda de los puntos críticos del pulso:} En una ventana de datos, se buscan los puntos críticos del pulso, que son los puntos de mayor valor absoluto del sensor del anillo y del sensor de la placa, denominados \texttt{c1} y \texttt{c2} respectivamente. Para evitar escoger puntos anómalos, se toma minimo (maximo para pulsos negativos) entre los puntos \texttt{i} e \texttt{i+1} del sensor del anillo y del sensor de la placa. La separacion maxima entre los puntos criticos es de \texttt{nn = 100} puntos, y ademas esta busqueda se hace con la restriccion de que \texttt{c1 <\ DROP\_SIZE} (ya que si \texttt{c1} se acerca al borde derecho, el pulso podria verse truncado).
     
-    \item \textbf{Búsqueda del punto crítico de la placa:} Si se encuentra \texttt{c1}, se busca el punto crítico del sensor de la placa en los siguientes \texttt{nn = 100} puntos hacia adelante, seleccionando el de mayor valor absoluto que tenga el mismo signo que el punto crítico del anillo, denominado \texttt{c2}.
-    
-    \item \textbf{Validación de la detección:} Si no se encuentra \texttt{c2}, se concluye que no hay un pulso válido en la primera mitad de la ventana. En ambos casos (ausencia de \texttt{c1} o \texttt{c2}), se descartan 400 puntos como candidatos y se avanza la ventana.
-    
-    \item \textbf{Análisis del pulso detectado:} Si se encuentran tanto \texttt{c1} como \texttt{c2}, se procede a encontrar los puntos de inicio del pulso, el punto medio de la señal del anillo y el punto de quiebre de la señal de la placa. Con estos datos se calculan todas las propiedades físicas de la gota.
+    \item \textbf{Análisis del pulso detectado:} Si se encuentran \texttt{c1} y \texttt{c2}, se procede a encontrar los puntos de inicio del pulso, el punto medio de la señal del anillo y el punto de quiebre de la señal de la placa. Con estos datos se calculan todas las propiedades físicas de la gota (carga, velocidad, diametro, etc.).
     
     \item \textbf{Aplicación de filtros de calidad:} Se aplican los filtros de calidad, se computa la evaluación y se determina si el pulso es válido.
     
     \item \textbf{Manejo de resultados:} 
     \begin{itemize}
-        \item Si el pulso no es válido, se descartan los puntos críticos encontrados y se reinicia la búsqueda en la misma ventana, lo que ayuda a manejar puntos anómalos en la señal.
+        \item Si no se encuentran \texttt{c1} y \texttt{c2}, se descartan \texttt{DROP\_SIZE} puntos como candidatos y se avanza la ventana.
+        \item Si el pulso no es válido, se descartan solo los puntos \texttt{c1} y \texttt{c2} (y sus siguientes) encontrados y se reinicia la búsqueda en la misma ventana, lo que ayuda a manejar puntos anómalos en la señal.
         \item Si el pulso es válido, se marcan todos los puntos del pulso como utilizados y se reinicia la búsqueda en la misma ventana, permitiendo detectar pulsos múltiples cuando estos son muy cortos.
     \end{itemize}
 \end{enumerate}
 
-Esta estrategia iterativa permite un procesamiento más eficiente y robusto, ya que aprovecha la estructura conocida de los pulsos y maneja adecuadamente los casos de pulsos múltiples y señales con ruido.
+Al avanzar la ventana, se permite que hasta los primeros \texttt{nn = 100} puntos de la ventana se encuentren marcados como utilizados, ya que pueden contener el inicio de un pulso que se va a procesar en la siguiente ventana. Esto hace que la ventana siempre avance como minimo 300 puntos (ya que la busqueda agota todos los puntos criticos de la ventana, y en el ultimo paso no se encontrara ninguno, marcando asi \texttt{DROP\_SIZE} puntos como utilizados).
+
+Esta estrategia iterativa tiene una gran ventaja en cuanto a la anterior, ya que una vez encontrados los puntos relevantes del pulso, analiza si la gota es valida o no, evitando descartar puntos que no pertenecen a ningun pulso.
 
 \subsection{Detección de puntos críticos}
 
@@ -811,7 +808,7 @@ El algoritmo utiliza una \texttt{MaxMinQueue} para mantener una ventana deslizan
     
     \item \textbf{Actualización de la cola:} En cada iteración, se agrega el \texttt{value} actual del sensor de la placa a la cola. Si la cola excede \texttt{nn} elementos, se elimina el elemento más antiguo.
     
-    \item \textbf{Obtención del mejor valor:} Para cada posición \texttt{i <\ DROP\_SIZE} del sensor del anillo, se obtiene el mejor valor de la cola (máximo para pulsos positivos, mínimo para pulsos negativos).
+    \item \textbf{Obtención del mejor valor:} Para cada posición \texttt{i <\ DROP\_SIZE} del sensor del anillo, se obtiene el mejor valor de la cola (máximo para pulsos positivos, mínimo para pulsos negativos). Con este paso, estamos calculando efectivamente el mejor valor \texttt{c2} para cada \texttt{c1 = i}.
     
     \item \textbf{Cálculo del valor combinado:} Se calcula un valor combinado tomando el mínimo (para pulsos positivos) o máximo (para pulsos negativos) entre el valor del sensor del anillo en la posición \texttt{i} y el mejor valor del sensor de la placa de la cola.
 \end{itemize}
@@ -830,10 +827,6 @@ El algoritmo mantiene un registro del mejor candidato encontrado hasta el moment
     \item \textbf{Actualización del mejor candidato:} Si el candidato actual es mejor que el anterior, se actualiza la información del mejor candidato, incluyendo las posiciones de los puntos críticos \texttt{c1} y \texttt{c2}.
 \end{itemize}
 
-\subsubsection{Consideraciones sobre puntos descartados}
-
-Es importante entender que los primeros \texttt{nn = 100} puntos de cada ventana pueden estar marcados como descartados, ya sea porque pertenecen al final de un pulso o porque no pertenecen a ninguno. Esto se hace porque pueden contener el inicio de un pulso que se está procesando en la ventana actual.
-
 \subsubsection{Evaluación del mejor candidato}
 
 Una vez obtenido el mejor candidato, aplicamos los mismos filtros de calidad que en el algoritmo anterior, y calculamos las propiedades físicas de la gota. Debido a la escasez de pulsos en cuanto a la totalidad de los datos, el tiempo de ejecucion de este paso es despreciable.
@@ -845,6 +838,20 @@ Si encontramos un pulso valido, lo escribimos en el archivo de resultados, y mar
 Si encontramos un pulso invalido, se descartan los puntos críticos encontrados (se marcan como utilizados).
 
 La ventana no se avanza hasta que, o bien todos los puntos hayan sido utilizados, o bien no se haya encontrado ningun punto critico para algun pulso (esto puede pasar si la señal se encuentra por debajo del umbral minimo). Cuando alguna de estas condiciones se cumpla, la ventana se avanzara como minimo 300 puntos (dado que los primeros 100 puntos permitimos que esten marcados como utilizados). Esto nos da como resultado una cantidad total de ventanas $O(n / 300) = O(n)$, donde $n$ es la cantidad total de puntos en la señal.
+
+\subsubsection{Análisis de complejidad}
+
+Habiendo analizado las complejidades de cada componente del algoritmo por separado, podemos determinar la complejidad total del sistema.
+
+El algoritmo procesa $O(n/300)$ ventanas, donde $n$ es el número total de puntos en la señal. En cada ventana de tamaño $V = 800$ puntos, se realizaran busquedas hasta agotar los cantidatos a puntos criticos.
+
+Durante cada búsqueda, se marcan como mínimo 4 puntos como utilizados. Esto establece una cota superior de $300/4 = 75$ búsquedas por ventana. En la práctica, cuando se detectan pulsos válidos (que obviamente abarcan más de 4 puntos), se reduce significativamente el número real de búsquedas por ventana.
+
+Cada operación de búsqueda individual tiene complejidad $O(V)$, donde $V$ es el tamaño de la ventana (800 puntos). Por tanto, la complejidad total del algoritmo es:
+
+$$O\left(\frac{n}{300}\right) \times 75 \times 800 = O(200n) = O(n)$$
+
+Esta reduccion de constante representa una mejora sustancial respecto al algoritmo original, cuya constante era de $100000$.
 
 \section{Sistema de Automatización}
 \lhead{}
