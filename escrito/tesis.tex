@@ -469,11 +469,10 @@ imposible determinar qué representa cada una sin leer todo el código. Ademas, 
 Al analizar el rendimiento del código, se encontraron dos areas de potenciales mejoras:
 
 \begin{itemize}
-    % TODO: fix reference to listing
-    \item \textbf{Remoción de offset:} El algoritmo de remoción de offset es muy ineficiente. Como se puede observar en la implementacion \ref{lst:codigo_remocion_offset}, para cada punto, se hace una suma de 5001 valores divididos por 5001,
+    \item \textbf{Remoción de offset:} El algoritmo de remoción de offset es muy ineficiente. Como se puede observar en la implementación \nameref{lst:codigo_remocion_offset}, para cada punto, se hace una suma de 5001 valores divididos por 5001,
     resultando en una complejidad $$O(5001n) = O(n)$$ Obviamente se trata de una complejidad lineal, pero no solo que la constante es altisima por el factor de 5001, sino que tambien se realizan 5001 divisiones por cada punto, que no es la operacion mas eficiente en un procesador.
 
-    \begin{lstlisting}[language=Fortran, label=lst:codigo_remocion_offset]
+    \begin{lstlisting}[language=Fortran, label=lst:codigo_remocion_offset, caption={buscador\_de\_gotas.f - Algoritmo ineficiente de remoción de offset}]
 ! n = 5000
 ! ww es la cantidad de puntos en la señal
 ! w1 y w2 son los arreglos de las señales
@@ -521,12 +520,11 @@ El programa `promedio\_general.f', como se menciono anteriormente, se encarga ta
 
 Basicamente, primero el algoritmo llena los huecos con un valor constante `10', para luego buscar los bordes de estos huecos y completarlos con una interpolacion lineal. En los comentarios del codigo, se menciona que esta interpolacion lineal se hace entre los promedios de los 1000 puntos anteriores y posteriores al hueco. Sin embargo, en la implementacion, se utiliza los valores de los extremos del huecos.
 
-% TODO: fix reference to listing
-El código \ref{lst:codigo_error} muestra la implementación del algoritmo de rellenado de huecos. Como se puede observar, los comentarios indican que se debe usar el promedio de 1000 puntos, pero la implementación utiliza directamente los valores de los bordes (`a1', `a2', `b1', `b2').
+El código \nameref{lst:codigo_error} muestra la implementación del algoritmo de rellenado de huecos. Como se puede observar, los comentarios indican que se debe usar el promedio de 1000 puntos, pero la implementación utiliza directamente los valores de los bordes (`a1', `a2', `b1', `b2').
 
 Este error tiene un impacto significativo en los pasos posteriores del procesamiento, particularmente en la remoción del offset. Al rellenar los huecos utilizando una interpolación entre dos valores puntuales, en lugar de promedios de ventanas más amplias, se pueden introducir distorsiones importantes. Esto ocurre especialmente cuando los valores utilizados para la interpolación corresponden a puntos críticos que difieren considerablemente del promedio de la señal en ese momento.
 
-\begin{lstlisting}[language=Fortran, label=lst:codigo_error]
+\begin{lstlisting}[language=Fortran, label=lst:codigo_error, caption={promedio\_general.f - Error en implementación de rellenado de huecos}]
 * Busca donde esta un punto que tiene valor de 10. y 
 * va hacia atras para encontrar el primer que no es
 * igual a 10.
@@ -591,9 +589,9 @@ El algoritmo de ventana deslizante (sliding window) es una técnica de optimizac
 
 En nuestro caso, el problema de calcular el promedio móvil para remover el offset se ajusta perfectamente a esta técnica: necesitamos mantener una ventana de tamaño fijo que se mueve a través de la señal, calculando el promedio en cada punto. En lugar de recalcular la suma completa cada vez que la ventana se mueve (lo que requeriría sumar todos los elementos nuevamente), podemos mantener una suma acumulada que actualizamos incrementalmente.
 
-Si analizamos la implementacion \ref{lst:codigo_promedio_movil}, vemos que el array de datos se recorre una sola vez. En cada iteración, solo se realiza una suma para agregar el nuevo valor a la ventana y una resta para eliminar el valor más antiguo cuando la ventana está completa. De esta manera, la suma total de la ventana se mantiene actualizada de forma incremental, requiriendo solo dos operaciones por iteración independientemente del tamaño de la ventana. El promedio se calcula dividiendo esta suma por el tamaño de la ventana y se resta del punto central. Como resultado, tenemos un algoritmo de complejidad $O(n)$ con una constante muy baja, ya que hacemos una sola division por punto, y dos operaciones para mantener la suma actualizada.
+Si analizamos la implementación \nameref{lst:codigo_promedio_movil}, vemos que el array de datos se recorre una sola vez. En cada iteración, solo se realiza una suma para agregar el nuevo valor a la ventana y una resta para eliminar el valor más antiguo cuando la ventana está completa. De esta manera, la suma total de la ventana se mantiene actualizada de forma incremental, requiriendo solo dos operaciones por iteración independientemente del tamaño de la ventana. El promedio se calcula dividiendo esta suma por el tamaño de la ventana y se resta del punto central. Como resultado, tenemos un algoritmo de complejidad $O(n)$ con una constante muy baja, ya que hacemos una sola division por punto, y dos operaciones para mantener la suma actualizada.
 
-\begin{lstlisting}[language=C++, label=lst:codigo_promedio_movil]
+\begin{lstlisting}[language=C++, label=lst:codigo_promedio_movil, caption={normalizer.cpp - Algoritmo optimizado de ventana deslizante con complejidad O(n)}]
     double sumSensor1 = 0.0;
     double sumSensor2 = 0.0;
     std::vector<double> avgSensor1, avgSensor2;
@@ -633,7 +631,7 @@ La estructura de datos \textit{MinQueue} es una cola que mantiene el elemento m�
 
 La MinQueue utiliza una cola principal para almacenar los elementos y una cola auxiliar (deque) para mantener los candidatos al mínimo. La clave del algoritmo radica en mantener la cola auxiliar en orden creciente, para que el primer elemento siempre sea el mínimo actual.
 
-\begin{lstlisting}[language=C++, label=lst:minqueue_simple]
+\begin{lstlisting}[language=C++, label=lst:minqueue_simple, caption={MaxMinQueue.hpp - Implementación básica de MinQueue con complejidad O(1) amortizado}]
 class MinQueue {
 private:
     std::queue<int> mainQueue;
@@ -695,7 +693,7 @@ public:
 
 Es trivial adaptar la MinQueue para obtener una MaxQueue: simplemente cambiamos la condición de comparación en el bucle while de `$>$' a `$<$', manteniendo el deque auxiliar en orden decreciente en lugar de creciente.
 
-\begin{lstlisting}[language=C++, label=lst:maxqueue_simple]
+\begin{lstlisting}[language=C++, label=lst:maxqueue_simple, caption={MaxMinQueue.hpp - Adaptación de MinQueue para MaxQueue}]
 void push(int value) {
     mainQueue.push(value);
     
@@ -711,7 +709,7 @@ void push(int value) {
 
 Para mantener simultáneamente el mínimo y el máximo, utilizamos dos deques auxiliares independientes: uno para el mínimo (orden decreciente) y otro para el máximo (orden creciente). Esta extensión mantiene la complejidad $O(1)$ amortizado para todas las operaciones, aunque requiere el doble de espacio auxiliar.
 
-\begin{lstlisting}[language=C++, label=lst:maxminqueue_simple]
+\begin{lstlisting}[language=C++, label=lst:maxminqueue_simple, caption={MaxMinQueue.hpp - Implementación completa de MaxMinQueue con dos deques auxiliares}]
 class MaxMinQueue {
 private:
     std::queue<int> mainQueue;
