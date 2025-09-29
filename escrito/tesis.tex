@@ -352,10 +352,10 @@ El algoritmo recorta cada pulso en base a la localización de estos puntos, cons
 
 \begin{itemize}
     \item Carga eléctrica: Se integra la señal de ambos canales y se aplica el factor de
-    conversión correspondiente a la amplificación del instrumento. La integración de la señal se fundamenta en el principio físico de que la carga eléctrica inducida en un conductor es proporcional a la integral temporal de la corriente que fluye a través de él. En la figura \ref{fig:calculo_carga_electrica} se puede observar el cálculo de carga eléctrica mediante integración de señales del anillo y placa. (agregar referencia, {principios de inducción electromagnética})
+    conversión correspondiente a la amplificación del instrumento. La integración de la señal se fundamenta en el principio físico de que la carga eléctrica inducida en un conductor es proporcional a la integral temporal de la corriente que fluye a través de él. En la figura \ref{fig:calculo_carga_electrica} se puede observar el cálculo de carga eléctrica mediante integración de señales del anillo y placa.
     \item Velocidad de caída: Se determina mediante la separación conocida entre
     anillo y placa (5.7 cm) dividida por el tiempo que hay entre el punto medio de la señal del anillo y el punto de quiebre de la señal de la placa.
-    \item Diámetro: Se obtiene interpolando en una tabla velocidad-diámetro precalculada. En la figura \ref{fig:relacion_velocidad_diametro} se puede observar la relación velocidad-diámetro para gotas de lluvia. (agregar referencia, {como se calculo esta tabla})
+    \item Diámetro: Se obtiene interpolando en una tabla velocidad-diámetro precalculada. En la figura \ref{fig:relacion_velocidad_diametro} se puede observar la relación velocidad-diámetro para gotas de lluvia.
 \end{itemize}
 
 \begin{figure}[H]
@@ -373,38 +373,38 @@ El algoritmo recorta cada pulso en base a la localización de estos puntos, cons
 \end{figure}
 
 
-\item \textbf{Aplicación de filtros de calidad:} Se implementan filtros secuenciales para separar
-los pulsos válidos del ruido:
+\item \textbf{Aplicación de filtros de calidad:} Durante el proceso de detección, el algoritmo identifica tanto pulsos validos (que corresponden a gotas de lluvia reales), asi como falsos positivos claros (que corresponden a ruido o detecciones espurias)
+
+Para resolver este problema, se implementan filtros de calidad para separar los pulsos válidos de los que no lo son. Estos filtros eliminan detecciones que no cumplen con propiedades fisicas esperadas para gotas de lluvia reales. Los filtros se aplican de manera progresiva, donde cada etapa elimina un tipo específico de detección errónea:
 
 \begin{itemize}
 
 \item \textbf{Filtros de carga:} La carga de la gota tanto en el anillo como en la placa tiene
 que ser mayor a un valor mínimo (`qminima=0.2') (en valor absoluto).
 
+\item \textbf{Filtro de signo:} Se verifica que la carga del pulso sea del mismo signo en
+ambos canales.
+
 \item \textbf{Filtro de velocidad:} Se verifica que la distancia temporal entre los picos del
 anillo y la placa corresponda a una velocidad de caída físicamente plausible
 (entre 0.7125 y 11.4 m/s).
 
-\item \textbf{Filtro de signo:} Se verifica que la carga del pulso sea del mismo signo en
-ambos canales.
 \end{itemize}
 
-\item \textbf{Sistema de evaluación y ordenamiento:} Se implementa un sistema de puntuación que evalúa la calidad de cada detección mediante cinco criterios:
+\item \textbf{Sistema de evaluación y ordenamiento:} Una vez aplicados los filtros de calidad, las detecciones restantes corresponden principalmente a gotas. Algunas de estas presentan señales muy limpias y bien definidas, mientras que otras pueden tener pequeñas distorsiones, ruido residual, o características que sugieren mediciones menos precisas.
+
+Para clasificar las gotas obtenidas, se implementa un sistema de puntuación que evalúa la calidad de cada detección mediante cinco criterios independientes. Este sistema fue desarrollado mediante ajuste manual y experimental, donde se analizaron visualmente detecciones para identificar patrones que distinguían entre gotas de alta y baja calidad.
 
 \begin{itemize}
 
     \item \textbf{Eval1 y Eval2:} Diferencia cuadrática entre la integral de la señal real y dos modelos teóricos distintos
     del pulso.
-    Para el pulso del anillo se utilizan dos modelos:
+    Para el pulso del anillo se utiliza el siguiente modelo:
     
     \begin{equation}
         a_1(t) = \frac{30.6 \cdot q_1}{\left(30.6^{1/1.7} + \left(\frac{v}{50.7}\right)^2(t-p_1)^2\right)^{1.7}}
     \end{equation}
     
-    \begin{equation}
-        b_1(t) = q_1 \cdot e^{-\frac{(t-p_1)^2}{p_1^2} \cdot 3.62}
-    \end{equation}
-
     Para el pulso de la placa se utiliza un modelo por partes:
 
     \begin{equation}
@@ -417,8 +417,6 @@ ambos canales.
 
     donde $q_1$ y $q_2$ son las cargas medidas en el anillo y la placa respectivamente, $v$ es la velocidad de la gota, $p_1$ es el punto medio del pulso del anillo, $p_2$ es el punto de quiebre de la integral del pulso de la placa, y $u_2$ es el punto inicial del pulso de la placa.
 
-    Estos modelos fueron obtenidos ajustando parámetros mediante inspección visual.
-
     En la figura \ref{fig:comparacion_modelos_teoricos} se puede observar la comparación entre señales reales y modelos teóricos para pulsos del anillo y placa.
 
     \begin{figure}[H]
@@ -429,12 +427,28 @@ ambos canales.
     \end{figure}
 
     \item \textbf{Eval3:} Desviación de la proporción esperada entre cargas del anillo y la placa. Experimentalmente se observo que la carga medida en el anillo es aproximadamente el 87\% de la carga medida en la placa, por lo que se mide la desviacion de esta proporcion.
+
+    \begin{equation}
+        penal2(l) = \left|\frac{q_1}{q} - 0.87 \cdot \frac{q_2}{q}\right|
+    \end{equation}
+
+    donde $q$ esta definido como $q = \frac{q1 / 0.87 + q2}{2}$
+    
     \item \textbf{Eval4:} Desviación de la proporción esperada del ancho entre los picos de la
 señal de la placa y el anillo. Experimentalmente se observo que el ancho del pulso de la placa es aproximadamente el 79\% del ancho del pulso del anillo, por lo que se mide la desviacion de esta proporcion.
-    \item \textbf{Eval5:} Proporción de señal en el rango de ruido (entre -0.02 y 0.02). Este valor 0.02 (tambien usado en la deteccion por umbrales) fue obtenido mediante inspección visual.
-\end{itemize}
-    La suma de estas evaluaciones determina el orden de calidad de los pulsos detectados, permitiendo clasificar los pulsos según su calidad.
 
+    \begin{equation}
+        penal3(l) = \left|\frac{p_1}{p} - 0.79 * \frac{p_2}{p}\right|
+    \end{equation}
+
+    donde $p$ esta definido como $p = \frac{p_1 / 0.79 + p_2}{2}$
+
+    \item \textbf{Eval5:} Proporción de señal en el rango de ruido (entre -0.02 y 0.02). Para esto se computan los promedios de cada señal, y se cuentan los puntos que, cuando se les resta el promedio, estan entre -0.02 y 0.02.
+
+\end{itemize}
+
+    Las evaluaciones se combinan linealmente con pesos para finalmente obtener una puntuacion total, que esta en el range $[0, 20]$. Mientras mas chico sea el valor de la puntuacion total, mejor es la calidad de la gota.
+    
 \item \textbf{Salida de resultados:} Finalmente, se escriben los datos de todos los pulsos válidos
 en un archivo, incluyendo posición temporal, cargas, velocidad, diámetro y puntuación de calidad.
 
