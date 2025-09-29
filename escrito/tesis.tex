@@ -218,19 +218,17 @@ El nuevo sistema debe ser capaz de procesar grandes volúmenes de datos de maner
 La estructura de esta tesis está organizada de manera que primero se establece el contexto y la motivación del trabajo, luego se presenta el análisis del sistema existente, y finalmente se describe la solución propuesta y sus resultados. El documento se divide en las siguientes secciones:
 
 \begin{enumerate}
-    \item Introduce el problema de análisis de gotas cargadas eléctricamente, describe el instrumento de medición utilizado y establece los objetivos del trabajo.
+    \item Presenta los conceptos previos necesarios, incluyendo una introducción al análisis de complejidad computacional que fundamenta las optimizaciones posteriores. (Sección 2)
 
-    \item Presenta los conceptos previos necesarios, incluyendo una introducción al análisis de complejidad computacional que fundamenta las optimizaciones posteriores.
+    \item Realiza un análisis exhaustivo del código existente, describiendo los algoritmos actuales, identificando problemas de diseño y rendimiento, y motivando la necesidad de refactorización. (Sección 3)
 
-    \item Realiza un análisis exhaustivo del código existente, describiendo los algoritmos actuales, identificando problemas de diseño y rendimiento, y motivando la necesidad de refactorización.
+    \item Presenta los algoritmos optimizados y estructuras de datos eficientes utilizados en el nuevo sistema. (Sección 4)
 
-    \item Presenta los algoritmos optimizados y estructuras de datos eficientes utilizados en el nuevo sistema.
+    \item Describe el nuevo algoritmo de deteccion de pulsos implementado. (Sección 5)
 
-    \item Describe el nuevo algoritmo de deteccion de pulsos implementado.
+    \item Presenta el sistema de automatización desarrollado en Python. (Sección 6)
 
-    \item Presenta el sistema de automatización desarrollado en Python.
-
-    \item Muestra los resultados obtenidos, incluyendo comparativas de rendimiento y precisión, seguida de las conclusiones y limitaciones del trabajo.
+    \item Muestra los resultados obtenidos, incluyendo comparativas de rendimiento y precisión, seguida de las conclusiones y limitaciones del trabajo. (Sección 7)
 \end{enumerate}
 
 \section{Conceptos previos}
@@ -304,7 +302,7 @@ El primer programa (`promedio\_general.f') recibe como entrada las señales crud
 \item \textbf{Rellenado de huecos mediante interpolación:} Debido a las limitaciones de
 hardware mencionadas anteriormente, cada segundo se pierden aproximadamente
 $50ms$ de datos durante la adquisición. El programa identifica estos huecos y los
-rellena utilizando interpolación lineal entre el promedio de 1000 puntos anteriores y posteriores al hueco.
+rellena utilizando interpolación lineal el punto anterior y el posterior al hueco.
 
 \item \textbf{Remoción del offset de las señales:} Para cada punto de la señal, se calcula el
 promedio de los 5000 puntos circundantes (2500 puntos a cada lado) y se le resta este
@@ -326,11 +324,10 @@ detección y análisis. El flujo general consta de las siguientes etapas:
 \item \textbf{Lectura y preprocesamiento de datos:} El programa lee los archivos de datos
 preprocesados con el paso anterior. Se pueden leer hasta 36 archivos, y cada archivo puede contener hasta 13 millones de muestras.
 
-\item \textbf{Detección de pulsos mediante umbrales:} Se implementa un sistema de umbrales que varía dinámicamente desde un valor superior (`c1=2.00') hasta
-uno inferior (`c2=0.02') a lo largo de 1000 pasos (`ps=1000'). Esta variación permite
+\item \textbf{Detección de pulsos mediante umbrales:} Se implementa un sistema de umbrales que varía dinámicamente desde un valor superior (`2.00') hasta
+uno inferior (`0.02') a lo largo de 1000 pasos. Esta variación permite
 detectar pulsos de diferentes amplitudes.
-Para cada umbral, se buscan pares de puntos consecutivos que superen el umbral en ambas señales (anillo y placa), con una separación máxima de 100 puntos
-(`nn=100'). En la figura \ref{fig:sensores_gota} se puede observar un pulso de ejemplo detectado con este algoritmo.
+Para cada umbral, se buscan pares de puntos consecutivos que superen el umbral en ambas señales (anillo y placa), con una separación máxima de 100 puntos. Al primer punto del par consecutivo en cada señal, se lo denomina `c1' y `c2' respectivamente. En la figura \ref{fig:sensores_gota} se puede observar un pulso de ejemplo detectado con este algoritmo.
 
 \begin{figure}[H]
     \centering
@@ -339,14 +336,14 @@ Para cada umbral, se buscan pares de puntos consecutivos que superen el umbral e
     \label{fig:sensores_gota}
 \end{figure}
 
-\item \textbf{Localización y delimitación de pulsos:} Una vez detectado un pulso, se determina su inicio retrocediendo hasta encontrar el punto donde la señal se anula. Se
-calcula el punto medio de la señal del anillo avanzando hasta donde se anula la señal, y el punto de quiebre de la señal de la placa mediante análisis de la integral de la misma. En la figura \ref{fig:analisis_gota} se pueden observar estos puntos relevantes.
-El algoritmo recorta cada pulso en base a la localización de estos puntos, considerando un ancho máximo de $4nn$ puntos.
+\item \textbf{Localización y delimitación de pulsos:} Una vez detectado un pulso, se determina el "inicio" de cada señal (u1 y u2 respectivamente), retrocediendo desde c1 y c2 respectivamente hasta encontrar el punto donde la señal se anula.
+Se calcula tambien el punto medio de la señal del anillo (p1) avanzando desde c1 hasta donde se anula la señal, y el punto de quiebre de la señal de la placa (p2) mediante análisis de la integral de la misma. En la figura \ref{fig:analisis_gota} se pueden observar estos puntos relevantes.
+El algoritmo recorta cada pulso en base a la localización de estos puntos, considerando un ancho máximo de 400 puntos.
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.9\textwidth]{figures/analisis_gota.png}
-    \caption{La figura muestra en el eje x los maximos consecutivos de cada sensor (c1 y c2). Tanto desde c1 como c2, podemos retroceder hasta encontrar el punto donde se anula la señal (u1 y u2 respectivamente) para encontrar los puntos de inicio de cada señal. Finalmente, desde c1 y c2, podemos avanzar para encontrar el punto medio de la señal del anillo (p1) y el punto de quiebre de la señal de la placa (p2) respectivamente.}
+    \caption{La figura muestra un pulso detectado junto con sus puntos relevantes.}
     \label{fig:analisis_gota}
 \end{figure}
 
