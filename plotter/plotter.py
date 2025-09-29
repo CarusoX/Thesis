@@ -540,7 +540,7 @@ def grafico_comparacion_modelos():
     integral_sensor2 = data[:, 5]  # Integral real del sensor 2 (placa)
     a1 = data[:, 6]  # Modelo teórico del sensor 1
     a2 = data[:, 7]  # Modelo teórico del sensor 2
-    b1 = data[:, 8]  # Modelo teórico adicional del sensor 1
+    # b1 = data[:, 8]  # Modelo teórico adicional del sensor 1
     
     # Configurar el estilo del gráfico
     plt.style.use('seaborn-v0_8')
@@ -557,7 +557,7 @@ def grafico_comparacion_modelos():
     # Gráfico superior: Comparación Anillo (sensor1)
     ax1.plot(time, integral_sensor1, 'b-', linewidth=2, label='Integral Real (Anillo)', alpha=0.8)
     ax1.plot(time, a1, 'r--', linewidth=2, label='Modelo Teórico a1', alpha=0.8)
-    ax1.plot(time, b1, 'g--', linewidth=2, label='Modelo Teórico b1', alpha=0.8)
+    # ax1.plot(time, b1, 'g--', linewidth=2, label='Modelo Teórico b1', alpha=0.8)
     ax1.set_ylabel('Carga Eléctrica (pC)', fontweight='bold')
     ax1.set_title('Comparación: Anillo - Señales Reales vs Modelos Teóricos', fontweight='bold', pad=20)
     ax1.grid(True, alpha=0.3, linestyle='--')
@@ -575,12 +575,12 @@ def grafico_comparacion_modelos():
     # Calcular y mostrar métricas de ajuste
     # Error cuadrático medio para cada modelo
     mse_a1 = np.mean((integral_sensor1 - a1)**2)
-    mse_b1 = np.mean((integral_sensor1 - b1)**2)
+    # mse_b1 = np.mean((integral_sensor1 - b1)**2)
     mse_a2 = np.mean((integral_sensor2 - a2)**2)
     
     # Coeficiente de correlación
     corr_a1 = np.corrcoef(integral_sensor1, a1)[0, 1]
-    corr_b1 = np.corrcoef(integral_sensor1, b1)[0, 1]
+    # corr_b1 = np.corrcoef(integral_sensor1, b1)[0, 1]
     corr_a2 = np.corrcoef(integral_sensor2, a2)[0, 1]
     
     # Agregar anotaciones con métricas de ajuste
