@@ -224,11 +224,13 @@ La estructura de esta tesis está organizada de manera que primero se establece 
 
     \item Presenta los algoritmos optimizados y estructuras de datos eficientes utilizados en el nuevo sistema. (Sección 4)
 
-    \item Describe el nuevo algoritmo de deteccion de pulsos implementado. (Sección 5)
+    \item Describe las mejoras implementadas en el preprocesamiento de señales. (Sección 5)
 
-    \item Presenta el sistema de automatización desarrollado en Python. (Sección 6)
+    \item Describe el nuevo algoritmo de deteccion de pulsos implementado. (Sección 6)
 
-    \item Muestra los resultados obtenidos, incluyendo comparativas de rendimiento y precisión, seguida de las conclusiones y limitaciones del trabajo. (Sección 7)
+    \item Presenta el sistema de automatización desarrollado en Python. (Sección 7)
+
+    \item Muestra los resultados obtenidos, incluyendo comparativas de rendimiento y precisión, seguida de las conclusiones y limitaciones del trabajo. (Sección 8)
 \end{enumerate}
 
 \section{Conceptos previos}
@@ -523,68 +525,6 @@ invertir tanta cantidad de tiempo y esfuerzo estudiándolo.
 
 \end{itemize}
 
-\subsection{Problemas descubiertos durante la refactorización}
-
-El programa `promedio\_general.f', como se menciono anteriormente, se encarga tanto del rellenado de huecos como de la remocion del offset de las señales. Es en esta primera parte donde se descubrio un error en la implementacion.
-
-Basicamente, primero el algoritmo llena los huecos con un valor constante `10', para luego buscar los bordes de estos huecos y completarlos con una interpolacion lineal. En los comentarios del codigo, se menciona que esta interpolacion lineal se hace entre los promedios de los 1000 puntos anteriores y posteriores al hueco. Sin embargo, en la implementacion, se utiliza los valores de los extremos del huecos.
-
-El código \nameref{lst:codigo_error} muestra la implementación del algoritmo de rellenado de huecos. Como se puede observar, los comentarios indican que se debe usar el promedio de 1000 puntos, pero la implementación utiliza directamente los valores de los bordes (`a1', `a2', `b1', `b2').
-
-Este error tiene un impacto significativo en los pasos posteriores del procesamiento, particularmente en la remoción del offset. Al rellenar los huecos utilizando una interpolación entre dos valores puntuales, en lugar de promedios de ventanas más amplias, se pueden introducir distorsiones importantes. Esto ocurre especialmente cuando los valores utilizados para la interpolación corresponden a puntos críticos que difieren considerablemente del promedio de la señal en ese momento.
-
-\begin{lstlisting}[language=Fortran, label=lst:codigo_error, caption={promedio\_general.f - Error en implementación de rellenado de huecos}]
-* Busca donde esta un punto que tiene valor de 10. y 
-* va hacia atras para encontrar el primer que no es
-* igual a 10.
-* es decir es un borde izquierdo de un 'hueco'
-* tambien va hacia adelante para encontrar el borde
-* derecho del 'hueco'
-* despues promedia los numeros de cada canal
-* 100 puntos hacia atras
-* y 1000 puntos hacia adelante 
-* y a esos promedios los llama a1 y a2 para el 
-* primer canal y
-* b1 y b2 para el segundo canal
-* Despues el valor w1(j) y w2(j) los revalua como
-* siguiendo una recta 
-* entre esos dos promedios.
-* Tambien ingresa un indice que vale 1 cuando no hay
-* blanco y un 0 cuando si lo hay.
-
-      do j=1,ww
-         if (w1(j).eq.10.) then
-            ind(j)=0
-            
-            do i=1,ww
-               if ((j-i.gt.0.).and.(w1(j-i).ne.10.)) then
-		     a1=w1(j-i)
-		     b1=w2(j-i)                  
-                     k1=i
-                  goto 20
-               endif
-            enddo
-            
- 20         do i=1,ww  
-               if ((j+i.le.ww).and.(w1(j+i).ne.10.)) then
-		     a2=w1(j+i)
-		     b2=w2(j+i)                  
-                     k2=i-1
-                  goto 30
-               endif
-            enddo
-
-! Aca es donde se utiliza los valores de los extremos
-! en vez de los promedios de 1000 puntos
- 30         w1p(j)=(a2-a1)/real(k2+k1)*real(k1)+a1
-            w2p(j)=(b2-b1)/real(k2+k1)*real(k1)+b1
-         else
-            ind(j)=1
-            w1p(j)=w1(j)
-            w2p(j)=w2(j)
-         endif
-      enddo
-\end{lstlisting}
 
 \section{Algoritmos y estructuras de datos utilizadas}
 \lhead{}
@@ -760,6 +700,28 @@ public:
     int max() const { return maxDeque.front(); }
 };
 \end{lstlisting}
+
+\section{Mejoras en el preprocesamiento de señales}
+
+Se implementaron dos mejoras en el preprocesamiento de señales. La primera es una mejora en el algoritmo de rellenado de huecos, y la segunda es una optimización en el algoritmo de remoción del offset, utilizando un algoritmo de ventana deslizante explicado previamente.
+
+\subsection{Mejora en el algoritmo de rellenado de huecos}
+
+La mejora implementada consiste en utilizar los promedios de los puntos anteriores y posteriores al hueco en vez de valores puntuales para la interpolación. Esta optimización proporciona mejores resultados por las siguientes razones:
+
+\begin{itemize}
+    \item \textbf{Mayor robustez estadística:} Al utilizar promedios de ventanas amplias en lugar de valores puntuales, se reduce la sensibilidad a valores atípicos o ruido en los extremos del hueco.
+    
+    \item \textbf{Mejor representación del comportamiento de la señal:} Los promedios de 1000 puntos proporcionan una mejor estimación del nivel de señal en la región circundante al hueco, especialmente importante cuando los valores extremos pueden no ser representativos del comportamiento general de la señal.
+    
+    \item \textbf{Reducción de distorsiones:} Esta mejora minimiza las distorsiones que pueden introducirse durante el rellenado, lo cual es particularmente importante para los pasos posteriores del procesamiento, especialmente en la remoción del offset.
+\end{itemize}
+
+\subsection{Optimización del algoritmo de remoción del offset}
+
+En el algoritmo original de remoción de offset implementado en `buscador\_de\_gotas.f', se utilizaba un enfoque ineficiente para calcular el promedio de los 5001 puntos circundantes para cada punto de la señal.
+
+Para optimizarlo, se aplico el algoritmo antes descripto de ventana deslizante para el calculo del promedio, reduciendo significativamente la constante del algoritmo.
 
 \section{Cambios en la detección de pulsos}
 \lhead{}
