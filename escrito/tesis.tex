@@ -127,13 +127,13 @@ Las gotas de lluvia pueden transportar carga eléctrica, la cual se adquiere pri
 
 En este sentido, medir y analizar simultáneamente el tamaño y la carga de las gotas resulta fundamental, ya que nos permite recopilar información que no solo ayuda a comprender la física de las tormentas, sino que también es útil para mejorar herramientas de pronóstico y para el estudio de fenómenos atmosféricos.
 
-En este marco, ya existen instrumentos capaces de realizar estas mediciones, como el descripto en `New experimental device for measuring electrical charge of precipitation particles' \cite{pereyra2025}, así como programas para procesarlas. Sin embargo, el código disponible actualmente presenta limitaciones tanto en diseño como en rendimiento: está poco modularizado, resulta difícil de mantener y su desempeño es insuficiente para procesar de manera eficiente grandes volúmenes de datos. En esta tesis se propone un nuevo sistema de análisis que resuelve esas limitaciones, mejorando la eficiencia, la escalabilidad y la mantenibilidad del software, y facilitando así la obtención de resultados más completos y confiables.
+En este marco, en el grupo de fisica de la atmosfera de FaMAF, ya existe un instrumento capaz de realizar estas mediciones, como el descripto en `New experimental device for measuring electrical charge of precipitation particles' \cite{pereyra2025}, así como un programa para procesarlas. Sin embargo, el código disponible actualmente presenta limitaciones tanto en diseño como en rendimiento: está poco modularizado, resulta difícil de mantener y su desempeño es insuficiente para procesar de manera eficiente grandes volúmenes de datos. En esta tesis se propone un nuevo sistema de análisis que resuelve esas limitaciones, mejorando la eficiencia, la escalabilidad y la mantenibilidad del software, y facilitando así la obtención de resultados más completos y confiables.
 
 \subsection{Instrumento de Medición}
 \lhead{}
 \rhead{Instrumento de Medición}
 
-El dispositivo utilizado consiste en un anillo de inducción de latón de 6 cm de diámetro y 1.5 cm de longitud, posicionado a 5.7 cm por encima de una placa plana de aluminio de 20 cm de diámetro. Tanto el anillo como la placa están conectados eléctricamente a amplificadores de corriente de alta ganancia con una amplificación de 5 $\cdot$ 10$^8$ V/A. Para proteger contra interferencias electromagnéticas, el anillo, la placa y los amplificadores están encerrados dentro de un contenedor metálico que actúa como jaula de Faraday. A su vez, los amplificadores están protegidos contra daños por agua al estar asegurados dentro de un recinto impermeable. La figura \ref{fig:instrumento_medicion} muestra el dispositivo.
+En la figura \ref{fig:instrumento_medicion} se muestra el dispotivo, el cual consiste en un anillo de inducción de latón de 6 cm de diámetro y 1.5 cm de longitud, posicionado a 5.7 cm por encima de una placa plana de aluminio de 20 cm de diámetro. Tanto el anillo como la placa están conectados eléctricamente a amplificadores de corriente de alta ganancia con una amplificación de 5 $\cdot$ 10$^8$ V/A. Para proteger contra interferencias electromagnéticas, el anillo, la placa y los amplificadores están encerrados dentro de un contenedor metálico que actúa como jaula de Faraday. A su vez, los amplificadores están protegidos contra daños por agua al estar asegurados dentro de un recinto impermeable.
 
 \begin{figure}[H]
     \centering
@@ -144,7 +144,7 @@ El dispositivo utilizado consiste en un anillo de inducción de latón de 6 cm d
 
 La jaula de Faraday presenta una abertura ligeramente mayor que el anillo, permitiendo que las gotas de lluvia entren únicamente a través del anillo de inducción. Toda el agua que llega a la placa se drena a través de sus lados y se recolecta en un contenedor de aluminio, que también está situado dentro de la jaula de Faraday pero eléctricamente aislado de ella.
 
-Las gotas cargadas eléctricamente inducen corrientes tanto en el anillo como en la placa. Al caer una gota, primero se acerca al anillo. Al hacerlo, se induce una corriente de la polaridad opuesta a la carga de la gota. Luego, al alejarse, esta polaridad se invierte. Mientras tanto, la gota se acerca a la placa, induciendo también una corriente de polaridad opuesta a la carga de la gota, lo cual culmina en una meseta en la corriente dado que la placa de aluminio absorbe el impacto de la gota y se le transfiere toda la carga a la placa, la cual se disipa en el tiempo. La figura \ref{fig:corriente_gotas} muestra la dinamica de este proceso con el registro de una gota.
+Las gotas cargadas eléctricamente inducen corrientes tanto en el anillo como en la placa. Al caer una gota, primero se acerca al anillo. Al hacerlo, se induce una corriente de la polaridad opuesta a la carga de la gota. Luego, al alejarse, esta polaridad se invierte. Mientras tanto, la gota se acerca a la placa, induciendo también una corriente de polaridad opuesta a la carga de la gota, lo cual culmina en una meseta en la corriente dado que la placa de aluminio absorbe el impacto de la gota y se le transfiere toda la carga a la placa, la cual se disipa en el tiempo. La figura \ref{fig:corriente_gotas} muestra la dinamica de la señal electrica registrada por los amplificadores.
 
 \begin{figure}[H]
     \centering
@@ -153,13 +153,13 @@ Las gotas cargadas eléctricamente inducen corrientes tanto en el anillo como en
     \label{fig:corriente_gotas}
 \end{figure}
 
-La recolección de datos se realiza a una tasa de 5 kHz por canal (5000 datos por segundo). Por limitaciones de hardware, no se puede realizar la recolección al mismo tiempo que la escritura a disco, por lo que cada segundo se pierden aproximadamente $50ms$ de datos. Esto debe ser tenido en cuenta luego para analizar lo obtenido.
+La recolección de datos se realiza a una tasa de 5 kHz por canal (5000 datos por segundo). Por limitaciones de hardware, no se puede realizar la recolección al mismo tiempo que la escritura a disco, por lo que cada segundo se pierden aproximadamente $50ms$ de datos, lo cual produce un "hueco" de datos en la señal.
 
 \subsection{Procesamiento de Señales}
 \lhead{}
 \rhead{Procesamiento de Señales}
 
-El procesamiento transforma las señales crudas registradas por el instrumento en una lista de gotas con sus propiedades. Para ello se emplean dos programas que se ejecutan de manera secuencial: el primero realiza un preprocesamiento de las señales y el segundo extrae las gotas y calcula sus características.
+El procesamiento transforma las señales crudas registradas por el instrumento en una lista de propiedades fisicas para cada gota. Para ello se emplean dos programas que se ejecutan de manera secuencial: el primero realiza un preprocesamiento de las señales y el segundo extrae la información de las gotas y calcula sus características.
 
 El fragmento de la señal que forma parte de una gota extraida por el programa, la denominamos `pulso'. Estos pulsos son reconocibles en la señal gracias a la dinamica producida por la interaccion de la gota con el instrumento de medicion.
 
@@ -177,7 +177,7 @@ Para el procesamiento de los datos se han desarrollado dos programas en Fortran 
 
 El primer programa se encarga del preprocesamiento de los datos, específicamente del rellenado de huecos mediante interpolación lineal y de la remoción del offset de las señales.
 
-El segundo programa realiza el análisis principal de las señales ya preprocesadas. Implementa el algoritmo de detección de pulsos, aplica filtros para separar los pulsos válidos y calcula sus propiedades físicas, incluyendo tamaño, carga eléctrica y velocidad de caída.
+El segundo programa realiza el análisis principal de las señales ya preprocesadas. Implementa el algoritmo de detección de pulsos, aplica filtros para separar los pulsos válidos y calcula sus propiedades físicas, incluyendo carga eléctrica, velocidad de caída y tamaño.
 
 \subsection{Necesidad de Mejoras}
 \lhead{}
@@ -185,7 +185,7 @@ El segundo programa realiza el análisis principal de las señales ya preprocesa
 
 El código actual, aunque funcional, presenta varios problemas tanto en su diseño como en su rendimiento.
 
-En primer lugar, el código consta de pocos archivos con una cantidad de líneas muy grande, lo que dificulta su mantenimiento y modificación. Cualquier cambio requiere revisar y entender todo el código, ya que las responsabilidades no están bien asignadas. Además, hay muchas variables sin nombres descriptivos y constantes hard-codeadas sin referencia alguna, lo que complica aún más la comprensión.
+En primer lugar, el código consta de pocos archivos con una gran cantidad de líneas, lo que dificulta su mantenimiento y modificación. Cualquier cambio requiere revisar y entender todo el código, ya que las responsabilidades no están bien asignadas. Además, hay muchas variables sin nombres descriptivos y constantes hard-codeadas sin referencia alguna, lo que complica aún más la comprensión.
 
 En segundo lugar, para grandes volúmenes de datos, la ejecución es muy lenta. Por ejemplo, para procesar datos de una tormenta de 5 horas de duración (aproximadamente 100 millones de datos), el programa tarda alrededor de 6 horas en completarse. A esto se suma un consumo de memoria excesivamente alto, lo que obliga a procesar los datos de a partes. A su vez el algoritmo actual no tiene en cuenta los pulsos que quedan en medio de estos cortes, resultando en la pérdida de algunos datos.
 
