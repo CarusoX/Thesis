@@ -1,5 +1,20 @@
+/**
+ * @file file.cpp
+ * @brief Implementation of file I/O utility functions
+ * 
+ * This file contains the implementation of efficient file operations
+ * including memory-mapped file reading and standard file I/O with
+ * proper error handling and directory creation.
+ */
+
 #include "file.hpp"
 
+/**
+ * @brief Opens a file for reading with error checking
+ * @param filePath Path to the file to open
+ * @return Input file stream
+ * @throws std::runtime_error if file cannot be opened
+ */
 std::ifstream openFileRead(const std::string &filePath)
 {
     std::filesystem::path path(filePath);
@@ -11,10 +26,17 @@ std::ifstream openFileRead(const std::string &filePath)
     return file;
 }
 
+/**
+ * @brief Opens a file for writing with error checking and directory creation
+ * @param filePath Path to the file to open
+ * @return Output file stream
+ * @throws std::runtime_error if file cannot be opened
+ */
 std::ofstream openFileWrite(const std::string &filePath)
 {
     std::filesystem::path path(filePath);
 
+    // Create parent directories if they don't exist
     if (!std::filesystem::exists(path))
     {
         std::filesystem::create_directories(path.parent_path());
@@ -28,6 +50,17 @@ std::ofstream openFileWrite(const std::string &filePath)
     return file;
 }
 
+/**
+ * @brief Reads entire file contents using memory mapping for efficiency
+ * 
+ * This function uses memory mapping to efficiently read large files
+ * without loading them entirely into memory. It's particularly useful
+ * for processing large sensor data files.
+ * 
+ * @param filePath Path to the file to read
+ * @return String containing the entire file contents
+ * @throws std::runtime_error if file cannot be read
+ */
 std::string readFileContents(const std::string &filePath)
 {
     // Open file descriptor
@@ -51,7 +84,7 @@ std::string readFileContents(const std::string &filePath)
         return std::string();
     }
     
-    // Memory map the file
+    // Memory map the file for efficient reading
     void* mappedMemory = mmap(nullptr, fileSize, PROT_READ, MAP_PRIVATE, fd, 0);
     
     // Close file descriptor (mmap keeps its own reference)
