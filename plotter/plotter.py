@@ -616,6 +616,420 @@ def grafico_comparacion_modelos():
     print(f"  Anillo - MSE b1: {mse_b1:.4f}, Correlación b1: {corr_b1:.3f}")
     print(f"  Placa - MSE a2: {mse_a2:.4f}, Correlación a2: {corr_a2:.3f}")
 
+def grafico_sliding_window():
+    """
+    Genera un gráfico que muestra el algoritmo de sliding window con 7 elementos
+    y 3 iteraciones de ventana de tamaño 3, usando cuadrados con números.
+    """
+    # Generar array de 7 elementos aleatorios
+    np.random.seed(42)  # Para reproducibilidad
+    array = np.random.randint(1, 10, 7)
+    window_size = 3
+    
+    # Configurar el estilo del gráfico
+    plt.style.use('seaborn-v0_8')
+    plt.rcParams['font.size'] = 14
+    plt.rcParams['axes.labelsize'] = 16
+    plt.rcParams['axes.titlesize'] = 18
+    plt.rcParams['xtick.labelsize'] = 14
+    plt.rcParams['ytick.labelsize'] = 14
+    plt.rcParams['legend.fontsize'] = 14
+    
+    # Crear la figura con subplots
+    fig, axes = plt.subplots(3, 1, figsize=(16, 10))
+    
+    # Colores para las iteraciones
+    window_color = '#2E8B57'  # Verde para elementos en ventana
+    outside_color = '#D3D3D3'  # Gris claro para elementos fuera de ventana
+    text_color = 'white' if window_color == '#2E8B57' else 'black'
+    
+    # Calcular las sumas de las ventanas
+    sums = []
+    for i in range(3):
+        start_idx = i
+        end_idx = i + window_size
+        window_sum = np.sum(array[start_idx:end_idx])
+        sums.append(window_sum)
+    
+    # Función para dibujar cuadrados
+    def draw_squares(ax, array, window_start, window_end, iteration_num, sum_value):
+        # Posiciones de los cuadrados
+        x_positions = np.arange(len(array))
+        
+        for i, val in enumerate(array):
+            # Determinar color según si está en la ventana
+            if window_start <= i < window_end:
+                color = window_color
+                text_color_current = 'white'
+            else:
+                color = outside_color
+                text_color_current = 'black'
+            
+            # Dibujar cuadrado
+            square = plt.Rectangle((i - 0.4, -0.4), 0.8, 0.8, 
+                                 facecolor=color, edgecolor='black', linewidth=2)
+            ax.add_patch(square)
+            
+            # Agregar número en el centro
+            ax.text(i, 0, str(val), ha='center', va='center', 
+                   fontweight='bold', fontsize=16, color=text_color_current)
+        
+        # Configurar el gráfico
+        ax.set_xlim(-0.8, 6.8)
+        ax.set_ylim(-0.8, 0.8)
+        ax.set_aspect('equal')
+        ax.axis('off')
+        
+        # Agregar título con suma
+        ax.set_title(f'Iteración {iteration_num}: Ventana [{window_start}:{window_end}] - Suma = {sum_value}', 
+                    fontweight='bold', pad=20)
+        
+        # Agregar anotación del cálculo para iteraciones 2 y 3
+        if iteration_num == 2:
+            calc_text = f'Cálculo: {sums[0]} - {array[0]} + {array[3]} = {sum_value}'
+        elif iteration_num == 3:
+            calc_text = f'Cálculo: {sums[1]} - {array[1]} + {array[4]} = {sum_value}'
+        else:
+            calc_text = f'Suma inicial: {array[0]} + {array[1]} + {array[2]} = {sum_value}'
+        
+        ax.text(3, -0.6, calc_text, ha='center', va='center', 
+               fontsize=12, fontweight='bold',
+               bbox=dict(boxstyle="round,pad=0.3", facecolor="yellow", alpha=0.7))
+    
+    # Iteración 1: Ventana [0:3]
+    draw_squares(axes[0], array, 0, 3, 1, sums[0])
+    
+    # Iteración 2: Ventana [1:4]
+    draw_squares(axes[1], array, 1, 4, 2, sums[1])
+    
+    # Iteración 3: Ventana [2:5]
+    draw_squares(axes[2], array, 2, 5, 3, sums[2])
+    
+    # Agregar leyenda
+    legend_elements = [
+        mpatches.Patch(color=window_color, label='Elemento en ventana'),
+        mpatches.Patch(color=outside_color, label='Elemento fuera de ventana')
+    ]
+    fig.legend(handles=legend_elements, loc='upper right', bbox_to_anchor=(0.98, 0.95))
+    
+    # Agregar texto explicativo
+    # fig.text(0.02, 0.02, 
+    #          'Algoritmo Sliding Window: O(n) en lugar de O(n×k)\n'
+    #          'En cada iteración: nueva_suma = suma_anterior - elemento_saliente + elemento_entrante',
+    #          fontsize=12, bbox=dict(boxstyle="round,pad=0.5", facecolor="lightgray", alpha=0.8))
+    
+    # Ajustar el layout
+    plt.tight_layout()
+    plt.subplots_adjust(bottom=0.1)
+    
+    # Guardar la figura
+    plt.savefig('/Users/uzielluduena/Thesis/new_def/escrito/figures/sliding_window_algorithm.png', 
+                dpi=300, bbox_inches='tight', facecolor='white')
+    
+    # Mostrar el gráfico
+    plt.show()
+    
+    print("Gráfico de sliding window guardado en: escrito/figures/sliding_window_algorithm.png")
+    print(f"Array: {array}")
+    print(f"Sumas de las ventanas: {sums}")
+    print(f"Verificación manual:")
+    print(f"  Iteración 1: {array[0]} + {array[1]} + {array[2]} = {sums[0]}")
+    print(f"  Iteración 2: {sums[0]} - {array[0]} + {array[3]} = {sums[1]}")
+    print(f"  Iteración 3: {sums[1]} - {array[1]} + {array[4]} = {sums[2]}")
+
+def grafico_minqueue():
+    """
+    Genera un gráfico que muestra el funcionamiento de la MinQueue paso a paso
+    con elementos visuales que representan la queue principal y la deque auxiliar.
+    """
+    # Configurar el estilo del gráfico
+    plt.style.use('seaborn-v0_8')
+    plt.rcParams['font.size'] = 14
+    plt.rcParams['axes.labelsize'] = 16
+    plt.rcParams['axes.titlesize'] = 18
+    plt.rcParams['xtick.labelsize'] = 14
+    plt.rcParams['ytick.labelsize'] = 14
+    plt.rcParams['legend.fontsize'] = 14
+    
+    # Crear la figura con subplots
+    fig, axes = plt.subplots(7, 1, figsize=(16, 14))
+    
+    # Datos de ejemplo para la MinQueue
+    operations = [
+        ('push', 3), ('push', 1), ('push', 4), ('push', 6), ('pop', None), 
+        ('push', 5), ('pop', None), ('pop', None)
+    ]
+    
+    # Simular el estado de la MinQueue en cada paso
+    queue_states = []
+    deque_states = []
+    min_values = []
+    
+    # Simular la MinQueue
+    queue = []
+    deque = []
+    
+    for op, value in operations:
+        if op == 'push':
+            queue.append(value)
+            # Mantener deque en orden creciente
+            while deque and deque[-1] > value:
+                deque.pop()
+            deque.append(value)
+        elif op == 'pop':
+            if queue:
+                removed = queue.pop(0)
+                if deque and deque[0] == removed:
+                    deque.pop(0)
+        
+        queue_states.append(queue.copy())
+        deque_states.append(deque.copy())
+        min_values.append(deque[0] if deque else None)
+    
+    # Función para dibujar la estructura de datos
+    def draw_data_structure(ax, queue, deque, min_val, step_num, operation):
+        ax.clear()
+        
+        # Dibujar la queue principal (arriba)
+        queue_y = 0.7
+        # ax.text(-0.5, queue_y + 0.1, 'Queue:', fontweight='bold', fontsize=10)
+        
+        for i, val in enumerate(queue):
+            # Color diferente para el elemento que se va a procesar
+            if step_num < len(operations) and operations[step_num][0] == 'pop' and i == 0:
+                # color = '#FF6B6B'  # Rojo para elemento a eliminar
+                color = '#4ECDC4'  # Verde para elementos normales
+            else:
+                color = '#4ECDC4'  # Verde para elementos normales
+            
+            rect = plt.Rectangle((i - 0.3, queue_y - 0.15), 0.6, 0.3, 
+                                facecolor=color, edgecolor='black', linewidth=2)
+            ax.add_patch(rect)
+            ax.text(i, queue_y, str(val), ha='center', va='center', 
+                   fontweight='bold', fontsize=14, color='white')
+        
+        # Dibujar la deque auxiliar (abajo)
+        deque_y = 0.3
+        # ax.text(-0.5, deque_y + 0.1, 'Deque:', fontweight='bold', fontsize=10)
+        
+        for i, val in enumerate(deque):
+            color = '#FFD93D'  # Amarillo para elementos en deque
+            rect = plt.Rectangle((i - 0.3, deque_y - 0.15), 0.6, 0.3, 
+                                facecolor=color, edgecolor='black', linewidth=2)
+            ax.add_patch(rect)
+            ax.text(i, deque_y, str(val), ha='center', va='center', 
+                   fontweight='bold', fontsize=14, color='black')
+        
+        # Mostrar el mínimo actual (posicionado a la derecha de las cajitas)
+        if min_val is not None:
+            # La posición x se ajusta a la cantidad máxima de elementos para quedar a la derecha 
+            max_elements = max(len(queue), len(deque)) if queue or deque else 1
+            ax.text(max_elements + 0.5, 0.5, f'Mínimo: {min_val}', 
+                    fontweight='bold', fontsize=12, color='red', va='center', ha='left')
+        
+        # Configurar el gráfico
+        max_elements = max(len(queue), len(deque)) if queue or deque else 1
+        ax.set_xlim(-1, max_elements + 1)
+        ax.set_ylim(-0.2, 1.0)
+        ax.set_aspect('equal')
+        ax.axis('off')
+        
+        # Título con la operación
+        op_text = f"{operation[0]}({operation[1]})" if operation[1] is not None else f"{operation[0]}()"
+        ax.set_title(f'Paso {step_num + 1}: {op_text}', fontweight='bold', pad=20)
+    
+    # Mostrar todos los pasos
+    for i in range(7):
+        if i < len(operations):
+            draw_data_structure(axes[i], queue_states[i], deque_states[i], 
+                              min_values[i], i, operations[i])
+        else:
+            axes[i].axis('off')
+    
+    # Agregar leyenda
+    legend_elements = [
+        mpatches.Patch(color='#4ECDC4', label='Elemento en Queue'),
+        mpatches.Patch(color='#FFD93D', label='Elemento en Deque')
+    ]
+    fig.legend(handles=legend_elements, loc='upper right', bbox_to_anchor=(0.98, 0.95))
+    
+    # Eliminar texto explicativo extra
+    
+    # Ajustar el layout con menos interlineado
+    plt.tight_layout()
+    plt.subplots_adjust(bottom=0.15, hspace=0.3)
+    
+    # Guardar la figura
+    plt.savefig('/Users/uzielluduena/Thesis/new_def/escrito/figures/minqueue_algorithm.png', 
+                dpi=300, bbox_inches='tight', facecolor='white')
+    
+    # Mostrar el gráfico
+    plt.show()
+    
+    print("Gráfico de MinQueue guardado en: escrito/figures/minqueue_algorithm.png")
+    print("Secuencia de operaciones:")
+    for i, (op, val) in enumerate(operations):
+        print(f"  Paso {i+1}: {op}({val}) - Queue: {queue_states[i]}, Deque: {deque_states[i]}, Mínimo: {min_values[i]}")
+
+def grafico_rellenado_huecos():
+    """
+    Genera un gráfico que muestra la mejora en el algoritmo de rellenado de huecos:
+    - Señal original con un hueco
+    - Interpolación puntual (método anterior)
+    - Interpolación con promedios de ventanas (método mejorado)
+    - Remoción del offset con promedios de 300 puntos
+    """
+    # Configurar el estilo del gráfico
+    plt.style.use('seaborn-v0_8')
+    plt.rcParams['font.size'] = 12
+    plt.rcParams['axes.labelsize'] = 14
+    plt.rcParams['axes.titlesize'] = 16
+    plt.rcParams['xtick.labelsize'] = 12
+    plt.rcParams['ytick.labelsize'] = 12
+    plt.rcParams['legend.fontsize'] = 12
+    
+    # Crear datos sintéticos para demostrar el concepto
+    np.random.seed(42)
+    n_points = 200
+    x = np.linspace(0, 10, n_points)
+    
+    # Crear una señal base con ruido
+    signal_base = 2 * np.sin(0.5 * x) + 0.5 * np.sin(2 * x) + 0.1 * np.random.randn(n_points)
+    
+    # Crear un hueco artificial en el medio
+    gap_start = 80
+    gap_end = 120
+    gap_size = gap_end - gap_start
+    
+    # Introducir valores anómalos/críticos en los extremos del hueco
+    signal_with_anomalies = signal_base.copy()
+    signal_with_anomalies[gap_start - 1] = 5.0  # Valor anómalo alto
+    signal_with_anomalies[gap_end] = 4.5        # Valor anómalo alto
+    
+    # Señal con hueco
+    signal_with_gap = signal_with_anomalies.copy()
+    signal_with_gap[gap_start:gap_end] = np.nan
+    
+    # Método 1: Interpolación puntual (método anterior)
+    # Usar solo los valores inmediatamente antes y después del hueco (valores anómalos)
+    left_value = signal_with_anomalies[gap_start - 1]  # 5.0 (anómalo)
+    right_value = signal_with_anomalies[gap_end]       # 4.5 (anómalo)
+    
+    # Interpolación lineal simple
+    signal_puntual = signal_with_gap.copy()
+    for i in range(gap_start, gap_end):
+        alpha = (i - gap_start + 1) / (gap_size + 1)
+        signal_puntual[i] = left_value + alpha * (right_value - left_value)
+    
+    # Método 2: Interpolación con promedios de ventanas (método mejorado)
+    window_size = 100  # 1000 puntos como en la tesis, pero reducido para visualización
+    
+    # Calcular promedios de las ventanas antes y después del hueco
+    left_window_start = max(0, gap_start - window_size)
+    left_window_end = gap_start
+    right_window_start = gap_end
+    right_window_end = min(n_points, gap_end + window_size)
+    
+    # Usar la señal original (sin anomalías) para calcular promedios
+    left_avg = np.mean(signal_base[left_window_start:left_window_end])
+    right_avg = np.mean(signal_base[right_window_start:right_window_end])
+    
+    # Interpolación con promedios
+    signal_promedios = signal_with_gap.copy()
+    for i in range(gap_start, gap_end):
+        alpha = (i - gap_start + 1) / (gap_size + 1)
+        signal_promedios[i] = left_avg + alpha * (right_avg - left_avg)
+    
+    # Método 3: Remoción del offset con promedios de 300 puntos
+    offset_window = 300  # Ventana para remoción de offset
+    signal_offset_removed = signal_promedios.copy()
+    
+    # Aplicar remoción de offset usando promedios móviles
+    for i in range(n_points):
+        start_idx = max(0, i - offset_window // 2)
+        end_idx = min(n_points, i + offset_window // 2)
+        offset_value = np.mean(signal_promedios[start_idx:end_idx])
+        signal_offset_removed[i] = signal_promedios[i] - offset_value
+    
+    # Offsetear la señal a partir del 1
+    signal_offset_removed = signal_offset_removed + 1.0
+    
+    # Crear la figura con subplots (sin el primer gráfico)
+    fig, (ax1, ax2, ax3) = plt.subplots(3, 1, figsize=(14, 12))
+    
+    # Gráfico 1: Interpolación puntual (método anterior) - usando valores anómalos
+    # ax1.plot(x, signal_base, 'b-', linewidth=1, label='Señal original', alpha=0.5)
+    ax1.plot(x, signal_puntual, 'r-', linewidth=2, label='Interpolación puntual', alpha=0.8)
+    
+    # Marcar los puntos anómalos usados para interpolación
+    ax1.plot(x[gap_start-1], left_value, 'ro', markersize=10, label=f'Valor anómalo izquierdo: {left_value:.1f}')
+    ax1.plot(x[gap_end], right_value, 'ro', markersize=10, label=f'Valor anómalo derecho: {right_value:.1f}')
+    
+    # Marcar el hueco rellenado
+    ax1.axvspan(x[gap_start], x[gap_end-1], alpha=0.3, color='red', label='Hueco rellenado')
+    
+    ax1.set_title('Interpolación puntual (con valores anómalos)', fontweight='bold', pad=20)
+    ax1.set_ylabel('Amplitud', fontweight='bold')
+    ax1.grid(True, alpha=0.3, linestyle='--')
+    ax1.legend(loc='upper right', frameon=True, fancybox=True, shadow=True)
+    
+    # Gráfico 2: Interpolación con promedios (método mejorado)
+    # ax2.plot(x, signal_base, 'b-', linewidth=1, label='Señal original', alpha=0.5)
+    ax2.plot(x, signal_promedios, 'g-', linewidth=2, label='Interpolación con promedios', alpha=0.8)
+    
+    # Marcar las líneas de promedio
+    ax2.axhline(y=left_avg, color='green', linestyle='--', linewidth=2, alpha=0.7, 
+                label=f'Promedio izquierdo: {left_avg:.3f}')
+    ax2.axhline(y=right_avg, color='orange', linestyle='--', linewidth=2, alpha=0.7, 
+                label=f'Promedio derecho: {right_avg:.3f}')
+    
+    # Marcar el hueco rellenado
+    ax2.axvspan(x[gap_start], x[gap_end-1], alpha=0.3, color='red', label='Hueco rellenado')
+    
+    ax2.set_title('Interpolación con promedios de ventanas', fontweight='bold', pad=20)
+    ax2.set_ylabel('Amplitud', fontweight='bold')
+    ax2.grid(True, alpha=0.3, linestyle='--')
+    ax2.legend(loc='upper right', frameon=True, fancybox=True, shadow=True)
+    
+    # Gráfico 3: Remoción del offset con promedios de 300 puntos
+    ax3.plot(x, signal_promedios, 'g-', linewidth=1, label='Remoción con la interpolación puntual', alpha=0.5)
+    ax3.plot(x, signal_offset_removed, 'purple', linewidth=2, label='Remoción con promedios de ventanas', alpha=0.8)
+    
+    # Marcar el hueco rellenado
+    ax3.axvspan(x[gap_start], x[gap_end-1], alpha=0.3, color='red', label='Hueco rellenado')
+    
+    ax3.set_title('Remoción del offset con promedios de 300 puntos', fontweight='bold', pad=20)
+    ax3.set_xlabel('Tiempo (s)', fontweight='bold')
+    ax3.set_ylabel('Amplitud', fontweight='bold')
+    ax3.grid(True, alpha=0.3, linestyle='--')
+    ax3.legend(loc='upper right', frameon=True, fancybox=True, shadow=True)
+    
+    # Agregar texto explicativo
+    # fig.text(0.02, 0.02, 
+    #          'Mejora en el algoritmo de rellenado de huecos:\n'
+    #          '• Mayor robustez estadística al usar promedios de ventanas amplias en lugar de valores anómalos\n'
+    #          '• Mejor representación del comportamiento de la señal al evitar distorsiones por valores extremos\n'
+    #          '• Reducción de distorsiones en el procesamiento posterior, especialmente en la remoción del offset',
+    #          fontsize=11, bbox=dict(boxstyle="round,pad=0.5", facecolor="lightblue", alpha=0.8))
+    
+    # Ajustar el layout
+    plt.tight_layout()
+    plt.subplots_adjust(bottom=0.15)
+    
+    # Guardar la figura
+    plt.savefig('/Users/uzielluduena/Thesis/new_def/escrito/figures/mejora_rellenado_huecos.png', 
+                dpi=300, bbox_inches='tight', facecolor='white')
+    
+    # Mostrar el gráfico
+    plt.show()
+    
+    print("Gráfico de mejora en rellenado de huecos guardado en: escrito/figures/mejora_rellenado_huecos.png")
+    print(f"Valores anómalos en extremos: izquierdo={left_value:.1f}, derecho={right_value:.1f}")
+    print(f"Valores de interpolación con promedios: izquierdo={left_avg:.3f}, derecho={right_avg:.3f}")
+    print(f"Tamaño de ventana para promedios: {window_size} puntos")
+    print(f"Tamaño de ventana para remoción de offset: {offset_window} puntos")
+    print(f"Señal final offseteada a partir de 1.0")
+
 if __name__ == "__main__":
     # grafico_complejidades()
     # grafico_sensores_gota()
@@ -623,4 +1037,7 @@ if __name__ == "__main__":
     # grafico_calculo_carga()
     # grafico_calculo_velocidad()
     # grafico_relacion_velocidad_diametro()
-    grafico_comparacion_modelos()
+    # grafico_comparacion_modelos()
+    # grafico_sliding_window()
+    # grafico_rellenado_huecos()
+    grafico_minqueue()
