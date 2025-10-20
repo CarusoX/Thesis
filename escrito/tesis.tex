@@ -539,7 +539,7 @@ invertir tanta cantidad de tiempo y esfuerzo estudiándolo.
 
 Para abordar las limitaciones de performance del código existente, se utilizaron algoritmos y estructuras de datos eficientes que mantienen la misma o similar funcionalidad pero con un rendimiento superior.
 
-\subsection{Optimización del algoritmo de remoción de offset con sliding window}
+\subsection{Optimización del algoritmo de remoción de offset con ventana deslizante}
 
 El algoritmo de ventana deslizante (sliding window) es una técnica de optimización utilizada para resolver eficientemente problemas que involucran secuencias contiguas en arreglos.
 
@@ -723,7 +723,7 @@ Para optimizarlo, se aplico el algoritmo antes descripto de ventana deslizante p
 \lhead{}
 \rhead{Cambios en la detección de pulsos}
 
-Se implemento un nuevo algoritmo de deteccion de pulsos en C++, que reemplaza la busqueda con umbrales adaptativos por una busqueda local e iterativa.
+Se implemento un nuevo algoritmo de deteccion de pulsos, que reemplaza la busqueda con umbrales adaptativos por una busqueda local e iterativa.
 
 \subsubsection{Algoritmo básico}
 
@@ -803,9 +803,9 @@ Durante cada búsqueda, se marcan como mínimo 4 puntos como utilizados. Esto es
 
 Cada operación de búsqueda individual tiene complejidad $O(V)$, donde $V$ es el tamaño de la ventana (800 puntos). Por tanto, la complejidad total del algoritmo es:
 
-$$O\left(\frac{n}{300}\right) \times 75 \times 800 = O(200n) = O(n)$$
+$$O\left(\frac{n}{300} \times 75 \times 800 \right) = O(200n) = O(n)$$
 
-Esta reduccion de constante representa una mejora sustancial respecto al algoritmo original, cuya constante era de $100000$.
+Esta reduccion de constante representa una mejora sustancial respecto al algoritmo original, que habiamos analizado anteriormente y cuya constante era de $100000$.
 
 \section{Sistema de Automatización}
 \lhead{}
@@ -897,17 +897,20 @@ Se documentó completamente el sistema mediante:
 
 \subsection{Mejoras en la Calidad de Detección}
 
-Además de la mejora cuantitativa en la cantidad de gotas detectadas, se observó una mejora cualitativa en la calidad de las detecciones. El análisis de la curva acumulada de calidad muestra que el nuevo sistema produce gotas de mejor calidad, con una distribución más favorable en los rangos de alta calidad.
+Además de la mejora cuantitativa en la cantidad de gotas detectadas, se observó una mejora cualitativa en la calidad de las detecciones. Como se puede ver en la figura \ref{fig:calidad_detecciones}, si observamos la proporcion acumulada de la evaluacion de las gotas obtenidas, vemos que el nuevo sistema obtiene, aunque por un margen pequeño, mejor calidad de gotas que el sistema original. Esto nos dice que las gotas extras detectadas tienen en general un buen puntaje de evaluacion.
 
-\subsection{Comparativa de Rendimiento}
-
-La tabla \ref{tab:comparativa_rendimiento} muestra una comparación detallada entre el sistema original y el nuevo sistema:
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{figures/calidad_detecciones.png}
+    \caption{Proporcion acumulada de evaluacion de ambos algoritmos}
+    \label{fig:calidad_detecciones}
+\end{figure}
 
 \section{Conclusiones}
 \lhead{}
 \rhead{Conclusiones}
 
-En este trabajo se desarrolló un sistema modular y automatizado para el análisis de datos de gotas cargadas eléctricamente que superó significativamente los objetivos planteados. El nuevo sistema no solo mejora la eficiencia computacional, sino que también facilita el uso y mantenimiento del software.
+En este trabajo se desarrolló un sistema modular y automatizado para el análisis de datos de gotas cargadas eléctricamente que superó significativamente los objetivos planteados.
 
 \subsection{Logros Principales}
 
@@ -916,12 +919,6 @@ Se consiguió una mejora del 7200\% en el tiempo de procesamiento, reduciendo el
 El sistema de automatización desarrollado elimina completamente la intervención manual, permitiendo procesar grandes volúmenes de datos con un único comando.
 
 Además de las mejoras cuantitativas, el sistema logró una mejora cualitativa del 5\% en la detección de gotas, con una distribución de calidad más favorable que el sistema original. Esto se debe principalmente a las mejoras en el preprocesamiento de señales y la detección de pulsos.
-
-\subsection{Impacto Científico}
-
-El nuevo sistema permite procesar datos meteorológicos a una escala y velocidad que antes no era posible, facilitando el análisis de fenómenos atmosféricos complejos y la obtención de resultados más completos y confiables.
-
-La arquitectura modular desarrollada no solo resuelve los problemas actuales, sino que también proporciona una base sólida para futuras mejoras y adaptaciones. El código bien documentado y la separación clara de responsabilidades facilitan la colaboración entre investigadores y el mantenimiento a largo plazo del sistema.
 
 \subsection{Trabajo Futuro}
 
@@ -940,8 +937,6 @@ Las mejoras implementadas abren varias líneas de investigación prometedoras:
 Este trabajo demuestra cómo la optimización algorítmica y el diseño de software pueden transformar completamente la capacidad de análisis científico. La reducción de 6 horas a 5 minutos no es solo una mejora cuantitativa, sino que representa un cambio cualitativo en las posibilidades de investigación.
 
 El sistema desarrollado no solo cumple con todos los objetivos planteados, sino que los supera significativamente, proporcionando una herramienta robusta y eficiente para el análisis de datos meteorológicos. La arquitectura modular y la documentación completa aseguran que el sistema sea sostenible y extensible para futuras investigaciones.
-
-La combinación de optimización algorítmica, diseño de software moderno y automatización ha resultado en un sistema que no solo resuelve los problemas actuales, sino que también abre nuevas posibilidades para la investigación atmosférica y el desarrollo de sistemas de monitoreo meteorológico más eficientes.
 
 \printbibliography
 
