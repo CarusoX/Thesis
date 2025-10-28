@@ -109,13 +109,13 @@ Las gotas de lluvia pueden transportar carga eléctrica, la cual se adquiere pri
 
 En este sentido, medir y analizar simultáneamente el tamaño y la carga de las gotas resulta fundamental, ya que nos permite recopilar información que no solo ayuda a comprender la física de las tormentas, sino que también es útil para mejorar herramientas de pronóstico y para el estudio de fenómenos atmosféricos.
 
-En este marco, en el grupo de fisica de la atmosfera de FaMAF, ya existe un instrumento capaz de realizar estas mediciones, como el descripto en `New experimental device for measuring electrical charge of precipitation particles' \cite{pereyra2025}, así como un programa para procesarlas. Sin embargo, el código disponible actualmente presenta limitaciones tanto en diseño como en rendimiento: está poco modularizado, resulta difícil de mantener y su desempeño es insuficiente para procesar de manera eficiente grandes volúmenes de datos. En esta tesis se propone un nuevo sistema de análisis que resuelve esas limitaciones, mejorando la eficiencia, la escalabilidad y la mantenibilidad del software, y facilitando así la obtención de resultados más completos y confiables.
+En este marco, en el grupo de física de la atmósfera de FaMAF, ya existe un instrumento capaz de realizar estas mediciones, como el descrito en `New experimental device for measuring electrical charge of precipitation particles' \cite{pereyra2025}, así como un programa para procesarlas. Sin embargo, el código disponible actualmente presenta limitaciones tanto en diseño como en rendimiento: está poco modularizado, resulta difícil de mantener y su desempeño es insuficiente para procesar de manera eficiente grandes volúmenes de datos. En esta tesis se propone un nuevo sistema de análisis que resuelve esas limitaciones, mejorando la eficiencia, la escalabilidad y la mantenibilidad del software, y facilitando así la obtención de resultados más completos y confiables.
 
 \subsection{Instrumento de Medición}
 \lhead{}
 \rhead{Instrumento de Medición}
 
-En la figura \ref{fig:instrumento_medicion} se muestra el dispotivo, el cual consiste en un anillo de inducción de latón de 6 cm de diámetro y 1.5 cm de longitud, posicionado a 5.7 cm por encima de una placa plana de aluminio de 20 cm de diámetro. Tanto el anillo como la placa están conectados eléctricamente a amplificadores de corriente de alta ganancia con una amplificación de 5 $\cdot$ 10$^8$ V/A. Para proteger contra interferencias electromagnéticas, el anillo, la placa y los amplificadores están encerrados dentro de un contenedor metálico que actúa como jaula de Faraday. A su vez, los amplificadores están protegidos contra daños por agua al estar asegurados dentro de un recinto impermeable.
+En la figura \ref{fig:instrumento_medicion} se muestra el dispositivo, el cual consiste en un anillo de inducción de latón de 6 cm de diámetro y 1.5 cm de longitud, posicionado a 5.7 cm por encima de una placa plana de aluminio de 20 cm de diámetro. Tanto el anillo como la placa están conectados eléctricamente a amplificadores de corriente de alta ganancia con una amplificación de 5 $\cdot$ 10$^8$ V/A. Para proteger contra interferencias electromagnéticas, el anillo, la placa y los amplificadores están encerrados dentro de un contenedor metálico que actúa como jaula de Faraday. A su vez, los amplificadores están protegidos contra daños por agua al estar asegurados dentro de un recinto impermeable.
 
 \begin{figure}[H]
     \centering
@@ -126,12 +126,12 @@ En la figura \ref{fig:instrumento_medicion} se muestra el dispotivo, el cual con
 
 La jaula de Faraday presenta una abertura ligeramente mayor que el anillo, permitiendo que las gotas de lluvia entren únicamente a través del anillo de inducción. Toda el agua que llega a la placa se drena a través de sus lados y se recolecta en un contenedor de aluminio, que también está situado dentro de la jaula de Faraday pero eléctricamente aislado de ella.
 
-Las gotas cargadas eléctricamente inducen corrientes tanto en el anillo como en la placa. Al caer una gota, primero se acerca al anillo. Al hacerlo, se induce una corriente de la polaridad opuesta a la carga de la gota. Luego, al alejarse, esta polaridad se invierte. Mientras tanto, la gota se acerca a la placa, induciendo también una corriente de polaridad opuesta a la carga de la gota, lo cual culmina en una meseta en la corriente dado que la placa de aluminio absorbe el impacto de la gota y se le transfiere toda la carga a la placa, la cual se disipa en el tiempo. La figura \ref{fig:corriente_gotas} muestra la dinamica de la señal electrica registrada por los amplificadores.
+Las gotas cargadas eléctricamente inducen corrientes tanto en el anillo como en la placa. Al caer una gota, primero se acerca al anillo. Al hacerlo, se induce una corriente de la polaridad opuesta a la carga de la gota. Luego, al alejarse, esta polaridad se invierte. Mientras tanto, la gota se acerca a la placa, induciendo también una corriente de polaridad opuesta a la carga de la gota, lo cual culmina en una meseta en la corriente dado que la placa de aluminio absorbe el impacto de la gota y se le transfiere toda la carga a la placa, la cual se disipa en el tiempo. La figura \ref{fig:corriente_gotas} muestra la dinámica de la señal eléctrica registrada por los amplificadores.
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.7\textwidth]{figures/corriente_gotas.png}
-    \caption{Corriente inducida por una gota cargada negativamente en el anillo (puntos solidos) y la placa (puntos huecos).}
+    \caption{Corriente inducida por una gota cargada negativamente en el anillo (puntos sólidos) y la placa (puntos huecos).}
     \label{fig:corriente_gotas}
 \end{figure}
 
@@ -141,9 +141,9 @@ La recolección de datos se realiza a una tasa de 5 kHz por canal (5000 datos po
 \lhead{}
 \rhead{Procesamiento de Señales}
 
-El procesamiento transforma las señales crudas registradas por el instrumento en una lista de propiedades fisicas para cada gota. Para ello se emplean dos programas que se ejecutan de manera secuencial: el primero realiza un preprocesamiento de las señales y el segundo extrae la información de las gotas y calcula sus características.
+El procesamiento transforma las señales crudas registradas por el instrumento en una lista de propiedades físicas para cada gota. Para ello se emplean dos programas que se ejecutan de manera secuencial: el primero realiza un preprocesamiento de las señales y el segundo extrae la información de las gotas y calcula sus características.
 
-El fragmento de la señal que forma parte de una gota extraida por el programa, la denominamos `pulso'. Estos pulsos son reconocibles en la señal gracias a la dinamica producida por la interaccion de la gota con el instrumento de medicion.
+El fragmento de la señal que forma parte de una gota extraída por el programa, la denominamos `pulso'. Estos pulsos son reconocibles en la señal gracias a la dinámica producida por la interacción de la gota con el instrumento de medición.
 
 El flujo general consta de cinco pasos principales:
 
@@ -208,7 +208,7 @@ La estructura de esta tesis está organizada de manera que primero se establece 
 
     \item Describe las mejoras implementadas en el preprocesamiento de señales. (Sección 5)
 
-    \item Describe el nuevo algoritmo de deteccion de pulsos implementado. (Sección 6)
+    \item Describe el nuevo algoritmo de detección de pulsos implementado. (Sección 6)
 
     \item Presenta el sistema de automatización desarrollado en Python. (Sección 7)
 
@@ -245,12 +245,12 @@ Las clases de complejidad más relevantes para este trabajo son:
     \item \textbf{$O(n^2)$ - Cuadrática:} El tiempo es proporcional al cuadrado del tamaño de la entrada. Ejemplo: algoritmos de ordenamiento simples como bubble sort. Bubble sort compara pares adyacentes de elementos y los intercambia si están en orden incorrecto, repitiendo este proceso hasta que no se requieran más intercambios.
 \end{itemize}
 
-En la figura \ref{fig:complejidades_algoritmicas} se puede observar un gráfico comparativo de numero de operaciones versus tamaño de datos para diferentes complejidades algorítmicas
+En la figura \ref{fig:complejidades_algoritmicas} se puede observar un gráfico comparativo de número de operaciones versus tamaño de datos para diferentes complejidades algorítmicas
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.8\textwidth]{figures/complejidades_algoritmicas.png}
-    \caption{Gráfico comparativo de numero de operaciones versus tamaño de datos para diferentes complejidades algorítmicas, en escala logarítmica. }
+    \caption{Gráfico comparativo de número de operaciones versus tamaño de datos para diferentes complejidades algorítmicas, en escala logarítmica. }
     \label{fig:complejidades_algoritmicas}
 \end{figure}
 
@@ -267,7 +267,7 @@ En el procesamiento de señales, donde se manejan millones de puntos de datos, l
     \item Un algoritmo $O(n^2)$ podría requerir días o semanas
 \end{itemize}
 
-Por esta razón, la optimización de la complejidad computacional, asi mismo como la optimizacion de la constante es crucial para hacer viable el análisis de grandes volúmenes de datos meteorológicos en tiempo razonable.
+Por esta razón, la optimización de la complejidad computacional, así como la optimización de la constante, es crucial para hacer viable el análisis de grandes volúmenes de datos meteorológicos en tiempo razonable.
 
 \section{Análisis del código existente}
 \lhead{}
@@ -320,12 +320,12 @@ Para cada umbral, se buscan pares de puntos consecutivos que superen el umbral e
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.9\textwidth]{figures/sensores_gota.png}
-    \caption{En la figura se puede observar un pulso, junto con los maximos consecutivos de cada sensor. Ademas se observan distintos valores de umbrales, y se marca el umbral que encuentra el pulso. }
+    \caption{En la figura se puede observar un pulso, junto con los máximos consecutivos de cada sensor. Además se observan distintos valores de umbrales, y se marca el umbral que encuentra el pulso. }
     \label{fig:sensores_gota}
 \end{figure}
 
 \item \textbf{Localización y delimitación de pulsos:} Una vez detectado un pulso, se determina el "inicio" de cada señal (u1 y u2 respectivamente), retrocediendo desde c1 y c2 respectivamente hasta encontrar el punto donde la señal se anula.
-Se calcula tambien el punto medio de la señal del anillo (p1) avanzando desde c1 hasta donde se anula la señal, y el punto de quiebre de la señal de la placa (p2) mediante análisis de la integral de la misma. En la figura \ref{fig:analisis_gota} se pueden observar estos puntos relevantes.
+Se calcula también el punto medio de la señal del anillo (p1) avanzando desde c1 hasta donde se anula la señal, y el punto de quiebre de la señal de la placa (p2) mediante análisis de la integral de la misma. En la figura \ref{fig:analisis_gota} se pueden observar estos puntos relevantes.
 El algoritmo recorta cada pulso en base a la localización de estos puntos, considerando un ancho máximo de 400 puntos.
 
 \begin{figure}[H]
@@ -361,9 +361,9 @@ El algoritmo recorta cada pulso en base a la localización de estos puntos, cons
 \end{figure}
 
 
-\item \textbf{Aplicación de filtros de calidad:} Durante el proceso de detección, el algoritmo identifica tanto pulsos validos (que corresponden a gotas de lluvia reales), asi como falsos positivos claros (que corresponden a ruido o detecciones espurias)
+\item \textbf{Aplicación de filtros de calidad:} Durante el proceso de detección, el algoritmo identifica tanto pulsos válidos (que corresponden a gotas de lluvia reales), así como falsos positivos claros (que corresponden a ruido o detecciones espurias)
 
-Para resolver este problema, se implementan filtros de calidad para separar los pulsos válidos de los que no lo son. Estos filtros eliminan detecciones que no cumplen con propiedades fisicas esperadas para gotas de lluvia reales. Los filtros se aplican de manera progresiva, donde cada etapa elimina un tipo específico de detección errónea:
+Para resolver este problema, se implementan filtros de calidad para separar los pulsos válidos de los que no lo son. Estos filtros eliminan detecciones que no cumplen con propiedades físicas esperadas para gotas de lluvia reales. Los filtros se aplican de manera progresiva, donde cada etapa elimina un tipo específico de detección errónea:
 
 \begin{itemize}
 
@@ -414,28 +414,28 @@ Para clasificar las gotas obtenidas, se implementa un sistema de puntuación que
         \label{fig:comparacion_modelos_teoricos}
     \end{figure}
 
-    \item \textbf{Eval3:} Desviación de la proporción esperada entre cargas del anillo y la placa. Experimentalmente se observo que la carga medida en el anillo es aproximadamente el 87\% de la carga medida en la placa, por lo que se mide la desviacion de esta proporcion.
+    \item \textbf{Eval3:} Desviación de la proporción esperada entre cargas del anillo y la placa. Experimentalmente se observó que la carga medida en el anillo es aproximadamente el 87\% de la carga medida en la placa, por lo que se mide la desviación de esta proporción.
 
     \begin{equation}
         penal2(l) = \left|\frac{q_1}{q} - 0.87 \cdot \frac{q_2}{q}\right|
     \end{equation}
 
-    donde $q$ esta definido como $q = \frac{q1 / 0.87 + q2}{2}$
+    donde $q$ está definido como $q = \frac{q1 / 0.87 + q2}{2}$
     
     \item \textbf{Eval4:} Desviación de la proporción esperada del ancho entre los picos de la
-señal de la placa y el anillo. Experimentalmente se observo que el ancho del pulso de la placa es aproximadamente el 79\% del ancho del pulso del anillo, por lo que se mide la desviacion de esta proporcion.
+señal de la placa y el anillo. Experimentalmente se observó que el ancho del pulso de la placa es aproximadamente el 79\% del ancho del pulso del anillo, por lo que se mide la desviación de esta proporción.
 
     \begin{equation}
         penal3(l) = \left|\frac{p_1}{p} - 0.79 * \frac{p_2}{p}\right|
     \end{equation}
 
-    donde $p$ esta definido como $p = \frac{p_1 / 0.79 + p_2}{2}$
+    donde $p$ está definido como $p = \frac{p_1 / 0.79 + p_2}{2}$
 
-    \item \textbf{Eval5:} Proporción de señal en el rango de ruido (entre -0.02 y 0.02). Para esto se computan los promedios de cada señal, y se cuentan los puntos que, cuando se les resta el promedio, estan entre -0.02 y 0.02.
+    \item \textbf{Eval5:} Proporción de señal en el rango de ruido (entre -0.02 y 0.02). Para esto se computan los promedios de cada señal, y se cuentan los puntos que, cuando se les resta el promedio, están entre -0.02 y 0.02.
 
 \end{itemize}
 
-    Las evaluaciones se combinan linealmente con pesos para finalmente obtener una puntuacion total, que esta en el range $[0, 20]$. Mientras mas chico sea el valor de la puntuacion total, mejor es la calidad de la gota.
+    Las evaluaciones se combinan linealmente con pesos para finalmente obtener una puntuación total, que está en el rango $[0, 20]$. Mientras más chico sea el valor de la puntuación total, mejor es la calidad de la gota.
     
 \item \textbf{Salida de resultados:} Finalmente, se escriben los datos de todos los pulsos válidos
 en un archivo, incluyendo posición temporal, cargas, velocidad, diámetro y puntuación de calidad.
@@ -448,26 +448,26 @@ El código existente presenta problemas de diseño que dificultan su comprensió
 
 \begin{itemize}
 
-\item \textbf{Modularización inexistente:} Todo el procesamiento está en el entorno global del programa, que maneja todos los pasos de procesamiento, como la detección de pulsos, cálculo de características, aplicación de filtros, escritura de resultados, etc. Cualquier modificación requiere entender por completo como interactuan las diferentes `partes' del programa.
+\item \textbf{Modularización inexistente:} Todo el procesamiento está en el entorno global del programa, que maneja todos los pasos de procesamiento, como la detección de pulsos, cálculo de características, aplicación de filtros, escritura de resultados, etc. Cualquier modificación requiere entender por completo cómo interactúan las diferentes `partes' del programa.
 
 \item \textbf{Variables sin contexto semántico:} El código utiliza variables como `s', `ss', `i', `j', `w', `k', `l', `p', `r', `x', `cont', `contt', `cc1', `cc2', `iii' sin ningún contexto. Es
-imposible determinar qué representa cada una sin leer todo el código. Ademas, estan todas definidas en el principio del programa, lo cual hace que sea dificil entender su uso en el resto del código.
+imposible determinar qué representa cada una sin leer todo el código. Además, están todas definidas en el principio del programa, lo cual hace que sea difícil entender su uso en el resto del código.
     
 \item \textbf{Requiere dividir el conjunto de datos en varias partes}: El consumo de memoria es muy alto, por lo que el programa requiere dividir el conjunto de datos en varias partes y procesarlos secuencialmente. Esto hace que se pierdan algunos pulsos, ya que los que quedan en medio de los cortes no se procesan.
 
-\item \textbf{Lectura de archivos hard-codeada:} El programa requiere cambio en los nombres de los archivos a procesar, ya que los nombres de estos son constantes en el codigo en vez de ser parametros. Ademas, hay un bloque de codigo que permite leer hasta 36 archivos, que se debe comentar o descomentar dependiendo de la cantidad en la que se dividio el conjunto de datos a procesar.
+\item \textbf{Lectura de archivos hard-codeada:} El programa requiere cambiar los nombres de los archivos a procesar, ya que los nombres de estos son constantes en el código en vez de ser parámetros. Además, hay un bloque de código que permite leer hasta 36 archivos, que se debe comentar o descomentar dependiendo de la cantidad en la que se dividió el conjunto de datos a procesar.
 
-\item \textbf{Codigo duplicado:} La cantidad de codigo repetido es muy alta. Hay mucha logica la cual solo tiene un cambio en el signo, un cambio en un `if statement' o un cambio en una variable. Esto hace que sea dificil mantener el codigo ya que hay que modificarlo en varios lugares.
+\item \textbf{Código duplicado:} La cantidad de código repetido es muy alta. Hay mucha lógica la cual solo tiene un cambio en el signo, un cambio en un `if statement' o un cambio en una variable. Esto hace que sea difícil mantener el código ya que hay que modificarlo en varios lugares.
 
 \end{itemize}
 
 \subsection{Problemas de rendimiento}
 
-Al analizar el rendimiento del código, se encontraron dos areas de potenciales mejoras:
+Al analizar el rendimiento del código, se encontraron dos áreas de potenciales mejoras:
 
 \begin{itemize}
     \item \textbf{Remoción de offset:} El algoritmo de remoción de offset es muy ineficiente. Como se puede observar en la implementación \nameref{lst:codigo_remocion_offset}, para cada punto, se hace una suma de 5001 valores divididos por 5001,
-    resultando en una complejidad $$O(5001n) = O(n)$$ Obviamente se trata de una complejidad lineal, pero no solo que la constante es altisima por el factor de 5001, sino que tambien se realizan 5001 divisiones por cada punto, que no es la operacion mas eficiente en un procesador.
+    resultando en una complejidad $$O(5001n) = O(n)$$ Obviamente se trata de una complejidad lineal, pero no solo que la constante es altísima por el factor de 5001, sino que también se realizan 5001 divisiones por cada punto, que no es la operación más eficiente en un procesador.
 
     \begin{lstlisting}[language=Fortran, label=lst:codigo_remocion_offset, caption={buscador\_de\_gotas.f - Algoritmo ineficiente de remoción de offset}]
 ! n = 5000
@@ -491,20 +491,20 @@ Al analizar el rendimiento del código, se encontraron dos areas de potenciales 
     \end{lstlisting}
 
 
-    \item \textbf{Detección de pulsos:} Si analizamos la complejidad de la implentacion de este algoritmo, podemos ver que para cada umbral (1000 umbrales), se revisa todo el array de la señales. Si dos puntos consecutivos superan el umbral en la primera señal, se revisa hasta un total de 100 puntos en la segunda señal. Esto resulta en una complejidad $$O(\#umbrales * \#puntos * 100) = O(100000 * \#puntos) = O(\#puntos)$$ Identico al caso anterior, se trata de una complejidad lineal, pero con una constante extremadamente alta.
+    \item \textbf{Detección de pulsos:} Si analizamos la complejidad de la implementación de este algoritmo, podemos ver que para cada umbral (1000 umbrales), se revisa todo el array de la señales. Si dos puntos consecutivos superan el umbral en la primera señal, se revisa hasta un total de 100 puntos en la segunda señal. Esto resulta en una complejidad $$O(\#umbrales * \#puntos * 100) = O(100000 * \#puntos) = O(\#puntos)$$ Idéntico al caso anterior, se trata de una complejidad lineal, pero con una constante extremadamente alta.
 \end{itemize}
 
 \subsection{Motivación de la refactorización}
 
-Todas las problematicas mencionadas anteriormente, motivan a realizar una refactorizacion del codigo. Esta refactorizacion tiene muchos beneficios, entre los cuales:
+Todas las problemáticas mencionadas anteriormente, motivan a realizar una refactorización del código. Esta refactorización tiene muchos beneficios, entre los cuales:
 
 \begin{itemize}
 
-\item \textbf{Mantenibilidad:} Cualquier corrección de errores o implementación de mejoras requiere revisar y entender menos codigo, ya que la logica se encuentra en funciones mas pequeñas.
+\item \textbf{Mantenibilidad:} Cualquier corrección de errores o implementación de mejoras requiere revisar y entender menos código, ya que la lógica se encuentra en funciones más pequeñas.
 
-\item \textbf{Reutilizabilidad:} El codigo puede ser reutilizado para otros experimentos o instrumentos.
+\item \textbf{Reutilizabilidad:} El código puede ser reutilizado para otros experimentos o instrumentos.
 
-\item \textbf{Verificación:} Permitiria realizar pruebas unitarias de cada funcion y no de todo el programa completo.
+\item \textbf{Verificación:} Permitiría realizar pruebas unitarias de cada función y no de todo el programa completo.
 
 \item \textbf{Colaboración:} Otros investigadores pueden entender y modificar el código sin
 invertir tanta cantidad de tiempo y esfuerzo estudiándolo.
@@ -522,7 +522,7 @@ Para abordar las limitaciones de performance del código existente, se utilizaro
 
 El algoritmo de ventana deslizante (sliding window) es una técnica de optimización utilizada para resolver eficientemente problemas que involucran secuencias contiguas en arreglos.
 
-En términos generales, la técnica consiste en mover una `ventana' de tamaño fijo a lo largo de la secuencia de datos, realizando operaciones sobre los elementos contenidos en cada posición de la ventana. A medida que la ventana avanza, el valor más antiguo se elimina y el nuevo valor que ingresa se incorpora al cálculo, actualizando así el resultado con un costo computacional que depende solamente de la operacion realizada, y no del tamaño de la ventana.
+En términos generales, la técnica consiste en mover una `ventana' de tamaño fijo a lo largo de la secuencia de datos, realizando operaciones sobre los elementos contenidos en cada posición de la ventana. A medida que la ventana avanza, el valor más antiguo se elimina y el nuevo valor que ingresa se incorpora al cálculo, actualizando así el resultado con un costo computacional que depende solamente de la operación realizada, y no del tamaño de la ventana.
 
 En la figura \ref{fig:sliding_window_algorithm} se ilustra el funcionamiento para calcular la suma de todos los subarreglos de tamaño 3, mostrando cómo el algoritmo evita recalcular la suma completa en cada desplazamiento de la ventana.
 
@@ -535,9 +535,9 @@ En la figura \ref{fig:sliding_window_algorithm} se ilustra el funcionamiento par
 
 Una vez entendido este principio, podemos aplicar la técnica al problema específico de cálculo del promedio móvil utilizado en este trabajo para remover el offset de la señal. En este caso, se mantiene una ventana de tamaño fijo que se desliza a lo largo de la señal, calculando el promedio en cada punto. Dado que la ventana es de tamaño fijo, el promedio es simplemente la suma de la ventana (lo cual se resuelve con la técnica de sliding window) dividida por el tamaño de la ventana.
 
-La implementación del algoritmo optimizado de \nameref{lst:codigo_promedio_movil}, utiliza esta tecnica. Vemos que el arreglo de datos se recorre una sola vez. En cada posición, solo se realiza una suma para agregar el nuevo valor a la ventana y una resta para eliminar el valor más antiguo cuando la ventana está completa.
+La implementación del algoritmo optimizado de \nameref{lst:codigo_promedio_movil}, utiliza esta técnica. Vemos que el arreglo de datos se recorre una sola vez. En cada posición, solo se realiza una suma para agregar el nuevo valor a la ventana y una resta para eliminar el valor más antiguo cuando la ventana está completa.
 
-De esta manera, la suma total de la ventana se mantiene actualizada de forma incremental, requiriendo solo dos operaciones por iteración independientemente del tamaño de la ventana. El promedio se calcula dividiendo esta suma por el tamaño de la ventana y se resta al punto central para corregir el offset de este punto. Como resultado, tenemos un algoritmo de complejidad $O(n)$ con una constante muy baja, ya que hacemos una sola division por punto, y dos operaciones para mantener la suma actualizada.
+De esta manera, la suma total de la ventana se mantiene actualizada de forma incremental, requiriendo solo dos operaciones por iteración independientemente del tamaño de la ventana. El promedio se calcula dividiendo esta suma por el tamaño de la ventana y se resta al punto central para corregir el offset de este punto. Como resultado, tenemos un algoritmo de complejidad $O(n)$ con una constante muy baja, ya que hacemos una sola división por punto, y dos operaciones para mantener la suma actualizada.
 
 \begin{lstlisting}[language=C++, label=lst:codigo_promedio_movil, caption={normalizer.cpp - Algoritmo optimizado de ventana deslizante con complejidad O(n)}]
     double sumaSensor1 = 0.0;
@@ -554,16 +554,16 @@ De esta manera, la suma total de la ventana se mantiene actualizada de forma inc
         sumaSensor2 += data[i].sensor2;
         ++tamañoActual; // Incrementamos el tamaño de la ventana
 
-        // Si nos excedemos del tamaño de la ventana, restamos el valor mas viejo
+        // Si nos excedemos del tamaño de la ventana, restamos el valor más viejo
         if (tamañoActual > tamañoVentana) {
             sumaSensor1 -= data[i - tamañoVentana].sensor1;
             sumaSensor2 -= data[i - tamañoVentana].sensor2;
             --tamañoActual; // Decrementamos el tamaño de la ventana
         }
 
-        // Si la ventana esta completa, calculamos el promedio
+        // Si la ventana está completa, calculamos el promedio
         if (tamañoActual == tamañoVentana) {
-            // Hacemos la division solo cuando lo necesitamos
+            // Hacemos la división solo cuando lo necesitamos
             double promSensor1 = sumaSensor1 / tamañoVentana;
             double promSensor2 = sumaSensor2 / tamañoVentana;
 
@@ -576,9 +576,9 @@ De esta manera, la suma total de la ventana se mantiene actualizada de forma inc
 
 \subsection{Estructura de datos MinQueue}
 
-Para entender la estructura de datos MinQueue, primero debemos entender las colas y las colas doblemente terminadas. Una cola (queue) es una estructura de datos que sigue el principio FIFO (First In, First Out), donde los elementos se agregan por un extremo y se eliminan por el otro. Una cola doblemente terminada (deque) es una estructura de datos que permite insertar y eliminar elementos por ambos extremos. Estas estructuras de datos son muy utiles para modelar situaciones comunes, como la cola del supermercado (ejemplo clasico de una queue) o una escalera mecanica que pueda cambiar de direccion (ejemplo clasico de una deque).
+Para entender la estructura de datos MinQueue, primero debemos entender las colas y las colas doblemente terminadas. Una cola (queue) es una estructura de datos que sigue el principio FIFO (First In, First Out), donde los elementos se agregan por un extremo y se eliminan por el otro. Una cola doblemente terminada (deque) es una estructura de datos que permite insertar y eliminar elementos por ambos extremos. Estas estructuras de datos son muy útiles para modelar situaciones comunes, como la cola del supermercado (ejemplo clásico de una queue) o una escalera mecánica que pueda cambiar de dirección (ejemplo clásico de una deque).
 
-La \textit{MinQueue} utiliza estas 2 estructuras internamente, para poder no solo mantener una queue de datos, sino que tambien permite obtener el elemento mínimo en tiempo constante ($O(1)$) en vez de buscar el mínimo en toda la ventana cada vez ($O(n)$).
+La \textit{MinQueue} utiliza estas 2 estructuras internamente, para poder no solo mantener una queue de datos, sino que también permite obtener el elemento mínimo en tiempo constante ($O(1)$) en vez de buscar el mínimo en toda la ventana cada vez ($O(n)$).
 
 \subsubsection{Operaciones}
 
@@ -588,9 +588,9 @@ La deque, tiene 2 operaciones extras: \texttt{push\_back} y \texttt{pop\_front}.
 
 Estas 4 operaciones, se pueden realizar en tiempo constante ($O(1)$).
 
-La MinQueue utiliza una queue principal para almacenar los elementos y una deque para mantener los candidatos al mínimo. Ademas, agrega la operacion \texttt{min} para obtener el elemento mínimo actual. La clave del algoritmo radica en mantener la deque en orden creciente, para que el primer elemento de esta siempre sea el mínimo actual.
+La MinQueue utiliza una queue principal para almacenar los elementos y una deque para mantener los candidatos al mínimo. Además, agrega la operación \texttt{min} para obtener el elemento mínimo actual. La clave del algoritmo radica en mantener la deque en orden creciente, para que el primer elemento de esta siempre sea el mínimo actual.
 
-En la figura \ref{fig:minqueue_algorithm} se puede observar un ejemplo de funcionamiento de algunas operaciones de la MinQueue. Se debe notar que la queue mantiene los elementos en orden FIFO, y la deque tiene la particularidad de que se elimina el ultimo elemento (derecha) mientras sea mayor al elemento que se esta agregando. Un ejemplo de implementacion de la MinQueue se puede observar en \nameref{lst:minqueue_simple}.
+En la figura \ref{fig:minqueue_algorithm} se puede observar un ejemplo de funcionamiento de algunas operaciones de la MinQueue. Se debe notar que la queue mantiene los elementos en orden FIFO, y la deque tiene la particularidad de que se elimina el último elemento (derecha) mientras sea mayor al elemento que se está agregando. Un ejemplo de implementación de la MinQueue se puede observar en \nameref{lst:minqueue_simple}.
 
 \begin{figure}[H]
     \centering
@@ -661,7 +661,7 @@ public:
 
 Es trivial adaptar la MinQueue para obtener una MaxQueue: simplemente cambiamos la condición de comparación en el bucle while de `$>$' a `$<$', manteniendo el deque auxiliar en orden decreciente en lugar de creciente.
 
-\subsubsection{MaxMinQueue: Manteniendo mínimo y maximo}
+\subsubsection{MaxMinQueue: Manteniendo mínimo y máximo}
 
 Para mantener simultáneamente el mínimo y el máximo, utilizamos dos deques auxiliares independientes: uno para el mínimo (orden creciente) y otro para el máximo (orden decreciente). Esta extensión mantiene la complejidad $O(1)$ amortizado para todas las operaciones, aunque requiere el doble de espacio auxiliar.
 
@@ -683,12 +683,12 @@ La mejora implementada consiste en utilizar los promedios de los puntos anterior
     \item \textbf{Reducción de distorsiones:} Esta mejora minimiza las distorsiones que pueden introducirse durante el rellenado, lo cual es particularmente importante para los pasos posteriores del procesamiento, especialmente en la remoción del offset.
 \end{itemize}
 
-En la figura \ref{fig:mejora_rellenado_huecos} se puede observar que con el metodo anterior, a la señal se le termina quitando offset "de más", ya que la presencia de valores anomalos en los extremos del hueco afecta el calculo posterior del promedio de las ventanas.
+En la figura \ref{fig:mejora_rellenado_huecos} se puede observar que con el método anterior, a la señal se le termina quitando offset "de más", ya que la presencia de valores anómalos en los extremos del hueco afecta el cálculo posterior del promedio de las ventanas.
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.9\textwidth]{figures/mejora_rellenado_huecos.png}
-    \caption{Diferencia entre la interpolacion puntual y la interpolacion con promedios de ventanas}
+    \caption{Diferencia entre la interpolación puntual y la interpolación con promedios de ventanas}
     \label{fig:mejora_rellenado_huecos}
 \end{figure}
 
@@ -696,13 +696,13 @@ En la figura \ref{fig:mejora_rellenado_huecos} se puede observar que con el meto
 
 En el algoritmo original de remoción de offset implementado en `buscador\_de\_gotas.f', se utilizaba un enfoque ineficiente para calcular el promedio de los 5001 puntos circundantes para cada punto de la señal.
 
-Para optimizarlo, se aplico el algoritmo antes descripto de ventana deslizante para el calculo del promedio, reduciendo significativamente la constante del algoritmo.
+Para optimizarlo, se aplicó el algoritmo antes descrito de ventana deslizante para el cálculo del promedio, reduciendo significativamente la constante del algoritmo.
 
 \subsection{Cambios en la detección de pulsos}
 \lhead{}
 \rhead{Cambios en la detección de pulsos}
 
-Se implemento un nuevo algoritmo de deteccion de pulsos, que reemplaza la busqueda con umbrales adaptativos por una busqueda local e iterativa.
+Se implementó un nuevo algoritmo de detección de pulsos, que reemplaza la búsqueda con umbrales adaptativos por una búsqueda local e iterativa.
 
 \subsubsection{Algoritmo básico}
 
@@ -711,9 +711,9 @@ El nuevo algoritmo de detección de pulsos se basa en una estrategia de búsqued
 El algoritmo funciona de la siguiente manera:
 
 \begin{enumerate}
-    \item \textbf{Búsqueda de los puntos críticos del pulso:} En una ventana de datos, se buscan los puntos críticos del pulso, que son los puntos de mayor valor absoluto del sensor del anillo y del sensor de la placa, denominados \texttt{c1} y \texttt{c2} respectivamente. Para evitar escoger puntos anómalos, se toma minimo (maximo para pulsos negativos) entre los puntos \texttt{i} e \texttt{i+1} del sensor del anillo y del sensor de la placa. La separacion maxima entre los puntos criticos es de \texttt{nn = 100} puntos, y ademas esta busqueda se hace con la restriccion de que \texttt{c1 <\ DROP\_SIZE} (ya que si \texttt{c1} se acerca al borde derecho, el pulso podria verse truncado).
+    \item \textbf{Búsqueda de los puntos críticos del pulso:} En una ventana de datos, se buscan los puntos críticos del pulso, que son los puntos de mayor valor absoluto del sensor del anillo y del sensor de la placa, denominados \texttt{c1} y \texttt{c2} respectivamente. Para evitar escoger puntos anómalos, se toma mínimo (máximo para pulsos negativos) entre los puntos \texttt{i} e \texttt{i+1} del sensor del anillo y del sensor de la placa. La separación máxima entre los puntos críticos es de \texttt{nn = 100} puntos, y además esta búsqueda se hace con la restricción de que \texttt{c1 <\ DROP\_SIZE} (ya que si \texttt{c1} se acerca al borde derecho, el pulso podría verse truncado).
     
-    \item \textbf{Análisis del pulso detectado:} Si se encuentran \texttt{c1} y \texttt{c2}, se procede a encontrar los puntos de inicio del pulso, el punto medio de la señal del anillo y el punto de quiebre de la señal de la placa. Con estos datos se calculan todas las propiedades físicas de la gota (carga, velocidad, diametro, etc.).
+    \item \textbf{Análisis del pulso detectado:} Si se encuentran \texttt{c1} y \texttt{c2}, se procede a encontrar los puntos de inicio del pulso, el punto medio de la señal del anillo y el punto de quiebre de la señal de la placa. Con estos datos se calculan todas las propiedades físicas de la gota (carga, velocidad, diámetro, etc.).
     
     \item \textbf{Aplicación de filtros de calidad:} Se aplican los filtros de calidad, se computa la evaluación y se determina si el pulso es válido.
     
@@ -725,11 +725,11 @@ El algoritmo funciona de la siguiente manera:
     \end{itemize}
 \end{enumerate}
 
-Al avanzar la ventana, se permite que hasta los primeros \texttt{nn = 100} puntos de la ventana se encuentren marcados como utilizados, ya que pueden contener el inicio de un pulso que se va a procesar en la siguiente ventana. Esto hace que la ventana siempre avance como minimo 300 puntos (ya que la busqueda agota todos los puntos criticos de la ventana, y en el ultimo paso no se encontrara ninguno, marcando asi \texttt{DROP\_SIZE} puntos como utilizados).
+Al avanzar la ventana, se permite que hasta los primeros \texttt{nn = 100} puntos de la ventana se encuentren marcados como utilizados, ya que pueden contener el inicio de un pulso que se va a procesar en la siguiente ventana. Esto hace que la ventana siempre avance como mínimo 300 puntos (ya que la búsqueda agota todos los puntos críticos de la ventana, y en el último paso no se encontrará ninguno, marcando así \texttt{DROP\_SIZE} puntos como utilizados).
 
-Esta estrategia iterativa tiene una gran ventaja en cuanto a la anterior, ya que una vez encontrados los puntos relevantes del pulso, analiza si la gota es valida o no, evitando descartar puntos que no pertenecen a ningun pulso.
+Esta estrategia iterativa tiene una gran ventaja en cuanto a la anterior, ya que una vez encontrados los puntos relevantes del pulso, analiza si la gota es válida o no, evitando descartar puntos que no pertenecen a ningún pulso.
 
-\subsubsection{Analisis detallado del algoritmo}
+\subsubsection{Análisis detallado del algoritmo}
 
 \subsubsubsection{Preprocesamiento de señales}
 
@@ -742,41 +742,41 @@ $$
 \texttt{value[i]} = \max(\texttt{sensor[i]}, \texttt{sensor[i+1]}) \quad \text{para pulsos negativos}
 $$
 
-Si el punto \texttt{i} o \texttt{i+1} esta marcado como descartado, el \texttt{value} se establece en 0, excluyendo efectivamente ese punto de la búsqueda.
+Si el punto \texttt{i} o \texttt{i+1} está marcado como descartado, el \texttt{value} se establece en 0, excluyendo efectivamente ese punto de la búsqueda.
 
 Este paso se puede implementar con una sola iteración sobre la señal, resultando en una complejidad de $O(n)$, donde $n$ es el tamaño de la ventana.
 
 \subsubsubsection{Búsqueda iterativa con MaxMinQueue}
 
-Para encontrar los puntos \texttt{c1} y \texttt{c2}, primero buscaremos el `mejor' \texttt{c2} para cada posicion `\texttt{i}' del sensor del anillo.
+Para encontrar los puntos \texttt{c1} y \texttt{c2}, primero buscaremos el `mejor' \texttt{c2} para cada posición `\texttt{i}' del sensor del anillo.
 
-Para esto, utilizamos una MaxMinQueue para mantener el mínimo y máximo de los últimos \texttt{nn}\ \texttt{values} del sensor de la placa, mientras se va recorriendo la señal del anillo desde el final hacia el inicio. De esta manera, para cada `\texttt{i}' sabemos cual es el `mejor' \texttt{c2} y su posicion para el `\texttt{c1 = i}'.
+Para esto, utilizamos una MaxMinQueue para mantener el mínimo y máximo de los últimos \texttt{nn}\ \texttt{values} del sensor de la placa, mientras se va recorriendo la señal del anillo desde el final hacia el inicio. De esta manera, para cada `\texttt{i}' sabemos cuál es el `mejor' \texttt{c2} y su posición para el `\texttt{c1 = i}'.
 
-Al mismo tiempo, podemos mantener el mejor de estos pares de puntos `\texttt{c1}' y `\texttt{c2}', comparando su valor absoluto con el mejor valor absoluto encontrado hasta el momento. De esta manera, al final de la busqueda, tenemos el mejor par de puntos `\texttt{c1}' y `\texttt{c2}' encontrado para esta ventana.
+Al mismo tiempo, podemos mantener el mejor de estos pares de puntos `\texttt{c1}' y `\texttt{c2}', comparando su valor absoluto con el mejor valor absoluto encontrado hasta el momento. De esta manera, al final de la búsqueda, tenemos el mejor par de puntos `\texttt{c1}' y `\texttt{c2}' encontrado para esta ventana.
 
-Al final, se debe comparar tanto \texttt{c1} como \texttt{c2} con el umbral minimo en valor absoluto (\texttt{MINIMUM\_THRESHOLD = 0.02}) y verificar que sean de la misma polaridad. En caso de que no cumplan alguna de las dos condiciones, no habremos encontrado ningun \texttt{c1} y \texttt{c2} validos para esta ventana, y marcaremos los primeros \texttt{DROP\_SIZE} puntos como utilizados.
+Al final, se debe comparar tanto \texttt{c1} como \texttt{c2} con el umbral mínimo en valor absoluto (\texttt{MINIMUM\_THRESHOLD = 0.02}) y verificar que sean de la misma polaridad. En caso de que no cumplan alguna de las dos condiciones, no habremos encontrado ningún \texttt{c1} y \texttt{c2} válidos para esta ventana, y marcaremos los primeros \texttt{DROP\_SIZE} puntos como utilizados.
 
-Este paso se puede implementar tambien con una sola iteracion sobre la señal, asi que a priori la complejidad es $O(n)$. Las operaciones de MaxMinQueue tienen complejidad constante amortizada, asi que no afectan a la complejidad total.
+Este paso se puede implementar también con una sola iteración sobre la señal, así que a priori la complejidad es $O(n)$. Las operaciones de MaxMinQueue tienen complejidad constante amortizada, así que no afectan a la complejidad total.
 
-En caso de que debamos marcar toda la ventana como utilizada, el coste es tambien de complejidad lineal (solo hay que iterar sobre la ventana una vez, marcando cada punto como utilizado).
+En caso de que debamos marcar toda la ventana como utilizada, el coste es también de complejidad lineal (solo hay que iterar sobre la ventana una vez, marcando cada punto como utilizado).
 
-\subsubsubsection{Evaluación del mejor par de puntos criticos}
+\subsubsubsection{Evaluación del mejor par de puntos críticos}
 
-Una vez obtenido el mejor par de puntos criticos, podemos calcular todos los puntos relevantes del pulso, y aplicar los filtros de calidad para decidir si el pulso es valido o no. Si el pulso no es valido, se descartan los puntos criticos encontrados (se marcan como utilizados), y se reinicia la busqueda en la misma ventana.
+Una vez obtenido el mejor par de puntos críticos, podemos calcular todos los puntos relevantes del pulso, y aplicar los filtros de calidad para decidir si el pulso es válido o no. Si el pulso no es válido, se descartan los puntos críticos encontrados (se marcan como utilizados), y se reinicia la búsqueda en la misma ventana.
 
-Si el pulso es valido, se calculan todas las propiedades fisicas de la gota, y se escribe en el archivo de resultados. Luego, se marcan como utilizados todos los puntos del pulso y se reinicia la busqueda en la misma ventana también (esto es importante para poder detectar pulsos múltiples cuando estos son muy cortos).
+Si el pulso es válido, se calculan todas las propiedades físicas de la gota, y se escribe en el archivo de resultados. Luego, se marcan como utilizados todos los puntos del pulso y se reinicia la búsqueda en la misma ventana también (esto es importante para poder detectar pulsos múltiples cuando estos son muy cortos).
 
-Debido a la escasez de pulsos validos con respecto a la totalidad de los datos, el tiempo de ejecucion de este paso es despreciable.
+Debido a la escasez de pulsos válidos con respecto a la totalidad de los datos, el tiempo de ejecución de este paso es despreciable.
 
 \subsubsubsection{Avance de la ventana}
 
-La ventana no se avanza hasta que todos los puntos hayan sido utilizados. Cuando esto ocurra, la ventana se avanzara como minimo 300 puntos (dado que los primeros 100 puntos permitimos que esten marcados como utilizados). Esto nos da como resultado una cantidad total de ventanas $O(n / 300) = O(n)$, donde $n$ es la cantidad total de puntos en la señal.
+La ventana no se avanza hasta que todos los puntos hayan sido utilizados. Cuando esto ocurra, la ventana se avanzará como mínimo 300 puntos (dado que los primeros 100 puntos permitimos que estén marcados como utilizados). Esto nos da como resultado una cantidad total de ventanas $O(n / 300) = O(n)$, donde $n$ es la cantidad total de puntos en la señal.
 
 \subsubsubsection{Análisis de complejidad}
 
 Habiendo analizado las complejidades de cada componente del algoritmo por separado, podemos determinar la complejidad total del sistema.
 
-El algoritmo procesa $O(n/300)$ ventanas, donde $n$ es el número total de puntos en la señal. En cada ventana de tamaño $V = 800$ puntos, se realizaran busquedas hasta agotar los cantidatos a puntos criticos.
+El algoritmo procesa $O(n/300)$ ventanas, donde $n$ es el número total de puntos en la señal. En cada ventana de tamaño $V = 800$ puntos, se realizarán búsquedas hasta agotar los candidatos a puntos críticos.
 
 Durante cada búsqueda, se marcan como mínimo 4 puntos como utilizados. Esto establece una cota superior de $300/4 = 75$ búsquedas por ventana. En la práctica, cuando se detectan pulsos válidos (que obviamente abarcan más de 4 puntos), se reduce significativamente el número real de búsquedas por ventana.
 
@@ -784,7 +784,7 @@ Cada operación de búsqueda individual tiene complejidad $O(V)$, donde $V$ es e
 
 $$O\left(\frac{n}{300} \times 75 \times 800 \right) = O(200n) = O(n)$$
 
-Esta reduccion de constante representa una mejora sustancial respecto al algoritmo original, que habiamos analizado anteriormente y cuya constante era de $100000$.
+Esta reducción de constante representa una mejora sustancial respecto al algoritmo original, que habíamos analizado anteriormente y cuya constante era de $100000$.
 
 \section{Sistema de Automatización}
 \lhead{}
@@ -876,12 +876,12 @@ Se documentó completamente el sistema mediante:
 
 \subsection{Mejoras en la Calidad de Detección}
 
-Además de la mejora cuantitativa en la cantidad de gotas detectadas, se observó una mejora cualitativa en la calidad de las detecciones. Como se puede ver en la figura \ref{fig:calidad_detecciones}, si observamos la proporcion acumulada de la evaluacion de las gotas obtenidas, vemos que el nuevo sistema obtiene, aunque por un margen pequeño, mejor calidad de gotas que el sistema original. Esto nos dice que las gotas extras detectadas tienen en general un buen puntaje de evaluacion.
+Además de la mejora cuantitativa en la cantidad de gotas detectadas, se observó una mejora cualitativa en la calidad de las detecciones. Como se puede ver en la figura \ref{fig:calidad_detecciones}, si observamos la proporción acumulada de la evaluación de las gotas obtenidas, vemos que el nuevo sistema obtiene, aunque por un margen pequeño, mejor calidad de gotas que el sistema original. Esto nos dice que las gotas extras detectadas tienen en general un buen puntaje de evaluación.
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.9\textwidth]{figures/calidad_detecciones.png}
-    \caption{Proporcion acumulada de evaluacion de ambos algoritmos}
+    \caption{Proporción acumulada de evaluación de ambos algoritmos}
     \label{fig:calidad_detecciones}
 \end{figure}
 
