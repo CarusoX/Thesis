@@ -234,15 +234,15 @@ En el contexto de algoritmos, esto significa que el tiempo de ejecución o el us
 Las clases de complejidad más relevantes para este trabajo son:
 
 \begin{itemize}
-    \item \textbf{$O(1)$ - Constante:} El tiempo de ejecución es independiente del tamaño de la entrada. Ejemplo: acceder a un elemento de un arreglo por índice.
+    \item \textbf{$O(1)$ - Constante:} El tiempo de ejecución es independiente del tamaño de la entrada, como cuando se accede a una posición fija de un arreglo o a una celda de una tabla hash con direccionamiento directo. \cite{cormen2009introduction}
     
-    \item \textbf{$O(\log n)$ - Logarítmica:} El tiempo crece logarítmicamente con el tamaño de la entrada. Ejemplo: búsqueda binaria en un arreglo ordenado. La búsqueda binaria divide repetidamente el espacio de búsqueda por la mitad, eliminando la mitad de los elementos en cada iteración.
+    \item \textbf{$O(\log n)$ - Logarítmica:} El tiempo crece logarítmicamente al dividir repetidamente el espacio de búsqueda, tal como ocurre en la búsqueda binaria sobre arreglos ordenados o árboles balanceados. \cite{kleinberg2006algorithm}
     
-    \item \textbf{$O(n)$ - Lineal:} El tiempo es proporcional al tamaño de la entrada. Ejemplo: recorrer todos los elementos de un arreglo.
+    \item \textbf{$O(n)$ - Lineal:} El tiempo es proporcional al tamaño de la entrada; recorrer secuencialmente todos los elementos de un arreglo o calcular frecuencias de aparición son patrones típicos. \cite{sedgewick2011algorithms}
     
-    \item \textbf{$O(n \log n)$ - Lineal logarítmica:} El tiempo crece como $n$ multiplicado por $\log n$. Ejemplo: algoritmos de ordenamiento eficientes como merge sort. Merge sort divide recursivamente el arreglo en mitades, ordena cada mitad y luego combina los resultados ordenados.
+    \item \textbf{$O(n \log n)$ - Lineal logarítmica:} El tiempo crece como $n$ multiplicado por $\log n$, característico de `algoritmos de divide y vencerás' como merge sort o heapsort. \cite{skiena2012algorithm}
     
-    \item \textbf{$O(n^2)$ - Cuadrática:} El tiempo es proporcional al cuadrado del tamaño de la entrada. Ejemplo: algoritmos de ordenamiento simples como bubble sort. Bubble sort compara pares adyacentes de elementos y los intercambia si están en orden incorrecto, repitiendo este proceso hasta que no se requieran más intercambios.
+    \item \textbf{$O(n^2)$ - Cuadrática:} El tiempo es proporcional al cuadrado de la entrada, como en bubble sort o en algoritmos que comparan cada par de elementos. \cite{aho1974design}
 \end{itemize}
 
 En la figura \ref{fig:complejidades_algoritmicas} se puede observar un gráfico comparativo de número de operaciones versus tamaño de datos para diferentes complejidades algorítmicas

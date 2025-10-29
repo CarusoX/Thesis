@@ -3,6 +3,7 @@ obj/
 exec
 *.dat
 references/LabVIEW
+references/Presentacion_Tesis_Seba_Marin
 **/*.pdf
 # tex related files
 *.aux
