@@ -16,6 +16,8 @@
 \usepackage{fancyhdr}
 \usepackage{setspace}
 \usepackage{caption}
+\usepackage{helvet}
+\renewcommand{\familydefault}{\sfdefault}
 
 \usepackage[backend=biber,style=numeric,sorting=nyt]{biblatex}
 
@@ -63,8 +65,12 @@
 
 % Información del documento
 \title{\textbf{Desarrollo de un sistema eficiente para el procesamiento de datos experimentales de la carga eléctrica de gotas de lluvia}}
-\author{Estudiante de Licenciatura en Ciencias de la Computación}
-\date{\today}
+\author{Uziel Ludueña}
+\date{Diciembre, 2025}
+
+% Variables para la carátula
+\newcommand{\nombreautor}{Uziel Ludueña}
+\newcommand{\fechadefensa}{Diciembre, 2025}
 
 
 \newcommand{\subsubsubsection}[1]{\paragraph{#1}\mbox{}\\}
@@ -80,9 +86,69 @@
 }
 
 \begin{document}
-\onehalfspacing
+\singlespacing
 
-\maketitle
+% Carátula personalizada
+\begin{titlepage}
+    \centering
+    
+    % Logos en la parte superior
+    \begin{minipage}{0.45\textwidth}
+        \raggedright
+        \includegraphics[height=1.5cm,keepaspectratio]{figures/unc_logo.jpg}
+    \end{minipage}
+    \hfill
+    \begin{minipage}{0.45\textwidth}
+        \raggedleft
+        \includegraphics[height=1.5cm,keepaspectratio]{figures/famaf_logo_cropped.png}
+    \end{minipage}
+    
+    \vspace{1.5cm}
+    
+    % Título del trabajo
+    {\Large Desarrollo de un sistema eficiente para el procesamiento de datos experimentales de la carga eléctrica de gotas de lluvia}
+    
+    \vspace{0.5cm}
+    
+    por
+    
+    \vspace{0.2cm}
+    
+    {\nombreautor}
+    
+    \vspace{1.5cm}
+    
+    % Información de la facultad y grado
+    \begin{minipage}{0.9\textwidth}
+        \centering
+        Presentado ante la FACULTAD DE MATEMÁTICA, ASTRONOMÍA, FÍSICA Y COMPUTACIÓN como parte de los requerimientos para la obtención del grado de Licenciado/a en Ciencias de la Computación de la
+    \end{minipage}
+    
+    \vspace{1cm}
+    
+    \textbf{UNIVERSIDAD NACIONAL DE CÓRDOBA}
+    
+    \vspace{1cm}
+    
+    {\large \fechadefensa}
+    
+    \vspace{1.5cm}
+    
+    Director: Rodolfo Guillermo Pereyra
+    
+    \vfill
+    \includegraphics[height=1.2cm,keepaspectratio]{figures/copyright.png}
+    
+    \vspace{0.1cm}
+    \begin{minipage}{0.85\textwidth}
+        \centering
+        \small
+        Este trabajo se distribuye bajo una licencia \href{https://creativecommons.org/licenses/by/4.0/}{Creative Commons Atribución-NoComercial 4.0 Internacional}.
+    \end{minipage}
+    
+\end{titlepage}
+
+\newpage
 
 \begin{abstract}
     El análisis de mediciones de gotas de lluvia cargadas eléctricamente en tormentas requiere procesar grandes volúmenes de datos, pero el código existente presenta limitaciones de diseño y rendimiento. Se desarrolló un sistema modular y optimizado que implementa algoritmos eficientes como ventanas deslizantes y estructuras de datos optimizadas. El sistema de automatización permite ejecutar toda la cadena de análisis con un único comando. Los resultados muestran una reducción del tiempo de procesamiento de 6 horas a 15 minutos para 100 millones de datos, manteniendo la misma precisión en la detección de gotas.
@@ -97,6 +163,8 @@
     \textbf{Keywords:} electrically charged droplets, signal processing, algorithm optimization, C++, Python
 \end{abstract}
 \selectlanguage{spanish}
+
+\newpage
 
 \tableofcontents
 \newpage
@@ -260,7 +328,7 @@ Aunque por definición la notación nos dice que $O(10n) = O(n)$ (la constante s
 
 \subsubsection{Importancia en el contexto de este trabajo}
 
-En el procesamiento de señales, donde se manejan millones de puntos de datos, la diferencia entre algoritmos de complejidad $O(n)$ y $O(n^2)$ puede resultar en diferencias de horas en el tiempo de procesamiento. Por ejemplo, para procesar 100 millones de puntos (teniendo en cuenta que un procesador realizar aproximadamente $10^8$ operaciones por segundo):
+En el procesamiento de señales, donde se manejan millones de puntos de datos, la diferencia entre algoritmos de complejidad $O(n)$ y $O(n^2)$ puede resultar en diferencias de horas en el tiempo de procesamiento. Por ejemplo, para procesar 100 millones de puntos (teniendo en cuenta que un procesador realiza aproximadamente $10^8$ operaciones por segundo):
 
 \begin{itemize}
     \item Un algoritmo $O(n)$ podría completarse en segundos
@@ -467,7 +535,7 @@ Al analizar el rendimiento del código, se encontraron dos áreas de potenciales
 
 \begin{itemize}
     \item \textbf{Remoción de offset:} El algoritmo de remoción de offset es muy ineficiente. Como se puede observar en la implementación \nameref{lst:codigo_remocion_offset}, para cada punto, se hace una suma de 5001 valores divididos por 5001,
-    resultando en una complejidad $$O(5001n) = O(n)$$ Obviamente se trata de una complejidad lineal, pero no solo que la constante es altísima por el factor de 5001, sino que también se realizan 5001 divisiones por cada punto, que no es la operación más eficiente en un procesador.
+    resultando en una complejidad $$O(5001n) = O(n)$$ Obviamente se trata de una complejidad lineal, pero no solo que la constante es altísima por el factor de 5001, sino que también se realizan 5001 divisiones por cada punto, que no es la operación más eficiente en un procesador \cite{Lemire2019FasterRemainder}.
 
     \begin{lstlisting}[language=Fortran, label=lst:codigo_remocion_offset, caption={buscador\_de\_gotas.f - Algoritmo ineficiente de remoción de offset}]
 ! n = 5000
