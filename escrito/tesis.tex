@@ -482,10 +482,20 @@ Para clasificar las gotas obtenidas, se implementa un sistema de puntuación que
         \label{fig:comparacion_modelos_teoricos}
     \end{figure}
 
+    Finalmente, se calculan las evaluaciones de la siguiente manera:
+
+    \begin{equation}
+        eval1 = \sum_{i=0}^{puntos\_totales} (a1(i) - integral\_sensor1(i))^{2} 
+    \end{equation}
+
+    \begin{equation}
+        eval2 = \sum_{i=0}^{puntos\_totales} (a2(i) - integral\_sensor2(i))^{2} 
+    \end{equation}
+
     \item \textbf{Eval3:} Desviación de la proporción esperada entre cargas del anillo y la placa. Experimentalmente se observó que la carga medida en el anillo es aproximadamente el 87\% de la carga medida en la placa, por lo que se mide la desviación de esta proporción.
 
     \begin{equation}
-        penal2(l) = \left|\frac{q_1}{q} - 0.87 \cdot \frac{q_2}{q}\right|
+        eval3 = \left|\frac{q_1}{q} - 0.87 \cdot \frac{q_2}{q}\right|
     \end{equation}
 
     donde $q$ está definido como $q = \frac{q1 / 0.87 + q2}{2}$
@@ -494,16 +504,26 @@ Para clasificar las gotas obtenidas, se implementa un sistema de puntuación que
 señal de la placa y el anillo. Experimentalmente se observó que el ancho del pulso de la placa es aproximadamente el 79\% del ancho del pulso del anillo, por lo que se mide la desviación de esta proporción.
 
     \begin{equation}
-        penal3(l) = \left|\frac{p_1}{p} - 0.79 * \frac{p_2}{p}\right|
+        eval4 = \left|\frac{p_1}{p} - 0.79 * \frac{p_2}{p}\right|
     \end{equation}
 
     donde $p$ está definido como $p = \frac{p_1 / 0.79 + p_2}{2}$
 
     \item \textbf{Eval5:} Proporción de señal en el rango de ruido (entre -0.02 y 0.02). Para esto se computan los promedios de cada señal, y se cuentan los puntos que, cuando se les resta el promedio, están entre -0.02 y 0.02.
 
+    \begin{equation}
+        eval5 = \frac{\#\{p: |sensor1(p)| <= 0.02\} + \#\{p: |sensor2(p)| <= 0.02\}}{puntos\_totales}
+    \end{equation}
+
 \end{itemize}
 
-    Las evaluaciones se combinan linealmente con pesos para finalmente obtener una puntuación total, que está en el rango $[0, 20]$. Mientras más chico sea el valor de la puntuación total, mejor es la calidad de la gota.
+    Las evaluaciones se combinan para finalmente obtener una puntuación total, que está generalmente en el rango $[0, 20]$ de la siguiente manera:
+
+    \begin{equation}
+        eval = ln(1 + eval1) + ln(1 + eval2) + 3 * eval3 + 3 * eval4 + eval5^{2}
+    \end{equation}
+
+    Mientras más chico sea el valor de la puntuación total, mejor es la calidad de la gota. En la figura \ref{fig:puntuacion_calidad} se puede observar la puntuación de calidad para diferentes gotas.
     
 \item \textbf{Salida de resultados:} Finalmente, se escriben los datos de todos los pulsos válidos
 en un archivo, incluyendo posición temporal, cargas, velocidad, diámetro y puntuación de calidad.

@@ -255,7 +255,6 @@ void perform(const std::string &filePath, const std::string &outPath)
 
     // Step 4: Detect drops and write results
     auto outFile = openFileWrite(outPath);
-    Drop::writeHeader(outFile); // Write column headers
     find_drops(offsetLvm, cli, findLvm, outFile);
 }
 

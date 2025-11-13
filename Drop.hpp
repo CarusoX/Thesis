@@ -126,13 +126,6 @@ public:
     static std::vector<Drop> readFromFile(std::ifstream &file);
 
     /**
-     * @brief Writes column headers to output file
-     * @param file Output file stream
-     * @param sortedDrops Whether this is for sorted drops (affects column order)
-     */
-    static void writeHeader(std::ofstream &file, bool sortedDrops = false);
-
-    /**
      * @brief Writes drop data to file
      * @param file Output file stream
      * @param withoutIndividualPenalties Whether to exclude individual penalty columns

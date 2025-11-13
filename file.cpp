@@ -37,7 +37,7 @@ std::ofstream openFileWrite(const std::string &filePath)
     std::filesystem::path path(filePath);
 
     // Create parent directories if they don't exist
-    if (!std::filesystem::exists(path))
+    if (!std::filesystem::exists(path) && !path.parent_path().empty())
     {
         std::filesystem::create_directories(path.parent_path());
     }

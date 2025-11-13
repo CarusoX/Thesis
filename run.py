@@ -224,7 +224,7 @@ Ejemplos de uso:
   python run.py archivo1.lvm archivo2.lvm             # Procesar múltiples archivos
   python run.py *.lvm                                 # Procesar todos los archivos .lvm
   python run.py datos_*.lvm --processes 8             # Usar 8 procesos en paralelo
-  python run.py archivo1.lvm --clean --from-step 3    # Limpiar y empezar desde el paso 3
+  python run.py archivo1.lvm --no-clean --from-step 3    # No limpiar y empezar desde el paso 3
         """,
         formatter_class=argparse.RawDescriptionHelpFormatter
     )
@@ -235,16 +235,16 @@ Ejemplos de uso:
         help="Ruta(s) al(los) archivo(s) de tormenta. Soporta wildcards (*.lvm)"
     )
     parser.add_argument(
-        "--clean",
-        action="store_true",
-        help="Limpiar los programas compilados antes de ejecutar",
-        default=False,
+        "--no-clean",
+        action="store_false",
+        dest="clean",
+        help="No limpiar los programas compilados antes de ejecutar (por defecto se limpia)",
     )
     parser.add_argument(
         "--from-step",
         type=int,
         help="Paso desde el que se quiere analizar la tormenta (1=finder, 2=sorter, 3=charts, 4=carga_velocidad)",
-        default=100,
+        default=1,
         choices=[1, 2, 3, 4],
     )
     parser.add_argument(

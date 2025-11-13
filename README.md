@@ -92,68 +92,18 @@ python run.py archivo1.lvm archivo2.lvm archivo3.lvm
 
 **Procesar archivos usando patrones (wildcards)**:
 ```bash
+python run.py archivo_tormenta.lvm     # Procesar un archivo de tormenta
 python run.py *.lvm                    # Todos los archivos .lvm
 python run.py datos_*.lvm              # Archivos que empiecen con "datos_"
 python run.py tormenta_2024_*.lvm      # Archivos de tormentas de 2024
 ```
 
-### Opciones Avanzadas
-
-**Limpiar y recompilar antes de ejecutar**:
-```bash
-python run.py *.lvm --clean
-```
-
-**Ejecutar desde un paso específico**:
-```bash
-python run.py *.lvm --from-step 3
-python run.py *.lvm --from-step 4   # Generar carga_velocidad.dat (Fortran)
-```
-
-**Controlar el número de procesos paralelos**:
-```bash
-python run.py *.lvm --processes 8      # Usar 8 procesos en paralelo
-python run.py *.lvm --processes 1      # Procesamiento secuencial
-```
-
-Los pasos disponibles son:
-- `1`: Ejecutar desde drop_finder
-- `2`: Ejecutar desde drop_sorter
-- `3`: Ejecutar desde drop_chart
-- `4`: Generar carga_velocidad.dat (Fortran)
-
-El paso 4 ejecuta un programa Fortran que lee `drops.dat`, toma la primera fila de cada gota y genera `carga_velocidad.dat` con las columnas `step q1 q2 q v diam sum_of_penalties`.
-
-### Procesamiento Paralelo
-
-El script utiliza **multiprocessing** para procesar múltiples archivos simultáneamente:
-
-- **Número de procesos por defecto**: 4
-- **Máximo recomendado**: Número de CPUs disponibles en el sistema
-- **Ventajas**: Reduce significativamente el tiempo total de procesamiento
-- **Limitaciones**: Cada proceso consume memoria y recursos del sistema
-
-**Configuración automática**:
-- Si se especifican más procesos que CPUs disponibles, se ajusta automáticamente
-- Para archivos únicos, se ejecuta directamente sin overhead de multiprocessing
-- Cada proceso trabaja en su propia carpeta independiente
-
-### Comportamiento del Script
-
-1. **Compilación**: Compila automáticamente todos los programas (una sola vez)
-2. **Expansión de patrones**: Convierte wildcards en listas de archivos
-3. **Validación**: Verifica que los archivos existan
-4. **Organización**: Crea una carpeta separada para cada archivo
-5. **Ejecución paralela**: Distribuye archivos entre los procesos disponibles
-6. **Control de dependencias**: Solo ejecuta un paso si es necesario
-7. **Reporte de resultados**: Muestra resumen de éxitos y fallos
-
 ### Estructura de Archivos Generados
 
-Después de ejecutar el análisis completo, se genera la siguiente estructura:
+Después de ejecutar el análisis completo, se genera la siguiente estructura en la misma carpeta que `run.py`:
 
 ```
-nombre_archivo/
+nombre_tormenta/
 ├── drops.dat            # Gotas detectadas
 ├── drops_sorted.dat     # Gotas ordenadas por calidad
 ├── carga_velocidad.dat  # Resumen (step, q1, q2, q, v, diam, penalidad)
@@ -165,94 +115,81 @@ nombre_archivo/
     └── ... (otros archivos de análisis)
 ```
 
-## Parámetros de Configuración
+El archivo drops.dat contiene las gotas una detras de la otra, identificadas por su `id`. Las columnas son:
+  - time --> Tiempo en segundos del dato parti
+  - step --> Tiempo convertido a pasos (1 paso ~ 1/5000 segundos)
+  - sensor1 --> Señal del sensor 1
+  - sensor2 --> Señal del sensor 2
+  - integral1 --> Integral de la señal del sensor 1
+  - integral2 --> Integral de la señal del sensor 2
+  - a1 --> Modelo teorico 1 para la integral del sensor 1
+  - a2 --> Modelo teorico 1 para la integral del sensor 2
+  - b1 --> Modelo teorico 2 para la integral del sensor 1
+  - q1 --> Carga del sensor 1
+  - q2 --> Carga del sensor 2
+  - v --> Velocidad de la gota
+  - diameter --> Diametro de la gota
+  - sum_sq1 --> Suma de los cuadrados de las diferencias entre el modelo teorico a1 y la integral del sensor 1
+  - sum_sq2 --> Suma de los cuadrados de las diferencias entre el modelo teorico a2 y la integral del sensor 2
+  - charge_penalty --> Penalidad de la carga
+  - width_penalty --> Penalidad de la anchura
+  - noise_penalty --> Penalidad de ruido
+  - penalty --> Penalidad total de la gota
+  - id --> ID de la gota (para identificar datos de la misma gota)
 
-Los parámetros principales del análisis se encuentran en `constants.hpp`:
+El archivo drops_sorted.dat contiene las gotas ordenadas por su penalidad total. Las columnas son:
+ - time --> Este tiempo se ajusta para que queden ordenadas, no representa nada fisico.
+ - step --> TIEMPO ORIGINAL convertido a pasos. Este si representa el tiempo fisico.
+ - sensor1 --> Señal del sensor 1
+ - sensor2 --> Señal del sensor 2
+ - integral1 --> Integral de la señal del sensor 1
+ - integral2 --> Integral de la señal del sensor 2
+ - a1 --> Modelo teorico 1 para la integral del sensor 1
+ - a2 --> Modelo teorico 1 para la integral del sensor 2
+ - b1 --> Modelo teorico 2 para la integral del sensor 1
+ - q1 --> Carga del sensor 1
+ - q2 --> Carga del sensor 2
+ - v --> Velocidad de la gota
+ - diameter --> Diametro de la gota
+ - penalty --> Penalidad total de la gota
+ - id --> ID de la gota (es el mismo que en drops.dat)
 
-- `DROP_SIZE`: Tamaño máximo de una gota (400 puntos)
-- `WINDOW_SIZE`: Tamaño de ventana para promedio móvil (5000 puntos)
-- `DATA_PER_SECOND`: Frecuencia de muestreo (5000 Hz)
-- `MINIMUM_THRESHOLD`: Umbral mínimo de detección (0.02)
-- `MINIMUM_CHARGE`: Carga mínima requerida (0.2)
+El archivo carga_velocidad.dat contiene los siguientes datos:
 
-## Ejemplo de Uso Completo
+  - La primera fila contiene el total de gotas, el total de steps, el primer step de la primera gota y el primer step de la ultima gota.
+  - Las siguientes filas contienen los datos de cada gota en el siguiente orden: step, q1, q2, q, v, diameter, penalty.
 
+
+### Opciones Avanzadas
+
+**No limpiar ni recompilar antes de ejecutar**:
 ```bash
-# Análisis de un archivo único
-python run.py datos_tormenta_2024.lvm
-
-# Análisis de múltiples archivos específicos
-python run.py tormenta1.lvm tormenta2.lvm tormenta3.lvm
-
-# Análisis masivo con wildcards
-python run.py datos_*.lvm
-
-# Procesamiento intensivo con 8 procesos paralelos
-python run.py *.lvm --processes 8
-
-# Recompilar y analizar desde el paso 2 con 6 procesos
-  python run.py datos_*.lvm --clean --from-step 2 --processes 6
-
- # Solo generar gráficos para todos los archivos procesados
- python run.py *.lvm --from-step 3
-
-# Procesamiento secuencial (un archivo a la vez)
-python run.py *.lvm --processes 1
+python run.py *.lvm --no-clean
 ```
 
-### Ejemplos de Salida
-
-**Procesamiento de un archivo único** (output completo):
-```
-Compilando programas...
-Archivos a procesar: 1
-  - tormenta_001.lvm
-Procesando archivo único...
-[12345] Iniciando análisis de tormenta_001.lvm
-Creando carpeta tormenta_001
-Ejecutando drop_finder
-...
-[12345] Análisis completado para tormenta_001.lvm
-Éxito: tormenta_001.lvm
+**Ejecutar desde un paso específico**:
+```bash
+python run.py *.lvm --from-step 3
+python run.py *.lvm --from-step 4   # Generar carga_velocidad.dat (Fortran)
 ```
 
-**Procesamiento de múltiples archivos** (output limpio con barra de progreso):
-```
-Compilando programas...
-Archivos a procesar: 5
-  - tormenta_001.lvm
-  - tormenta_002.lvm
-  - tormenta_003.lvm
-  - tormenta_004.lvm
-  - tormenta_005.lvm
-Procesando 5 archivos en paralelo (máximo 4 procesos)...
-Nota: Output detallado suprimido durante procesamiento paralelo
+Los pasos disponibles son:
+- `1`: Ejecutar desde drop_finder
+- `2`: Ejecutar desde drop_sorter
+- `3`: Ejecutar desde drop_chart
+- `4`: Generar carga_velocidad.dat (Fortran)
 
-Progreso: [████████████████████████████████████████████████████] 5/5 (100.0%)
-
-=== RESUMEN DE PROCESAMIENTO ===
-Éxito: tormenta_001.lvm
-Éxito: tormenta_002.lvm
-Error: tormenta_003.lvm - File not found
-Éxito: tormenta_004.lvm
-Éxito: tormenta_005.lvm
-
-Total: 5 archivos
-Exitosos: 4
-Fallidos: 1
+**Controlar el número de procesos paralelos**:
+```bash
+python run.py *.lvm --processes 8      # Usar 8 procesos en paralelo
+python run.py *.lvm --processes 1      # Procesamiento secuencial
 ```
 
-### Manejo de Output
+**Cambiar el charge multiplier en carga_velocidad.f90**:
+El charge multiplier es el factor de multiplicacion de la carga. Generalmente es 1.0 o 5.0. Se puede cambiar directamente en el archivo `carga_velocidad.f90` antes de correr el programa.
 
-El script maneja el output de manera inteligente:
+El paso 4 ejecuta un programa Fortran que lee `drops.dat`, toma la primera fila de cada gota y genera `carga_velocidad.dat` con las columnas `step q1 q2 q v diam sum_of_penalties`.
 
-- **Archivo único**: Muestra todo el output detallado para facilitar el debugging
-- **Múltiples archivos**: Suprime el output detallado para evitar ruido, mostrando:
-  - Lista de archivos a procesar
-  - Barra de progreso en tiempo real
-  - Resumen final de resultados
-
-Esto hace que el procesamiento en paralelo sea mucho más limpio y fácil de seguir, especialmente cuando se procesan muchos archivos simultáneamente.
 
 ## Notas Importantes
 

@@ -43,7 +43,6 @@ program fortran_example
     read(10, '(A)') header
 
     open(unit=20, file='carga_velocidad.dat', status='replace')
-    write(20, *) 'step,', 'q1,', 'q2,', 'q,', 'v,', 'diameter,', 'sum_of_penalties'
     write(20, *) total_gotas, total_pasos, primer_paso_primera_gota, primer_paso_ultima_gota
 
     last_id = -1
