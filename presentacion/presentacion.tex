@@ -1,0 +1,353 @@
+\documentclass{beamer}
+\mode<presentation>{
+  \usetheme{Madrid}
+  \usecolortheme{default}
+  \usefonttheme{default}
+  \setbeamertemplate{navigation symbols}{}
+  \setbeamertemplate{caption}[numbered]
+}
+
+\usepackage[spanish]{babel}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\usepackage{pgfpages}
+
+\newif\ifnotes
+\notesfalse
+
+\newcommand{\notesmode}{\notestrue}
+
+\ifnotes
+  \setbeamertemplate{note page}[plain]
+  \setbeameroption{show notes on second screen=right}
+  % \setbeameroption{show notes}
+\fi
+
+\title[Procesamiento eficiente de gotas]{Desarrollo de un sistema eficiente para el procesamiento de datos experimentales de la
+carga eléctrica de gotas de lluvia}
+\author{Uziel Ludueña}
+\institute{FaMAF -- UNC}
+\date{19 de Diciembre de 2025}
+
+% \AtBeginSection[]{
+%   \begin{frame}{Agenda}
+%     \tableofcontents[currentsection]
+%   \end{frame}
+% }
+
+\begin{document}
+
+\begin{frame}
+  \titlepage
+\end{frame}
+
+\begin{frame}{Agenda}
+  \tableofcontents
+\end{frame}
+
+\section{Motivación y contexto}
+
+\begin{frame}{Motivación científica}
+  \begin{itemize}
+    \item Las gotas de lluvia pueden transportar \textbf{carga eléctrica}
+    \begin{itemize}
+      \item Adquirida mediante procesos microfísicos en la nube
+      \item Colisiones entre hidrometeoros (granizo, graupel, copos de nieve)
+    \end{itemize}
+    \vspace{0.5cm}
+    \item El signo y magnitud de la carga dependen de:
+    \begin{itemize}
+      \item Condiciones termodinámicas de la tormenta
+      \item Mecanismo no-inductivo (NIM)
+    \end{itemize}
+    \vspace{0.5cm}
+    \item La distribución de tamaños (RSD) es clave para:
+    \begin{itemize}
+      \item Estimar precipitación
+      \item Modelos numéricos y radar meteorológico
+      \item Análisis de erosión y crecidas
+    \end{itemize}
+  \end{itemize}
+  
+  \note{
+    Comenzaré explicando por qué es importante estudiar las gotas de lluvia cargadas eléctricamente.
+    
+    Las gotas de lluvia no son simplemente agua que cae. Pueden transportar carga eléctrica que se adquiere dentro de la nube, principalmente a través de colisiones entre diferentes tipos de partículas como granizo, graupel, copos de nieve y cristales de hielo.
+    
+    El signo y la magnitud de esta carga dependen fuertemente de las condiciones termodinámicas y microfísicas dentro de la tormenta, lo cual está descrito por el mecanismo no-inductivo.
+    
+    Además, la distribución de tamaños de las gotas concentra información muy valiosa para estimar precipitación, alimentar modelos numéricos, interpretar datos de radar meteorológico y analizar procesos como erosión, escorrentía y crecidas.
+    
+    Por lo tanto, medir y analizar simultáneamente el tamaño y la carga de las gotas resulta fundamental para comprender la física de las tormentas y mejorar herramientas de pronóstico.
+  }
+\end{frame}
+
+\begin{frame}{Instrumento y adquisición de datos}
+  \begin{columns}
+    \column{0.5\textwidth}
+    \centering
+    \includegraphics[width=0.9\textwidth]{../escrito/figures/instrumento_de_medicion.png}
+    
+    \column{0.5\textwidth}
+    \textbf{Instrumento existente:}
+    \begin{itemize}
+      \item Anillo de inducción + placa de aluminio
+      \item Amplificadores de corriente ($5 \cdot 10^8$ V/A)
+      \item Jaula de Faraday
+    \end{itemize}
+    
+    \vspace{0.5cm}
+    \textbf{Adquisición:}
+    \begin{itemize}
+      \item 5 kHz por canal
+      \item Pérdida de 50ms/segundo
+    \end{itemize}
+  \end{columns}
+  
+  \note{
+    En el grupo de física de la atmósfera de FaMAF ya existe un instrumento capaz de realizar estas mediciones, como el descrito en el trabajo de Pereyra et al. 2025.
+    
+    El dispositivo consiste en un anillo de inducción de latón posicionado a 5.7 centímetros por encima de una placa plana de aluminio. Ambos están conectados a amplificadores de corriente de alta ganancia y todo el sistema está protegido por una jaula de Faraday.
+    
+    La recolección de datos se realiza a 5 kilohertz por canal, es decir, 5000 datos por segundo. Sin embargo, debido a limitaciones de hardware, cada segundo se pierden aproximadamente 50 milisegundos de datos durante la escritura a disco, lo cual produce huecos en la señal.
+  }
+\end{frame}
+
+\begin{frame}{Teoría: ¿Cómo se ve una gota?}
+  \begin{itemize}
+    \item \textbf{Anillo:} Corriente de polaridad opuesta al acercarse, se invierte al alejarse
+    \item \textbf{Placa:} Corriente de polaridad opuesta, meseta al impactar (transferencia de carga)
+  \end{itemize}
+  \vspace{0.3cm}
+  \centering
+  \includegraphics[width=0.65\textwidth]{../escrito/figures/corriente_gotas.png}
+  
+  
+  \note{
+    Ahora, en teoría, cuando una gota cargada eléctricamente cae, induce corrientes tanto en el anillo como en la placa.
+    
+    Primero, la gota se acerca al anillo. Al hacerlo, se induce una corriente de la polaridad opuesta a la carga de la gota. Luego, al alejarse del anillo, esta polaridad se invierte.
+    
+    Mientras tanto, la gota se acerca a la placa, induciendo también una corriente de polaridad opuesta a la carga de la gota. Cuando la gota impacta la placa de aluminio, se le transfiere toda la carga, lo cual produce una meseta en la corriente que se disipa en el tiempo.
+    
+    Esta es la señal ideal que esperaríamos ver. Sin embargo, la realidad es muy diferente.
+  }
+\end{frame}
+
+\begin{frame}{La realidad: señal cruda}
+  \textbf{Ruido continuo} que offsetea la señal constantemente
+  
+  \vspace{0.3cm}
+  \begin{center}
+  \includegraphics[width=0.9\textwidth,height=0.4\textheight,keepaspectratio]{../escrito/figures/señal_cruda.png}
+  \end{center}
+  
+  \vspace{0.5cm}
+  \textbf{El programa existente resuelve estos problemas:}
+  \begin{itemize}
+    \item Detectar pulsos válidos entre el ruido continuo
+    \item Extraer propiedades físicas precisas en ventanas muy cortas
+  \end{itemize}
+
+  \note{
+    Sin embargo, la realidad es muy diferente a la teoría. La señal que obtenemos del instrumento está llena de ruido electromagnético continuo que offsetea la señal constantemente.
+    
+    Este offset no es constante, sino que varía durante la medición, lo que hace que la señal base no esté en cero y cambie con el tiempo. Como pueden ver en la imagen, la señal está completamente contaminada por este ruido.
+    
+    A pesar de estos problemas, el programa existente ya resuelve estos desafíos: es capaz de detectar pulsos válidos entre todo este ruido continuo y extraer las propiedades físicas precisas de las gotas, incluso en ventanas muy cortas.
+    
+    Sin embargo, como veremos a continuación, el código actual presenta limitaciones tanto en diseño como en rendimiento que motivan la necesidad de mejoras.
+  }
+\end{frame}
+
+\begin{frame}{Procesamiento de señales}
+  % Diagrama de flujo con dos boxes: Programa 1 (Preprocesamiento) y Programa 2 (Detección)
+  
+  \note{
+    El procesamiento transforma las señales crudas registradas por el instrumento en una lista de propiedades físicas para cada gota. Para esto se emplean dos programas que se ejecutan de manera secuencial.
+    
+    El primer programa se encarga del preprocesamiento de los datos. Específicamente realiza dos operaciones fundamentales: primero, el rellenado de huecos mediante interpolación lineal para compensar los 50 milisegundos que se pierden cada segundo durante la adquisición. Segundo, la remoción del offset de las señales, eliminando el offset de corriente continua que varía durante la medición.
+    
+    El segundo programa realiza el análisis principal de las señales ya preprocesadas. Este programa implementa el algoritmo de detección de pulsos, aplica filtros de calidad para separar los pulsos válidos de los falsos positivos, y finalmente calcula las propiedades físicas de cada gota detectada, incluyendo carga eléctrica, velocidad de caída y tamaño.
+  }
+\end{frame}
+
+\begin{frame}{Necesidad de mejoras}
+  \begin{columns}[t]
+    \column{0.5\textwidth}
+    \vspace{0pt}
+    \textbf{Problemas de diseño:}
+    \begin{itemize}
+      \item Sin modularización
+      \item Variables sin contexto
+      \item Código duplicado
+      \item I/O hard-codeado
+    \end{itemize}
+    
+    \column{0.5\textwidth}
+    \vspace{0pt}
+    \textbf{Problemas de rendimiento:}
+    \begin{itemize}
+      \item 6 horas de procesamiento para 100M datos (extraidos de una tormenta de 5 horas)
+      \item Alto consumo de memoria, lo que obliga a procesar los datos de a partes
+      \item Pérdida de pulsos en medio de los cortes
+    \end{itemize}
+  \end{columns}
+  
+  \note{
+    El código actual, aunque funcional, presenta varios problemas tanto en su diseño como en su rendimiento.
+    
+    En cuanto al diseño, el código consta de pocos archivos con una gran cantidad de líneas, lo que dificulta su mantenimiento y modificación. Cualquier cambio requiere revisar y entender todo el código, ya que las responsabilidades no están bien asignadas. Además, hay muchas variables sin nombres descriptivos - como 's', 'ss', 'i', 'j', 'w', 'k' - y constantes hard-codeadas sin referencia alguna, lo que complica aún más la comprensión. También hay mucha duplicación de código, donde la misma lógica se repite con pequeños cambios, y los nombres de archivos están hard-codeados en el código.
+    
+    En cuanto al rendimiento, para grandes volúmenes de datos la ejecución es muy lenta. Por ejemplo, para procesar datos de una tormenta de 5 horas de duración, que son aproximadamente 100 millones de datos, el programa tarda alrededor de 6 horas en completarse. A esto se suma un consumo de memoria excesivamente alto, lo que obliga a procesar los datos de a partes. El algoritmo actual no tiene en cuenta los pulsos que quedan en medio de estos cortes, resultando en la pérdida de algunos datos.
+    
+    Estos problemas motivan la necesidad de desarrollar un nuevo sistema que mejore tanto el diseño como el rendimiento.
+  }
+\end{frame}
+
+\begin{frame}{Objetivos}
+  \textbf{Objetivo General:}
+  \begin{itemize}
+    \item Desarrollar un sistema modular y automatizado que mejore significativamente la eficiencia, mantenibilidad y escalabilidad del código existente
+  \end{itemize}
+  
+  \vspace{0.5cm}
+  \textbf{Objetivos Específicos:}
+  \begin{enumerate}
+    \item \textbf{Arquitectura modular:} Separar las etapas en al menos tres componentes independientes
+    \item \textbf{Optimización:} Procesar 100M datos en 15 min (vs 6h) usando $<$2GB de memoria
+    \item \textbf{Automatización:} Ejecutar toda la cadena con un único comando
+    \item \textbf{Documentación:} Manual de usuario y código comentado
+  \end{enumerate}
+  
+  \note{
+    El objetivo general es desarrollar un sistema modular y automatizado para el análisis de datos de gotas cargadas eléctricamente que mejore significativamente la eficiencia, mantenibilidad y escalabilidad del código existente, facilitando la obtención de nuevos resultados.
+    
+    El nuevo sistema debe ser capaz de procesar grandes volúmenes de datos de manera eficiente y, como mínimo, detectar la misma cantidad de pulsos que el código original, intentando incrementarla en lo posible.
+    
+    Los objetivos específicos son cuatro:
+    
+    Primero, diseñar una arquitectura modular que separe las etapas del procesamiento en al menos tres componentes independientes y reutilizables.
+    
+    Segundo, optimizar el rendimiento y el uso de memoria del algoritmo de detección de pulsos para manejar aproximadamente 100 millones de muestras - que corresponden a una tormenta de 5 horas de duración - utilizando menos de 2 GB de memoria y reduciendo el tiempo de análisis de 6 horas a aproximadamente 15 minutos, asegurando al menos la misma cantidad de pulsos detectados que el programa original.
+    
+    Tercero, desarrollar un sistema de automatización que permita ejecutar la cadena completa de análisis con un único comando y sin intervención manual.
+    
+    Y cuarto, documentar completamente el sistema mediante un manual de usuario y comentarios en el código para facilitar su uso y mantenimiento futuro.
+  }
+\end{frame}
+
+\section{Conceptos previos}
+
+\begin{frame}{Complejidad computacional}
+\end{frame}
+
+\begin{frame}{Notación Big-O}
+\end{frame}
+
+\begin{frame}{Importancia de la constante en la complejidad}
+\end{frame}
+
+\begin{frame}{Estructuras de datos básicas}
+  % Array, Queue, Deque
+\end{frame}
+
+\section{Análisis del código existente}
+
+\begin{frame}{Pipeline original}
+\end{frame}
+
+\begin{frame}{Lectura de datos}
+\end{frame}
+
+\begin{frame}{Preprocesamiento de señales}
+\end{frame}
+
+\begin{frame}{Detección de pulsos}
+\end{frame}
+
+\begin{frame}{Localización y delimitación de pulsos}
+\end{frame}
+
+\begin{frame}{Cálculo de propiedades físicas}
+\end{frame}
+
+\begin{frame}{Filtros de calidad}
+\end{frame}
+
+\begin{frame}{Sistema de evaluación y ordenamiento}
+\end{frame}
+
+\begin{frame}{Problemas de diseño}
+  % papapapa
+\end{frame}
+
+\begin{frame}{Problemas de rendimiento}
+  % papapapa
+\end{frame}
+
+\begin{frame}{Motivación de la refactorización}
+  % papapapa
+\end{frame}
+
+\section{Estructuras de datos y algoritmos optimizados}
+
+\begin{frame}{Algoritmos de ventana deslizante}
+  % papapapa
+\end{frame}
+
+\begin{frame}{MinQueue}
+  % papapapa
+\end{frame}
+
+\begin{frame}{Extension a MaxQueue y MaxMinQueue}
+  % papapapa
+\end{frame}
+
+\section{Mejoras aplicadas en el sistema}
+
+\begin{frame}{Mejora en el algoritmo de rellenado de huecos}
+  % papapapa
+\end{frame}
+
+\begin{frame}{Optimizacion en el algoritmo de remoción de offset}
+  % papapapa
+\end{frame}
+
+\begin{frame}{Cambios en la detección de pulsos}
+  % papapapa
+\end{frame}
+
+\section{Resultados}
+
+\begin{frame}{Resultados y benchmarking}
+  \begin{itemize}
+    \item Reducción de tiempo: 6 h \textrightarrow{} 5 min para 100 millones de datos.
+    \item Uso de memoria estable por debajo de 2 GB.
+    \item Detección de pulsos aumenta 1--5\% según tormenta.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Validación cualitativa}
+  % papapapa
+\end{frame}
+
+\section{Cierre}
+
+\begin{frame}{Trabajo futuro}
+  \begin{itemize}
+    \item Mejora en la adquisición de datos: eliminar los huecos de 50ms cada segundo.
+    \item Procesamiento en tiempo real: solo almacenar las gotas detectadas, sin apagar y encender el instrumento.
+    \item Mejora en la detección de pulsos: explorar técnicas de machine learning como Support Vector Networks (SVN) o redes neuronales.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \centering
+  {\Large \textbf{Preguntas?}}
+\end{frame}
+
+\end{document}
