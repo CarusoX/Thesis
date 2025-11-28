@@ -97,7 +97,9 @@ LVM::LVM(size_t buffer_size) : totalUsed(0), maxSize(buffer_size) {}
 
 void LVM::addSensorData(const std::string &line)
 {
-    std::istringstream iss(line);
+    std::string modified_line = line;
+    std::replace(modified_line.begin(), modified_line.end(), ',', '.');
+    std::istringstream iss(modified_line);
     double time, sensor1, sensor2;
     if (!(iss >> time >> sensor1 >> sensor2))
     {
