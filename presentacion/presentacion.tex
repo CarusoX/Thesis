@@ -14,7 +14,6 @@
 \usepackage{booktabs}
 \usepackage{hyperref}
 \usepackage{pgfpages}
-\usepackage[inkscapeformat=png]{svg}
 
 \newif\ifnotes
 \notesfalse
@@ -165,7 +164,8 @@ carga eléctrica de gotas de lluvia}
 \end{frame}
 
 \begin{frame}{Procesamiento de señales}
-  % Diagrama de flujo con dos boxes: Programa 1 (Preprocesamiento) y Programa 2 (Detección)
+  \centering
+  \includegraphics[width=0.9\textwidth]{./figures/diagrama.png}
   
   \note{
     El procesamiento transforma las señales crudas registradas por el instrumento en una lista de propiedades físicas para cada gota. Para esto se emplean dos programas que se ejecutan de manera secuencial.
@@ -686,12 +686,12 @@ carga eléctrica de gotas de lluvia}
 
 \begin{frame}{Ejemplo: suma de una ventana deslizante}
   \centering
-  \includesvg[width=0.5\textwidth]{figures/ventana_1.svg}
+  \includegraphics[width=\textwidth]{figures/ventana_1.png}
 \end{frame}
 
 \begin{frame}{Ejemplo: suma de una ventana deslizante}
   \centering
-  \includesvg[width=0.5\textwidth]{figures/ventana_2.svg}
+  \includegraphics[width=\textwidth]{figures/ventana_2.png}
 \end{frame}
 
 \begin{frame}{Aplicación: promedio móvil}
@@ -723,11 +723,170 @@ carga eléctrica de gotas de lluvia}
 
 
 \begin{frame}{MinQueue}
-  % papapapa
+  \textbf{¿Qué resuelve?}
+  \begin{itemize}
+    \item Obtener el elemento mínimo de una queue en $O(1)$
+    \item Sin MinQueue: buscar el mínimo en toda la queue cada vez = $O(n)$
+  \end{itemize}
+  
+  \vspace{0.5cm}
+  \textbf{Modelado como:}
+  \begin{itemize}
+    \item \textbf{Queue principal:} almacena todos los elementos (FIFO)
+    \item \textbf{Deque auxiliar:} mantiene candidatos al mínimo en orden creciente
+    \item El primer elemento del deque siempre es el mínimo actual
+  \end{itemize}
+  
+  \vspace{0.3cm}
+  \textbf{Operaciones:} \texttt{push}, \texttt{pop}, \texttt{min} - todas en $O(1)$ amortizado
+  
+  \note{
+    La MinQueue es una estructura de datos que resuelve el problema de obtener el elemento mínimo de una queue en tiempo constante O(1), en vez de buscar el mínimo en toda la ventana cada vez, lo cual sería O(n).
+    
+    La MinQueue utiliza dos estructuras internamente: una queue principal para almacenar todos los elementos siguiendo el principio FIFO, y una deque auxiliar para mantener los candidatos al mínimo en orden creciente. La clave del algoritmo radica en mantener la deque en orden creciente, para que el primer elemento de esta siempre sea el mínimo actual.
+    
+    Las operaciones básicas son push, que agrega un elemento, pop, que elimina el elemento más antiguo, y min, que obtiene el elemento mínimo actual. Todas estas operaciones tienen complejidad O(1) amortizado.
+  }
 \end{frame}
 
-\begin{frame}{Extension a MaxQueue y MaxMinQueue}
-  % papapapa
+\begin{frame}{Ejemplo MinQueue - Parte 1}
+  \begin{columns}
+    \column{0.5\textwidth}
+    \centering
+    \includegraphics[width=0.95\textwidth]{figures/minqueue_1.png}
+    
+    \column{0.5\textwidth}
+    \centering
+    \includegraphics[width=0.95\textwidth]{figures/minqueue_2.png}
+  \end{columns}
+  
+  \note{
+    Veamos un ejemplo paso a paso de cómo funciona la MinQueue. En estas primeras dos imágenes podemos ver las operaciones iniciales de push.
+  }
+\end{frame}
+
+\begin{frame}{Ejemplo MinQueue - Parte 2}
+  \begin{columns}
+    \column{0.5\textwidth}
+    \centering
+    \includegraphics[width=0.95\textwidth]{figures/minqueue_3.png}
+    
+    \column{0.5\textwidth}
+    \centering
+    \includegraphics[width=0.95\textwidth]{figures/minqueue_4.png}
+  \end{columns}
+  
+  \note{
+    Continuamos con más operaciones de push. Noten cómo la deque mantiene los candidatos al mínimo en orden creciente.
+  }
+\end{frame}
+
+\begin{frame}{Ejemplo MinQueue - Parte 3}
+  \begin{columns}
+    \column{0.5\textwidth}
+    \centering
+    \includegraphics[width=0.95\textwidth]{figures/minqueue_5.png}
+    
+    \column{0.5\textwidth}
+    \centering
+    \includegraphics[width=0.95\textwidth]{figures/minqueue_6.png}
+  \end{columns}
+  
+  \note{
+    Observen cómo cuando se agregan elementos menores, estos eliminan elementos mayores de la deque, manteniendo siempre el orden creciente.
+  }
+\end{frame}
+
+\begin{frame}{Ejemplo MinQueue - Parte 4}
+  \begin{columns}
+    \column{0.5\textwidth}
+    \centering
+    \includegraphics[width=0.95\textwidth]{figures/minqueue_7.png}
+    
+    \column{0.5\textwidth}
+    \centering
+    \includegraphics[width=0.95\textwidth]{figures/minqueue_8.png}
+  \end{columns}
+  
+  \note{
+    Continuamos viendo cómo se mantiene la deque ordenada y cómo el mínimo siempre está en el frente.
+  }
+\end{frame}
+
+\begin{frame}{Ejemplo MinQueue - Parte 5}
+  \begin{columns}
+    \column{0.5\textwidth}
+    \centering
+    \includegraphics[width=0.95\textwidth]{figures/minqueue_9.png}
+    
+    \column{0.5\textwidth}
+    \centering
+    \includegraphics[width=0.95\textwidth]{figures/minqueue_10.png}
+  \end{columns}
+  
+  \note{
+    Ahora vemos operaciones de pop. Cuando se elimina un elemento de la queue, si ese elemento es el mínimo actual (está en el frente de la deque), también se elimina de la deque.
+  }
+\end{frame}
+
+\begin{frame}{Ejemplo MinQueue - Parte 6}
+  \begin{columns}
+    \column{0.5\textwidth}
+    \centering
+    \includegraphics[width=0.95\textwidth]{figures/minqueue_11.png}
+    
+    \column{0.5\textwidth}
+    \centering
+    \includegraphics[width=0.95\textwidth]{figures/minqueue_12.png}
+  \end{columns}
+  
+  \note{
+    Continuamos con más operaciones, mostrando cómo la estructura se mantiene consistente después de cada operación.
+  }
+\end{frame}
+
+\begin{frame}{Ejemplo MinQueue - Parte 7}
+  \begin{columns}
+    \column{0.5\textwidth}
+    \centering
+    \includegraphics[width=0.95\textwidth]{figures/minqueue_13.png}
+    
+    \column{0.5\textwidth}
+    \centering
+    \includegraphics[width=0.95\textwidth]{figures/minqueue_14.png}
+  \end{columns}
+  
+  \note{
+    Finalizamos el ejemplo mostrando cómo la MinQueue mantiene correctamente el mínimo en todo momento, permitiendo acceder a él en tiempo constante.
+  }
+\end{frame}
+
+\begin{frame}{Extensión a MaxQueue y MaxMinQueue}
+  \textbf{MaxQueue:}
+  \begin{itemize}
+    \item Mantener deque en orden \textbf{decreciente}
+    \item El primer elemento es el máximo
+  \end{itemize}
+  
+  \vspace{0.5cm}
+  \textbf{MaxMinQueue:}
+  \begin{itemize}
+    \item Dos deques auxiliares independientes:
+    \begin{itemize}
+      \item Uno para mínimo (orden creciente)
+      \item Otro para máximo (orden decreciente)
+    \end{itemize}
+    \item Complejidad: $O(1)$ amortizado para todas las operaciones
+    \item Espacio: doble de espacio auxiliar
+  \end{itemize}
+  
+  \note{
+    Es trivial adaptar la MinQueue para obtener una MaxQueue: simplemente cambiamos la condición de comparación en el bucle while de mayor que a menor que, manteniendo el deque auxiliar en orden decreciente en lugar de creciente. De esta manera, el primer elemento del deque será el máximo en vez del mínimo.
+    
+    Para mantener simultáneamente el mínimo y el máximo, utilizamos dos deques auxiliares independientes: uno para el mínimo en orden creciente y otro para el máximo en orden decreciente. Esta extensión mantiene la complejidad O(1) amortizado para todas las operaciones, aunque requiere el doble de espacio auxiliar.
+    
+    Esta estructura es muy útil cuando necesitamos tanto el mínimo como el máximo de una ventana deslizante, como en nuestro algoritmo de detección de pulsos.
+  }
 \end{frame}
 
 \section{Mejoras aplicadas en el sistema}
