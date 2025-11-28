@@ -7,7 +7,7 @@ LATEX = pdflatex
 MAIN = presentacion
 
 # Opciones de compilación
-LATEX_OPTS = -interaction=nonstopmode -shell-escape
+LATEX_OPTS = --interaction=nonstopmode --shell-escape
 
 # Archivos auxiliares a limpiar
 AUX_FILES = *.aux *.log *.out *.toc *.nav *.snm *.vrb *.synctex.gz

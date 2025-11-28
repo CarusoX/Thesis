@@ -14,6 +14,7 @@
 \usepackage{booktabs}
 \usepackage{hyperref}
 \usepackage{pgfpages}
+\usepackage[inkscapeformat=png]{svg}
 
 \newif\ifnotes
 \notesfalse
@@ -32,11 +33,11 @@ carga eléctrica de gotas de lluvia}
 \institute{FaMAF -- UNC}
 \date{19 de Diciembre de 2025}
 
-% \AtBeginSection[]{
-%   \begin{frame}{Agenda}
-%     \tableofcontents[currentsection]
-%   \end{frame}
-% }
+\AtBeginSection[]{
+  \begin{frame}{Agenda}
+    \tableofcontents[currentsection]
+  \end{frame}
+}
 
 \begin{document}
 
@@ -243,61 +244,483 @@ carga eléctrica de gotas de lluvia}
 \section{Conceptos previos}
 
 \begin{frame}{Complejidad computacional}
+  \textbf{¿Por qué es importante?}
+  \begin{itemize}
+    \item Permite evaluar y comparar la eficiencia de algoritmos
+    \item Describe el comportamiento asintótico en función del tamaño de entrada
+    \item Mide tiempo de ejecución y uso de memoria
+  \end{itemize}
+  
+  \vspace{0.5cm}
+  \textbf{En este trabajo:}
+  \begin{itemize}
+    \item Procesamos millones de puntos de datos
+    \item La diferencia entre $O(n)$ y $O(n^2)$ puede ser minutos vs. días
+    \item Optimización crucial para análisis en tiempo razonable
+  \end{itemize}
+  
+  \note{
+    Para evaluar y comparar la eficiencia de los algoritmos utilizados en este trabajo, es fundamental entender cómo se mide el rendimiento computacional. La notación Big-O es una herramienta matemática que permite describir el comportamiento asintótico de un algoritmo en términos de tiempo de ejecución o uso de memoria, en función del tamaño de la entrada.
+    
+    En el procesamiento de señales, donde se manejan millones de puntos de datos, la diferencia entre algoritmos de complejidad O(n) y O(n²) puede resultar en diferencias de horas en el tiempo de procesamiento. Por ejemplo, para procesar 100 millones de puntos, considerando que un procesador realiza aproximadamente 10 a la 8 operaciones por segundo, un algoritmo O(n) podría completarse en segundos, mientras que un algoritmo O(n²) podría requerir días o semanas.
+    
+    Por esta razón, la optimización de la complejidad computacional, así como la optimización de la constante, es crucial para hacer viable el análisis de grandes volúmenes de datos meteorológicos en tiempo razonable.
+  }
 \end{frame}
 
 \begin{frame}{Notación Big-O}
+  \textbf{Definición:}
+  \begin{itemize}
+    \item $f(n) = O(g(n))$ si existen constantes $c > 0$ y $n_0$ tales que
+    \item $f(n) \leq c \cdot g(n)$ para todo $n \geq n_0$
+  \end{itemize}
+  
+  \vspace{0.3cm}
+  \centering
+  \includegraphics[width=0.7\textwidth]{../escrito/figures/complejidades_algoritmicas.png}
+  
+  \note{
+    La notación Big-O describe el límite superior del crecimiento de una función. Formalmente, decimos que f(n) es igual a O(g(n)) si existen constantes positivas c y n_0 tales que f(n) es menor o igual a c multiplicado por g(n) para todo n mayor o igual a n_0.
+    
+    En el contexto de algoritmos, esto significa que el tiempo de ejecución o el uso de memoria no crecerá más rápido que la función g(n) multiplicada por una constante, independientemente del tamaño de la entrada.
+    
+    Las clases de complejidad más relevantes para este trabajo son:
+    - O(1) constante: el tiempo es independiente del tamaño de la entrada, como acceder a una posición fija de un arreglo
+    - O(log n) logarítmica: el tiempo crece logarítmicamente, como en búsqueda binaria
+    - O(n) lineal: el tiempo es proporcional al tamaño de la entrada, como recorrer todos los elementos
+    - O(n log n) lineal logarítmica: característico de algoritmos de divide y vencerás como merge sort
+    - O(n²) cuadrática: el tiempo es proporcional al cuadrado de la entrada, como comparar cada par de elementos
+    
+    En el gráfico pueden ver cómo crecen estas complejidades en escala logarítmica.
+  }
 \end{frame}
 
 \begin{frame}{Importancia de la constante en la complejidad}
+  \textbf{La constante importa:}
+  \begin{itemize}
+    \item Por definición: $O(10n) = O(n)$ (la constante se elimina)
+    \item Pero en la práctica: un algoritmo que hace 10 veces más operaciones requiere 10 veces más cómputo
+    \item Por lo tanto, es importante prestar atención a la cantidad de constante de un algoritmo, para terminar de evaluar su desempeño en la práctica.
+  \end{itemize}
+  
+  \note{
+    Aunque por definición la notación nos dice que O(10n) es igual a O(n), porque la constante se elimina, es importante entender que un algoritmo que haga 10 veces más operaciones que otro, requerirá obviamente 10 veces más cómputo.
+    
+    Por esta razón, es importante no solo prestar atención a la complejidad de los algoritmos, sino también a la constante que afecta a esta, ya que este factor puede ser determinante en la práctica.
+    
+    En este trabajo tenemos un ejemplo claro: el algoritmo original de detección de pulsos tiene una complejidad O(100000 por n), mientras que el algoritmo optimizado tiene O(200 por n). Ambos son O(n), pero el optimizado es 500 veces más rápido debido a la reducción de la constante.
+    
+    Por lo tanto, optimizar la constante es crucial para hacer viable el análisis de grandes volúmenes de datos en tiempo razonable.
+  }
 \end{frame}
 
 \begin{frame}{Estructuras de datos básicas}
-  % Array, Queue, Deque
+  \begin{columns}[t]
+    \column{0.5\textwidth}
+    \vspace{0pt}
+    \begin{minipage}[t]{\textwidth}
+      \textbf{Array (Arreglo):}
+      \begin{itemize}
+        \item Lista de elementos en un espacio contiguo de memoria
+        \item Acceso directo a cualquier elemento en $O(1)$
+      \end{itemize}
+    \end{minipage}
+    
+    \column{0.5\textwidth}
+    \vspace{0pt}
+    \begin{minipage}[t]{\textwidth}
+      \textbf{Queue (Cola):}
+      \begin{itemize}
+        \item FIFO: First In, First Out
+        \item Operaciones: \texttt{push}, \texttt{pop} en $O(1)$
+        \item Lectura: \texttt{front} en $O(1)$
+      \end{itemize}
+    \end{minipage}
+  \end{columns}
+  
+  \vspace{0.3cm}
+  \begin{columns}[t]
+    \column{0.5\textwidth}
+    \vspace{0pt}
+    \begin{minipage}[t]{\textwidth}
+      \textbf{Deque (Cola doble):}
+      \begin{itemize}
+        \item Inserción/eliminación por ambos extremos
+        \item Operaciones: \texttt{push\_back}, \texttt{push\_front}, \texttt{pop\_back}, \texttt{pop\_front} en $O(1)$
+        \item Lectura: \texttt{front}, \texttt{back} en $O(1)$
+      \end{itemize}
+    \end{minipage}
+    
+    \column{0.5\textwidth}
+    \vspace{0pt}
+    \begin{minipage}[t]{\textwidth}
+      \textbf{Ejemplos:}
+      \begin{itemize}
+        \item \textbf{Array:} lista de supermercado
+        \item \textbf{Queue:} cola del supermercado
+        \item \textbf{Deque:} escalera mecánica bidireccional
+      \end{itemize}
+    \end{minipage}
+  \end{columns}
+  
+  \note{
+    Para entender las estructuras de datos básicas, comenzamos con el array, que es un espacio contiguo de memoria que permite acceso directo a cualquier índice en tiempo constante O(1).
+    
+    Una cola, o queue, es una estructura de datos que sigue el principio FIFO - First In, First Out - donde los elementos se agregan por un extremo y se eliminan por el otro. Un ejemplo clásico es la cola del supermercado. Una queue tiene dos operaciones básicas: push, que agrega un elemento al principio de la queue, y pop, que elimina el elemento al final de la queue.
+    
+    Una cola doblemente terminada, o deque, es una estructura de datos que permite insertar y eliminar elementos por ambos extremos. Un ejemplo clásico es una escalera mecánica que pueda cambiar de dirección. La deque tiene operaciones de inserción y eliminación: push_back, que agrega un elemento al final, y pop_front, que elimina el elemento al principio. También tiene operaciones de lectura: front, para leer el elemento del frente, y back, para leer el elemento del final.
+    
+    Todas estas operaciones se pueden realizar en tiempo constante, O(1).
+  }
 \end{frame}
 
 \section{Análisis del código existente}
 
-\begin{frame}{Pipeline original}
-\end{frame}
-
 \begin{frame}{Lectura de datos}
+  \begin{itemize}
+    \item Formato de entrada: archivo `.lvm' con 3 columnas
+    \begin{itemize}
+      \item Tiempo
+      \item Señal del anillo
+      \item Señal de la placa
+    \end{itemize}
+  \end{itemize}
+  
+  \note{
+    El primer programa, promedio_general.f, recibe como entrada las señales crudas registradas por el instrumento. El formato de los archivos es un archivo .lvm que contiene 3 columnas: tiempo, señal del anillo y señal de la placa.
+    
+    El segundo programa, buscador_de_gotas.f, lee los archivos de datos preprocesados con el paso anterior. Se pueden leer hasta 36 archivos, y cada archivo puede contener hasta 13 millones de muestras.
+  }
 \end{frame}
 
 \begin{frame}{Preprocesamiento de señales}
+  \begin{enumerate}
+    \item \textbf{Rellenado de huecos:} Interpolación lineal entre puntos anterior y posterior
+    \item \textbf{Remoción de offset:} Para cada punto, se calcula el promedio de 5000 puntos circundantes y se resta
+  \end{enumerate}
+  
+  \note{
+    El programa de preprocesamiento realiza dos operaciones fundamentales.
+    
+    Primero, el rellenado de huecos mediante interpolación. Debido a las limitaciones de hardware, cada segundo se pierden aproximadamente 50 milisegundos de datos durante la adquisición. El programa identifica estos huecos y los rellena utilizando interpolación lineal entre el punto anterior y el posterior al hueco.
+    
+    Segundo, la remoción del offset de las señales. Para cada punto de la señal, se calcula el promedio de los 5000 puntos circundantes - 2500 puntos a cada lado - y se le resta este valor. Para esto se ignoran los primeros y últimos 2500 puntos de la señal. Este proceso elimina el offset de corriente continua que puede variar durante la medición.
+    
+    Finalmente, se escriben las señales preprocesadas en un archivo. El formato de salida son 4 columnas: contador de tiempo como entero, señal del anillo resultante, señal de la placa resultante y un booleano que indica si la fila corresponde a un hueco.
+  }
 \end{frame}
 
 \begin{frame}{Detección de pulsos}
+  \textbf{Sistema de umbrales adaptativos:}
+  \begin{itemize}
+    \item 1000 umbrales desde 2.00 hasta 0.02
+    \item Para cada umbral, busca pares de puntos consecutivos que superen el umbral en ambas señales
+    \item Separación máxima de 100 puntos entre señales
+  \end{itemize}
+  
+  \vspace{0.3cm}
+  \centering
+  \includegraphics[width=0.7\textwidth]{../escrito/figures/sensores_gota.png}
+  
+  \note{
+    El segundo programa implementa un sistema de umbrales que varía dinámicamente desde un valor superior de 2.00 hasta uno inferior de 0.02 a lo largo de 1000 pasos. Esta variación permite detectar pulsos de diferentes amplitudes.
+    
+    Para cada umbral, se buscan pares de puntos consecutivos que superen el umbral en ambas señales - anillo y placa - con una separación máxima de 100 puntos. Al primer punto del par consecutivo en cada señal, se lo denomina c1 y c2 respectivamente.
+    
+    En la figura pueden observar un pulso de ejemplo detectado con este algoritmo, junto con los máximos consecutivos de cada sensor. Además se observan distintos valores de umbrales, y se marca el umbral que encuentra el pulso.
+  }
 \end{frame}
 
-\begin{frame}{Localización y delimitación de pulsos}
+\begin{frame}{Delimitación de pulsos}
+  \centering
+  \includegraphics[width=0.5\textwidth]{../escrito/figures/analisis_gota.png}
+  
+  \vspace{0.3cm}
+  \textbf{Puntos relevantes:}
+  \begin{itemize}
+    \item \textbf{u1, u2:} Inicio de cada señal (retrocediendo desde c1, c2 hasta anulación)
+    \item \textbf{p1:} Punto medio del anillo (avanzando desde c1 hasta anulación)
+    \item \textbf{p2:} Punto de quiebre de la placa (análisis de la integral)
+  \end{itemize}
+  
+  \vspace{0.2cm}
+  Ancho máximo del pulso: 400 puntos
+  
+  \note{
+    Una vez detectado un pulso, se determina el inicio de cada señal - u1 y u2 respectivamente - retrocediendo desde c1 y c2 hasta encontrar el punto donde la señal se anula.
+    
+    Se calcula también el punto medio de la señal del anillo - p1 - avanzando desde c1 hasta donde se anula la señal, y el punto de quiebre de la señal de la placa - p2 - mediante análisis de la integral de la misma.
+    
+    El algoritmo recorta cada pulso en base a la localización de estos puntos, considerando un ancho máximo de 400 puntos.
+    
+    En la figura pueden observar un pulso detectado junto con sus puntos relevantes marcados.
+  }
 \end{frame}
 
 \begin{frame}{Cálculo de propiedades físicas}
+  \begin{columns}
+    \column{0.5\textwidth}
+    \textbf{Carga eléctrica:}
+    \begin{itemize}
+      \item Integración de señales de ambos canales
+      \item Factor de conversión por amplificación
+    \end{itemize}
+    
+    \vspace{0.3cm}
+    \centering
+    \includegraphics[width=0.9\textwidth]{../escrito/figures/calculo_carga_electrica.png}
+    
+    \column{0.5\textwidth}
+    \textbf{Velocidad:}
+    \begin{itemize}
+      \item Separación conocida: 5.7 cm
+      \item Dividida por tiempo entre p1 y p2
+    \end{itemize}
+    
+    \vspace{0.3cm}
+    \textbf{Diámetro:}
+    \begin{itemize}
+      \item Interpolación en tabla velocidad-diámetro
+    \end{itemize}
+    
+    \vspace{0.3cm}
+    \centering
+    \includegraphics[width=0.9\textwidth]{../escrito/figures/relacion_velocidad_diametro.png}
+  \end{columns}
+  
+  \note{
+    Para cada pulso detectado, se calculan las propiedades físicas.
+    
+    La carga eléctrica se calcula integrando la señal de ambos canales y aplicando el factor de conversión correspondiente a la amplificación del instrumento. La integración de la señal se fundamenta en el principio físico de que la carga eléctrica inducida en un conductor es proporcional a la integral temporal de la corriente que fluye a través de él. En la figura pueden observar el cálculo de carga eléctrica mediante integración de señales del anillo y placa.
+    
+    La velocidad de caída se determina mediante la separación conocida entre anillo y placa - 5.7 centímetros - dividida por el tiempo que hay entre el punto medio de la señal del anillo p1 y el punto de quiebre de la señal de la placa p2.
+    
+    El diámetro se obtiene interpolando en una tabla velocidad-diámetro precalculada. En la figura pueden observar la relación velocidad-diámetro para gotas de lluvia.
+  }
 \end{frame}
 
 \begin{frame}{Filtros de calidad}
+
+  Una vez detectados y delimitados los pulsos, se aplican filtros de calidad para separar los pulsos válidos de los falsos positivos.
+
+  \vspace{0.5cm}
+
+  \textbf{Filtros:}
+  \begin{enumerate}
+    \item \textbf{Carga:} $|q| > 0.2$ en ambos canales
+    \item \textbf{Signo:} Mismo signo en ambos canales
+    \item \textbf{Velocidad:} Entre 0.7125 y 11.4 m/s
+  \end{enumerate}
+  
+  \note{
+    Durante el proceso de detección, el algoritmo identifica tanto pulsos válidos que corresponden a gotas de lluvia reales, así como falsos positivos claros que corresponden a ruido o detecciones espurias.
+    
+    Para resolver este problema, se implementan filtros de calidad para separar los pulsos válidos de los que no lo son. Estos filtros eliminan detecciones que no cumplen con propiedades físicas esperadas para gotas de lluvia reales. Los filtros se aplican de manera progresiva, donde cada etapa elimina un tipo específico de detección errónea.
+    
+    Primero, los filtros de carga: la carga de la gota tanto en el anillo como en la placa tiene que ser mayor a un valor mínimo de 0.2 en valor absoluto.
+    
+    Segundo, el filtro de signo: se verifica que la carga del pulso sea del mismo signo en ambos canales.
+    
+    Tercero, el filtro de velocidad: se verifica que la distancia temporal entre los picos del anillo y la placa corresponda a una velocidad de caída físicamente plausible, entre 0.7125 y 11.4 metros por segundo.
+  }
 \end{frame}
 
 \begin{frame}{Sistema de evaluación y ordenamiento}
+
+  Una vez tenemos los pulsos, los evaluamos para determinar que tan buenos son. Las metricas fueron desarrolladas mediante ajuste manual y experimental.
+
+  \vspace{0.2cm}
+  
+  \textbf{5 criterios de evaluación:}
+  \begin{itemize}
+    \item \textbf{Eval1, Eval2:} Diferencia cuadrática con modelos teóricos del sensor del anillo y la placa respectivamente
+    \item \textbf{Eval3:} Desviación de proporción carga (87\% anillo/placa)
+    \item \textbf{Eval4:} Desviación de proporción ancho (79\% placa/anillo)
+    \item \textbf{Eval5:} Proporción de señal en rango de ruido
+  \end{itemize}
+  
+  \vspace{0.2cm}
+  \textbf{Puntuación total:}
+  $$eval = \ln(1 + eval1) + \ln(1 + eval2) + 3 \cdot eval3 + 3 \cdot eval4 + eval5^2$$
+  
+  \vspace{0.2cm}
+  Menor puntuación = mejor calidad (rango típico: $[0, 20]$)
+  
+  \note{
+    Una vez aplicados los filtros de calidad, las detecciones restantes corresponden principalmente a gotas. Algunas de estas presentan señales muy limpias y bien definidas, mientras que otras pueden tener pequeñas distorsiones, ruido residual, o características que sugieren mediciones menos precisas.
+    
+    Para clasificar las gotas obtenidas, se implementa un sistema de puntuación que evalúa la calidad de cada detección mediante cinco criterios independientes. Este sistema fue desarrollado mediante ajuste manual y experimental.
+    
+    Eval1 y Eval2 miden la diferencia cuadrática entre la integral de la señal real y dos modelos teóricos distintos del pulso, uno para el anillo y otro para la placa.
+    
+    Eval3 mide la desviación de la proporción esperada entre cargas del anillo y la placa. Experimentalmente se observó que la carga medida en el anillo es aproximadamente el 87 por ciento de la carga medida en la placa.
+    
+    Eval4 mide la desviación de la proporción esperada del ancho entre los picos de la señal de la placa y el anillo. Experimentalmente se observó que el ancho del pulso de la placa es aproximadamente el 79 por ciento del ancho del pulso del anillo.
+    
+    Eval5 mide la proporción de señal en el rango de ruido, entre -0.02 y 0.02.
+    
+    Las evaluaciones se combinan para obtener una puntuación total. Mientras más chico sea el valor de la puntuación total, mejor es la calidad de la gota. El rango típico está entre 0 y 20.
+  }
 \end{frame}
 
 \begin{frame}{Problemas de diseño}
-  % papapapa
+  \begin{columns}[t]
+    \column{0.5\textwidth}
+    \vspace{0pt}
+    \begin{itemize}
+      \item \textbf{Sin modularización:} Todo en entorno global
+      \item \textbf{Variables sin contexto:} `s', `ss', `i', `j', `w', `k', etc.
+      \item \textbf{Código duplicado:} Lógica repetida con pequeños cambios
+    \end{itemize}
+    
+    \column{0.5\textwidth}
+    \vspace{0pt}
+    \begin{itemize}
+      \item \textbf{I/O hard-codeado:} Nombres de archivos en código
+      \item \textbf{División forzada:} Alto consumo de memoria obliga a procesar por partes
+      \item \textbf{Pérdida de datos:} Pulsos en medio de cortes no se procesan
+    \end{itemize}
+  \end{columns}
+  
+  \vspace{0.5cm}
+  Cualquier modificación requiere entender todo el código
+  
+  \note{
+    El código existente presenta problemas de diseño que dificultan su comprensión y mantenimiento.
+    
+    En primer lugar, no hay modularización. Todo el procesamiento está en el entorno global del programa, que maneja todos los pasos de procesamiento, como la detección de pulsos, cálculo de características, aplicación de filtros, escritura de resultados, etc. Cualquier modificación requiere entender por completo cómo interactúan las diferentes partes del programa.
+    
+    En segundo lugar, hay variables sin contexto semántico. El código utiliza variables como 's', 'ss', 'i', 'j', 'w', 'k', 'l', 'p', 'r', 'x', 'cont', 'contt', 'cc1', 'cc2', 'iii' sin ningún contexto. Es imposible determinar qué representa cada una sin leer todo el código. Además, están todas definidas en el principio del programa, lo cual hace que sea difícil entender su uso en el resto del código.
+    
+    En tercer lugar, requiere dividir el conjunto de datos en varias partes. El consumo de memoria es muy alto, por lo que el programa requiere dividir el conjunto de datos en varias partes y procesarlos secuencialmente. Esto hace que se pierdan algunos pulsos, ya que los que quedan en medio de los cortes no se procesan.
+    
+    En cuarto lugar, la lectura de archivos está hard-codeada. El programa requiere cambiar los nombres de los archivos a procesar, ya que los nombres de estos son constantes en el código en vez de ser parámetros. Además, hay un bloque de código que permite leer hasta 36 archivos, que se debe comentar o descomentar dependiendo de la cantidad en la que se dividió el conjunto de datos a procesar.
+    
+    Finalmente, hay mucha duplicación de código. La cantidad de código repetido es muy alta. Hay mucha lógica la cual solo tiene un cambio en el signo, un cambio en un if statement o un cambio en una variable. Esto hace que sea difícil mantener el código ya que hay que modificarlo en varios lugares.
+  }
 \end{frame}
 
 \begin{frame}{Problemas de rendimiento}
-  % papapapa
+  \textbf{Remoción de offset:}
+  \begin{itemize}
+    \item Para cada punto: suma de 5001 valores y 5001 divisiones
+    \item Complejidad: $O(5001n) = O(n)$ pero con constante muy alta
+  \end{itemize}
+  
+  \vspace{0.5cm}
+  \textbf{Detección de pulsos:}
+  \begin{itemize}
+    \item 1000 umbrales $\times$ todos los puntos $\times$ 100 puntos de búsqueda
+    \item Complejidad: $O(100000 \cdot n) = O(n)$ pero con constante extremadamente alta
+  \end{itemize}
+  
+  \vspace{0.3cm}
+  \centering
+  \textcolor{red}{\textbf{Ambos son $O(n)$ pero con constantes muy altas}}
+  
+  \note{
+    Al analizar el rendimiento del código, se encontraron dos áreas de potenciales mejoras.
+    
+    Primero, el algoritmo de remoción de offset es muy ineficiente. Para cada punto, se hace una suma de 5001 valores divididos por 5001, resultando en una complejidad O(5001n) que es O(n). Obviamente se trata de una complejidad lineal, pero no solo que la constante es altísima por el factor de 5001, sino que también se realizan 5001 divisiones por cada punto, que no es la operación más eficiente en un procesador.
+    
+    Segundo, la detección de pulsos. Si analizamos la complejidad de la implementación de este algoritmo, podemos ver que para cada umbral - 1000 umbrales - se revisa todo el array de las señales. Si dos puntos consecutivos superan el umbral en la primera señal, se revisa hasta un total de 100 puntos en la segunda señal. Esto resulta en una complejidad O(100000 por n) que es O(n). Idéntico al caso anterior, se trata de una complejidad lineal, pero con una constante extremadamente alta.
+    
+    Ambos algoritmos son O(n) pero con constantes muy altas, lo que los hace extremadamente lentos en la práctica.
+  }
 \end{frame}
 
 \begin{frame}{Motivación de la refactorización}
-  % papapapa
+  \textbf{Beneficios de la refactorización:}
+  \begin{itemize}
+    \item \textbf{Mantenibilidad:} Menos código por revisar, lógica en funciones pequeñas
+    \item \textbf{Reutilizabilidad:} Código reutilizable para otros experimentos o instrumentos
+    \item \textbf{Verificación:} Pruebas unitarias de cada función, no del programa completo
+    \item \textbf{Colaboración:} Otros investigadores pueden entender y modificar el código más fácilmente
+  \end{itemize}
+  
+  \vspace{0.5cm}
+  \centering
+  \textbf{Necesidad:} Resolver problemas de diseño y rendimiento para mejorar el sistema
+  
+  \note{
+    Todas las problemáticas mencionadas anteriormente - tanto de diseño como de rendimiento - motivan a realizar una refactorización del código. Esta refactorización tiene muchos beneficios.
+    
+    Primero, mantenibilidad. Cualquier corrección de errores o implementación de mejoras requiere revisar y entender menos código, ya que la lógica se encuentra en funciones más pequeñas.
+    
+    Segundo, reutilizabilidad. El código puede ser reutilizado para otros experimentos o instrumentos, en vez de tener que adaptar el código monolítico existente.
+    
+    Tercero, verificación. Permitiría realizar pruebas unitarias de cada función y no de todo el programa completo, lo que facilita la detección y corrección de errores.
+    
+    Cuarto, colaboración. Otros investigadores pueden entender y modificar el código sin invertir tanta cantidad de tiempo y esfuerzo estudiándolo.
+    
+    Por todas estas razones, es necesario resolver los problemas de diseño y rendimiento para mejorar significativamente el sistema.
+  }
 \end{frame}
 
 \section{Estructuras de datos y algoritmos optimizados}
 
 \begin{frame}{Algoritmos de ventana deslizante}
-  % papapapa
+  \textbf{Concepto:}
+  \begin{itemize}
+    \item Mover una ventana de tamaño fijo a lo largo de un array
+    \item Realizar operaciones sobre los elementos en los extremos de la ventana
+    \item Al avanzar: eliminar valor más antiguo, agregar nuevo valor
+  \end{itemize}
+  
+  \vspace{0.5cm}
+  \textbf{Ventaja:}
+  \begin{itemize}
+    \item Actualiza el resultado incrementalmente
+    \item Costo computacional independiente del tamaño de la ventana
+    \item Solo depende de la operación realizada
+  \end{itemize}
+  
+  \note{
+    El algoritmo de ventana deslizante, o sliding window, es una técnica de optimización utilizada para resolver eficientemente problemas que involucran secuencias contiguas en arreglos.
+    
+    En términos generales, la técnica consiste en mover una ventana de tamaño fijo a lo largo de la secuencia de datos, realizando operaciones sobre los elementos contenidos en cada posición de la ventana. A medida que la ventana avanza, el valor más antiguo se elimina y el nuevo valor que ingresa se incorpora al cálculo, actualizando así el resultado con un costo computacional que depende solamente de la operación realizada, y no del tamaño de la ventana.
+    
+    Esta técnica es muy poderosa porque permite evitar recalcular todo desde cero en cada paso, lo que resulta en algoritmos mucho más eficientes.
+  }
 \end{frame}
+
+\begin{frame}{Ejemplo: suma de una ventana deslizante}
+  \centering
+  \includesvg[width=0.5\textwidth]{figures/ventana_1.svg}
+\end{frame}
+
+\begin{frame}{Ejemplo: suma de una ventana deslizante}
+  \centering
+  \includesvg[width=0.5\textwidth]{figures/ventana_2.svg}
+\end{frame}
+
+\begin{frame}{Aplicación: promedio móvil}
+  \textbf{El promedio es simplemente:}
+  $$\text{promedio} = \frac{\text{suma de la ventana}}{\text{tamaño de la ventana}}$$
+  
+  \vspace{0.5cm}
+  \textbf{Optimización:}
+  \begin{itemize}
+    \item Suma de la ventana: resuelta con ventana deslizante (2 operaciones)
+    \item División: solo cuando necesitamos el promedio (1 operación)
+    \item Total: 3 operaciones por punto, independiente del tamaño de ventana
+  \end{itemize}
+  
+  \vspace{0.3cm}
+  \centering
+  \textcolor{red}{\textbf{Complejidad: $O(n)$ con constante muy baja}}
+  
+  \note{
+    Una vez entendido el principio de la ventana deslizante, podemos aplicarlo al problema específico de cálculo del promedio móvil utilizado en este trabajo para remover el offset de la señal.
+    
+    El promedio es simplemente la suma de la ventana dividida por el tamaño de la ventana. Como ya sabemos cómo calcular la suma de la ventana eficientemente con la técnica de sliding window - usando solo dos operaciones - el promedio se calcula dividiendo esta suma por el tamaño de la ventana.
+    
+    De esta manera, la suma total de la ventana se mantiene actualizada de forma incremental, requiriendo solo dos operaciones por iteración independientemente del tamaño de la ventana. El promedio se calcula dividiendo esta suma por el tamaño de la ventana cuando lo necesitamos, lo que requiere una división adicional.
+    
+    Como resultado, tenemos un algoritmo de complejidad O(n) con una constante muy baja, ya que hacemos una sola división por punto, y dos operaciones para mantener la suma actualizada. Esto es mucho más eficiente que el algoritmo original que requería 5001 operaciones por punto.
+  }
+\end{frame}
+
 
 \begin{frame}{MinQueue}
   % papapapa
