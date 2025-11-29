@@ -1030,6 +1030,94 @@ def grafico_rellenado_huecos():
     print(f"Tamaño de ventana para remoción de offset: {offset_window} puntos")
     print(f"Señal final offseteada a partir de 1.0")
 
+def grafico_interpolacion_puntual():
+    """
+    Genera un gráfico que muestra la interpolación puntual de un hueco en una señal.
+    Muestra la señal con el hueco rellenado mediante interpolación lineal.
+    """
+    # Configurar el estilo del gráfico
+    plt.style.use('seaborn-v0_8')
+    plt.rcParams['font.size'] = 12
+    plt.rcParams['axes.labelsize'] = 14
+    plt.rcParams['axes.titlesize'] = 16
+    plt.rcParams['xtick.labelsize'] = 12
+    plt.rcParams['ytick.labelsize'] = 12
+    plt.rcParams['legend.fontsize'] = 12
+    
+    # Crear datos sintéticos para demostrar el concepto
+    np.random.seed(42)
+    n_points = 200
+    x = np.linspace(0, 10, n_points)
+    
+    # Crear una señal base con ruido
+    signal_base = 2 * np.sin(0.5 * x) + 0.5 * np.sin(2 * x) + 0.1 * np.random.randn(n_points)
+    
+    # Crear un hueco artificial en el medio
+    gap_start = 80
+    gap_end = 120
+    gap_size = gap_end - gap_start
+    
+    # Usar los valores reales de la señal base en los extremos del hueco
+    # Estos valores serán los puntos de referencia para la interpolación
+    left_value = signal_base[gap_start - 1]
+    right_value = signal_base[gap_end]
+    
+    # Señal con hueco (usamos la señal base directamente)
+    signal_with_gap = signal_base.copy()
+    signal_with_gap[gap_start:gap_end] = np.nan
+    
+    # Interpolación puntual: usar los valores inmediatamente antes y después del hueco
+    
+    # Interpolación lineal simple
+    signal_puntual = signal_with_gap.copy()
+    for i in range(gap_start, gap_end):
+        alpha = (i - gap_start + 1) / (gap_size + 1)
+        signal_puntual[i] = left_value + alpha * (right_value - left_value)
+    
+    # Crear la figura
+    fig, ax = plt.subplots(figsize=(14, 8))
+    
+    # Graficar la señal interpolada
+    ax.plot(x, signal_puntual, 'r-', linewidth=2, label='Interpolación puntual', alpha=0.8)
+    
+    # Marcar los puntos usados para interpolación
+    ax.plot(x[gap_start-1], left_value, 'ro', markersize=10, label=f'Valor izquierdo: {left_value:.1f}')
+    ax.plot(x[gap_end], right_value, 'ro', markersize=10, label=f'Valor derecho: {right_value:.1f}')
+    
+    # Marcar puntos del medio del hueco (punto medio y algunos puntos intermedios)
+    mid_idx = (gap_start + gap_end) // 2
+    mid_value = signal_puntual[mid_idx]
+    ax.plot(x[mid_idx], mid_value, 'rs', markersize=10, label=f'Punto medio: {mid_value:.1f}')
+    
+    # Marcar algunos puntos adicionales dentro del hueco para mayor claridad
+    quarter1_idx = gap_start + (gap_end - gap_start) // 4
+    quarter3_idx = gap_start + 3 * (gap_end - gap_start) // 4
+    ax.plot(x[quarter1_idx], signal_puntual[quarter1_idx], 'rs', markersize=8, alpha=0.7)
+    ax.plot(x[quarter3_idx], signal_puntual[quarter3_idx], 'rs', markersize=8, alpha=0.7)
+    
+    # Marcar el hueco rellenado
+    ax.axvspan(x[gap_start], x[gap_end-1], alpha=0.3, color='red', label='Hueco rellenado')
+    
+    # Configurar el gráfico
+    ax.set_title('Interpolación Puntual', fontweight='bold', pad=20)
+    ax.set_xlabel('Tiempo (s)', fontweight='bold')
+    ax.set_ylabel('Amplitud', fontweight='bold')
+    ax.grid(True, alpha=0.3, linestyle='--')
+    ax.legend(loc='upper right', frameon=True, fancybox=True, shadow=True)
+    
+    # Ajustar el layout
+    plt.tight_layout()
+    
+    # Guardar la figura
+    plt.savefig('/Users/uzielluduena/Thesis/new_def/escrito/figures/interpolacion_puntual.png', 
+                dpi=300, bbox_inches='tight', facecolor='white')
+    
+    # Mostrar el gráfico
+    plt.show()
+    
+    print("Gráfico de interpolación puntual guardado en: escrito/figures/interpolacion_puntual.png")
+    print(f"Valores usados para interpolación: izquierdo={left_value:.1f}, derecho={right_value:.1f}")
+
 if __name__ == "__main__":
     # grafico_complejidades()
     # grafico_sensores_gota()
@@ -1040,4 +1128,5 @@ if __name__ == "__main__":
     # grafico_comparacion_modelos()
     # grafico_sliding_window()
     # grafico_rellenado_huecos()
-    grafico_minqueue()
+    grafico_interpolacion_puntual()
+    # grafico_minqueue()

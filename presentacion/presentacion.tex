@@ -52,17 +52,9 @@ carga eléctrica de gotas de lluvia}
 
 \begin{frame}{Motivación científica}
   \begin{itemize}
-    \item Las gotas de lluvia pueden transportar \textbf{carga eléctrica}
-    \begin{itemize}
-      \item Adquirida mediante procesos microfísicos en la nube
-      \item Colisiones entre hidrometeoros (granizo, graupel, copos de nieve)
-    \end{itemize}
+    \item Las gotas de lluvia pueden transportar \textbf{carga eléctrica}, adquirida mediante procesos microfísicos en la nube
     \vspace{0.5cm}
-    \item El signo y magnitud de la carga dependen de:
-    \begin{itemize}
-      \item Condiciones termodinámicas de la tormenta
-      \item Mecanismo no-inductivo (NIM)
-    \end{itemize}
+    \item El signo y magnitud de la carga dependen de condiciones termodinámicas de la tormenta
     \vspace{0.5cm}
     \item La distribución de tamaños (RSD) es clave para:
     \begin{itemize}
@@ -118,13 +110,15 @@ carga eléctrica de gotas de lluvia}
 
 \begin{frame}{Teoría: ¿Cómo se ve una gota?}
   \begin{itemize}
-    \item \textbf{Anillo:} Corriente de polaridad opuesta al acercarse, se invierte al alejarse
-    \item \textbf{Placa:} Corriente de polaridad opuesta, meseta al impactar (transferencia de carga)
+    \item \textbf{Anillo:} Polaridad opuesta al acercarse, se invierte al alejarse
+    \item \textbf{Placa:} Polaridad opuesta, meseta al impactar
   \end{itemize}
-  \vspace{0.3cm}
-  \centering
+  \vspace{0.2cm}
+  \begin{center}
   \includegraphics[width=0.65\textwidth]{../escrito/figures/corriente_gotas.png}
-  
+  \end{center}
+  \vspace{0.1cm}
+  Denominamos `pulso' a la señal que forma parte de una gota.
   
   \note{
     Ahora, en teoría, cuando una gota cargada eléctricamente cae, induce corrientes tanto en el anillo como en la placa.
@@ -138,18 +132,16 @@ carga eléctrica de gotas de lluvia}
 \end{frame}
 
 \begin{frame}{La realidad: señal cruda}
-  \textbf{Ruido continuo} que offsetea la señal constantemente
-  
-  \vspace{0.3cm}
   \begin{center}
-  \includegraphics[width=0.9\textwidth,height=0.4\textheight,keepaspectratio]{../escrito/figures/señal_cruda.png}
+  \includegraphics[width=0.7\textwidth,keepaspectratio]{./figures/tormenta_lvm.png}
   \end{center}
   
-  \vspace{0.5cm}
+  \vspace{0.1cm}
   \textbf{El programa existente resuelve estos problemas:}
   \begin{itemize}
-    \item Detectar pulsos válidos entre el ruido continuo
-    \item Extraer propiedades físicas precisas en ventanas muy cortas
+    \item Llena los huecos, mueve las señales de base a cero
+    \item Identifica pulsos válidos entre el ruido continuo
+    \item Extrae propiedades físicas de los pulsos
   \end{itemize}
 
   \note{
@@ -176,110 +168,46 @@ carga eléctrica de gotas de lluvia}
   }
 \end{frame}
 
-\begin{frame}{Necesidad de mejoras}
-  \begin{columns}[t]
-    \column{0.5\textwidth}
-    \vspace{0pt}
-    \textbf{Problemas de diseño:}
-    \begin{itemize}
-      \item Sin modularización
-      \item Variables sin contexto
-      \item Código duplicado
-      \item I/O hard-codeado
-    \end{itemize}
-    
-    \column{0.5\textwidth}
-    \vspace{0pt}
-    \textbf{Problemas de rendimiento:}
-    \begin{itemize}
-      \item 6 horas de procesamiento para 100M datos (extraidos de una tormenta de 5 horas)
-      \item Alto consumo de memoria, lo que obliga a procesar los datos de a partes
-      \item Pérdida de pulsos en medio de los cortes
-    \end{itemize}
-  \end{columns}
-  
-  \note{
-    El código actual, aunque funcional, presenta varios problemas tanto en su diseño como en su rendimiento.
-    
-    En cuanto al diseño, el código consta de pocos archivos con una gran cantidad de líneas, lo que dificulta su mantenimiento y modificación. Cualquier cambio requiere revisar y entender todo el código, ya que las responsabilidades no están bien asignadas. Además, hay muchas variables sin nombres descriptivos - como 's', 'ss', 'i', 'j', 'w', 'k' - y constantes hard-codeadas sin referencia alguna, lo que complica aún más la comprensión. También hay mucha duplicación de código, donde la misma lógica se repite con pequeños cambios, y los nombres de archivos están hard-codeados en el código.
-    
-    En cuanto al rendimiento, para grandes volúmenes de datos la ejecución es muy lenta. Por ejemplo, para procesar datos de una tormenta de 5 horas de duración, que son aproximadamente 100 millones de datos, el programa tarda alrededor de 6 horas en completarse. A esto se suma un consumo de memoria excesivamente alto, lo que obliga a procesar los datos de a partes. El algoritmo actual no tiene en cuenta los pulsos que quedan en medio de estos cortes, resultando en la pérdida de algunos datos.
-    
-    Estos problemas motivan la necesidad de desarrollar un nuevo sistema que mejore tanto el diseño como el rendimiento.
-  }
-\end{frame}
-
-\begin{frame}{Objetivos}
-  \textbf{Objetivo General:}
+\begin{frame}{Problemas y objetivos}
+  \textbf{Problemas principales:}
   \begin{itemize}
-    \item Desarrollar un sistema modular y automatizado que mejore significativamente la eficiencia, mantenibilidad y escalabilidad del código existente
+    \item \textbf{Es lentísimo:} 6 horas para procesar una tormenta de 5 horas (100M datos)
+    \item \textbf{Consume mucha memoria:} obliga a procesar los datos de a partes
+    \item \textbf{Codigo monolítico:} Requiere entender todo el codigo para hacer modificaciones
+  \end{itemize}
+
+  \textbf{Objetivos:}
+  \begin{itemize}
+    \item Analizar el código existente para entender su funcionamiento
+    \item Replicar su funcionalidad de forma más óptima
+    \item Refactorizar el código para hacerlo más modular y mantenible
   \end{itemize}
   
-  \vspace{0.5cm}
-  \textbf{Objetivos Específicos:}
-  \begin{enumerate}
-    \item \textbf{Arquitectura modular:} Separar las etapas en al menos tres componentes independientes
-    \item \textbf{Optimización:} Procesar 100M datos en 15 min (vs 6h) usando $<$2GB de memoria
-    \item \textbf{Automatización:} Ejecutar toda la cadena con un único comando
-    \item \textbf{Documentación:} Manual de usuario y código comentado
-  \end{enumerate}
-  
   \note{
-    El objetivo general es desarrollar un sistema modular y automatizado para el análisis de datos de gotas cargadas eléctricamente que mejore significativamente la eficiencia, mantenibilidad y escalabilidad del código existente, facilitando la obtención de nuevos resultados.
-    
-    El nuevo sistema debe ser capaz de procesar grandes volúmenes de datos de manera eficiente y, como mínimo, detectar la misma cantidad de pulsos que el código original, intentando incrementarla en lo posible.
-    
-    Los objetivos específicos son cuatro:
-    
-    Primero, diseñar una arquitectura modular que separe las etapas del procesamiento en al menos tres componentes independientes y reutilizables.
-    
-    Segundo, optimizar el rendimiento y el uso de memoria del algoritmo de detección de pulsos para manejar aproximadamente 100 millones de muestras - que corresponden a una tormenta de 5 horas de duración - utilizando menos de 2 GB de memoria y reduciendo el tiempo de análisis de 6 horas a aproximadamente 15 minutos, asegurando al menos la misma cantidad de pulsos detectados que el programa original.
-    
-    Tercero, desarrollar un sistema de automatización que permita ejecutar la cadena completa de análisis con un único comando y sin intervención manual.
-    
-    Y cuarto, documentar completamente el sistema mediante un manual de usuario y comentarios en el código para facilitar su uso y mantenimiento futuro.
+    El código actual, aunque funcional, presenta problemas serios de rendimiento. Es extremadamente lento: tarda 6 horas para procesar una tormenta de 5 horas, que son aproximadamente 100 millones de datos. Además, consume mucha memoria, lo que obliga a procesar los datos de a partes. El código es monolítico, lo que dificulta su mantenimiento y modificación.
+
+    Para solucionar estos problemas, es necesario analizar el código existente para entender completamente su funcionamiento y poder replicar su funcionalidad de forma más óptima. El objetivo es mejorar significativamente el rendimiento y el uso de memoria, manteniendo la misma precisión en la detección de pulsos.
+    Tambien es necesario refactorizar el código para hacerlo más modular y mantenible, lo cual facilita la implementación de nuevas funcionalidades y la corrección de errores.
   }
 \end{frame}
 
 \section{Conceptos previos}
 
-\begin{frame}{Complejidad computacional}
-  \textbf{¿Por qué es importante?}
-  \begin{itemize}
-    \item Permite evaluar y comparar la eficiencia de algoritmos
-    \item Describe el comportamiento asintótico en función del tamaño de entrada
-    \item Mide tiempo de ejecución y uso de memoria
-  \end{itemize}
+\begin{frame}{Complejidad computacional y notación Big-O}
+  Herramienta para evaluar y comparar la eficiencia de algoritmos
   
-  \vspace{0.5cm}
-  \textbf{En este trabajo:}
-  \begin{itemize}
-    \item Procesamos millones de puntos de datos
-    \item La diferencia entre $O(n)$ y $O(n^2)$ puede ser minutos vs. días
-    \item Optimización crucial para análisis en tiempo razonable
-  \end{itemize}
+  \vspace{0.2cm}
+  \textbf{Definición Big-O:}
+  $$f(n) = O(g(n)) \text{ si existen constantes } c > 0 \text{ y } n_0 \text{ tales que}$$
+  $$f(n) \leq c \cdot g(n) \text{ para todo } n \geq n_0$$
+  
+  \vspace{0.2cm}
+  \centering
+  \includegraphics[width=0.6\textwidth]{../escrito/figures/complejidades_algoritmicas.png}
   
   \note{
     Para evaluar y comparar la eficiencia de los algoritmos utilizados en este trabajo, es fundamental entender cómo se mide el rendimiento computacional. La notación Big-O es una herramienta matemática que permite describir el comportamiento asintótico de un algoritmo en términos de tiempo de ejecución o uso de memoria, en función del tamaño de la entrada.
     
-    En el procesamiento de señales, donde se manejan millones de puntos de datos, la diferencia entre algoritmos de complejidad O(n) y O(n²) puede resultar en diferencias de horas en el tiempo de procesamiento. Por ejemplo, para procesar 100 millones de puntos, considerando que un procesador realiza aproximadamente 10 a la 8 operaciones por segundo, un algoritmo O(n) podría completarse en segundos, mientras que un algoritmo O(n²) podría requerir días o semanas.
-    
-    Por esta razón, la optimización de la complejidad computacional, así como la optimización de la constante, es crucial para hacer viable el análisis de grandes volúmenes de datos meteorológicos en tiempo razonable.
-  }
-\end{frame}
-
-\begin{frame}{Notación Big-O}
-  \textbf{Definición:}
-  \begin{itemize}
-    \item $f(n) = O(g(n))$ si existen constantes $c > 0$ y $n_0$ tales que
-    \item $f(n) \leq c \cdot g(n)$ para todo $n \geq n_0$
-  \end{itemize}
-  
-  \vspace{0.3cm}
-  \centering
-  \includegraphics[width=0.7\textwidth]{../escrito/figures/complejidades_algoritmicas.png}
-  
-  \note{
     La notación Big-O describe el límite superior del crecimiento de una función. Formalmente, decimos que f(n) es igual a O(g(n)) si existen constantes positivas c y n_0 tales que f(n) es menor o igual a c multiplicado por g(n) para todo n mayor o igual a n_0.
     
     En el contexto de algoritmos, esto significa que el tiempo de ejecución o el uso de memoria no crecerá más rápido que la función g(n) multiplicada por una constante, independientemente del tamaño de la entrada.
@@ -291,86 +219,114 @@ carga eléctrica de gotas de lluvia}
     - O(n log n) lineal logarítmica: característico de algoritmos de divide y vencerás como merge sort
     - O(n²) cuadrática: el tiempo es proporcional al cuadrado de la entrada, como comparar cada par de elementos
     
+    En este trabajo procesamos millones de puntos de datos. La diferencia entre algoritmos de complejidad O(n) y O(n²) puede resultar en diferencias enormes en el tiempo de procesamiento. Por ejemplo, para procesar 100 millones de puntos, un algoritmo O(n) podría completarse en minutos, mientras que un algoritmo O(n²) podría requerir días o semanas.
+    
     En el gráfico pueden ver cómo crecen estas complejidades en escala logarítmica.
   }
 \end{frame}
 
 \begin{frame}{Importancia de la constante en la complejidad}
-  \textbf{La constante importa:}
+
+  En general, la funcion $g(n)$ es lo mas simple posible, es decir que si
   \begin{itemize}
-    \item Por definición: $O(10n) = O(n)$ (la constante se elimina)
-    \item Pero en la práctica: un algoritmo que hace 10 veces más operaciones requiere 10 veces más cómputo
+    \item $f(n) = O(n)$
+    \item $f(n) = O(n^2)$
+    \item $f(n) = O(3n + 7)$
+  \end{itemize}
+  elegimos $O(n)$.
+
+  \vspace{0.3cm}
+
+  \textbf{La constante importa en la práctica:}
+  \begin{itemize}
+    \item Por definición: $f(n) = O(10n) = O(n)$ (la constante se elimina)
+    \item Pero, un algoritmo que hace 10 veces más operaciones requiere 10 veces más cómputo
     \item Por lo tanto, es importante prestar atención a la cantidad de constante de un algoritmo, para terminar de evaluar su desempeño en la práctica.
   \end{itemize}
+\end{frame}
+
+\begin{frame}{Array (Arreglo)}
+  \begin{center}
+  \includegraphics[width=0.7\textwidth]{figures/array.png}
+  \end{center}
+  
+  \vspace{0.3cm}
+  \textbf{Características:}
+  \begin{itemize}
+    \item Lista de elementos en espacio contiguo de memoria
+  \end{itemize}
+  
+  \vspace{0.2cm}
+  \textbf{Operaciones:}
+  \begin{itemize}
+    \item \texttt{acceso[i]}: $O(1)$
+  \end{itemize}
+  
+  \vspace{0.2cm}
+  \textbf{Ejemplo:} Lista de supermercado
   
   \note{
-    Aunque por definición la notación nos dice que O(10n) es igual a O(n), porque la constante se elimina, es importante entender que un algoritmo que haga 10 veces más operaciones que otro, requerirá obviamente 10 veces más cómputo.
+    Un array, o arreglo, es un espacio contiguo de memoria que permite acceso directo a cualquier elemento mediante su índice. Esta estructura es fundamental porque permite acceso directo a cualquier elemento en tiempo constante O(1), simplemente calculando la posición en memoria basándose en el índice.
     
-    Por esta razón, es importante no solo prestar atención a la complejidad de los algoritmos, sino también a la constante que afecta a esta, ya que este factor puede ser determinante en la práctica.
-    
-    En este trabajo tenemos un ejemplo claro: el algoritmo original de detección de pulsos tiene una complejidad O(100000 por n), mientras que el algoritmo optimizado tiene O(200 por n). Ambos son O(n), pero el optimizado es 500 veces más rápido debido a la reducción de la constante.
-    
-    Por lo tanto, optimizar la constante es crucial para hacer viable el análisis de grandes volúmenes de datos en tiempo razonable.
+    Las operaciones principales son acceso y lectura por índice, ambas en tiempo constante O(1). Un ejemplo cotidiano es una lista de supermercado, donde puedes acceder directamente a cualquier elemento de la lista sabiendo su posición.
   }
 \end{frame}
 
-\begin{frame}{Estructuras de datos básicas}
-  \begin{columns}[t]
-    \column{0.5\textwidth}
-    \vspace{0pt}
-    \begin{minipage}[t]{\textwidth}
-      \textbf{Array (Arreglo):}
-      \begin{itemize}
-        \item Lista de elementos en un espacio contiguo de memoria
-        \item Acceso directo a cualquier elemento en $O(1)$
-      \end{itemize}
-    \end{minipage}
-    
-    \column{0.5\textwidth}
-    \vspace{0pt}
-    \begin{minipage}[t]{\textwidth}
-      \textbf{Queue (Cola):}
-      \begin{itemize}
-        \item FIFO: First In, First Out
-        \item Operaciones: \texttt{push}, \texttt{pop} en $O(1)$
-        \item Lectura: \texttt{front} en $O(1)$
-      \end{itemize}
-    \end{minipage}
-  \end{columns}
+\begin{frame}{Queue (Cola)}
+  \begin{center}
+  \includegraphics[width=0.7\textwidth]{figures/queue.png}
+  \end{center}
   
   \vspace{0.3cm}
-  \begin{columns}[t]
-    \column{0.5\textwidth}
-    \vspace{0pt}
-    \begin{minipage}[t]{\textwidth}
-      \textbf{Deque (Cola doble):}
-      \begin{itemize}
-        \item Inserción/eliminación por ambos extremos
-        \item Operaciones: \texttt{push\_back}, \texttt{push\_front}, \texttt{pop\_back}, \texttt{pop\_front} en $O(1)$
-        \item Lectura: \texttt{front}, \texttt{back} en $O(1)$
-      \end{itemize}
-    \end{minipage}
-    
-    \column{0.5\textwidth}
-    \vspace{0pt}
-    \begin{minipage}[t]{\textwidth}
-      \textbf{Ejemplos:}
-      \begin{itemize}
-        \item \textbf{Array:} lista de supermercado
-        \item \textbf{Queue:} cola del supermercado
-        \item \textbf{Deque:} escalera mecánica bidireccional
-      \end{itemize}
-    \end{minipage}
-  \end{columns}
+  \textbf{Características:}
+  \begin{itemize}
+    \item FIFO: First In, First Out
+  \end{itemize}
+  
+  \vspace{0.2cm}
+  \textbf{Operaciones:}
+  \begin{itemize}
+    \item \texttt{push}: $O(1)$
+    \item \texttt{pop}: $O(1)$
+    \item \texttt{front}: $O(1)$
+  \end{itemize}
+  
+  \vspace{0.2cm}
+  \textbf{Ejemplo:} Cola del supermercado
   
   \note{
-    Para entender las estructuras de datos básicas, comenzamos con el array, que es un espacio contiguo de memoria que permite acceso directo a cualquier índice en tiempo constante O(1).
+    Una cola, o queue, es una estructura de datos que sigue el principio FIFO - First In, First Out - donde los elementos se agregan por un extremo y se eliminan por el otro. Un ejemplo clásico es la cola del supermercado, donde la primera persona que llega es la primera en ser atendida.
     
-    Una cola, o queue, es una estructura de datos que sigue el principio FIFO - First In, First Out - donde los elementos se agregan por un extremo y se eliminan por el otro. Un ejemplo clásico es la cola del supermercado. Una queue tiene dos operaciones básicas: push, que agrega un elemento al principio de la queue, y pop, que elimina el elemento al final de la queue.
+    Una queue tiene tres operaciones básicas: push, que agrega un elemento al final de la queue, pop, que elimina el elemento del frente, y front, que lee el elemento del frente sin eliminarlo. Todas estas operaciones se pueden realizar en tiempo constante O(1).
+  }
+\end{frame}
+
+\begin{frame}{Deque (Cola doble)}
+  \begin{center}
+  \includegraphics[width=0.7\textwidth]{figures/deque.png}
+  \end{center}
+  
+  \vspace{0.3cm}
+  \textbf{Características:}
+  \begin{itemize}
+    \item Inserción/eliminación por ambos extremos
+  \end{itemize}
+  
+  \vspace{0.2cm}
+  \textbf{Operaciones:}
+  \begin{itemize}
+    \item \texttt{push\_back}, \texttt{push\_front}: $O(1)$
+    \item \texttt{pop\_back}, \texttt{pop\_front}: $O(1)$
+    \item \texttt{front}, \texttt{back}: $O(1)$
+  \end{itemize}
+  
+  \vspace{0.2cm}
+  \textbf{Ejemplo:} Historial del navegador
+  
+  \note{
+    Una cola doblemente terminada, o deque, es una estructura de datos que permite insertar y eliminar elementos por ambos extremos. Un ejemplo clásico es una escalera mecánica que pueda cambiar de dirección, permitiendo movimiento en ambas direcciones.
     
-    Una cola doblemente terminada, o deque, es una estructura de datos que permite insertar y eliminar elementos por ambos extremos. Un ejemplo clásico es una escalera mecánica que pueda cambiar de dirección. La deque tiene operaciones de inserción y eliminación: push_back, que agrega un elemento al final, y pop_front, que elimina el elemento al principio. También tiene operaciones de lectura: front, para leer el elemento del frente, y back, para leer el elemento del final.
-    
-    Todas estas operaciones se pueden realizar en tiempo constante, O(1).
+    La deque tiene operaciones de inserción y eliminación por ambos extremos: push_back y push_front para agregar elementos, pop_back y pop_front para eliminar elementos, y front y back para leer los elementos de los extremos sin eliminarlos. Todas estas operaciones se pueden realizar en tiempo constante O(1).
   }
 \end{frame}
 
@@ -393,21 +349,21 @@ carga eléctrica de gotas de lluvia}
   }
 \end{frame}
 
-\begin{frame}{Preprocesamiento de señales}
-  \begin{enumerate}
-    \item \textbf{Rellenado de huecos:} Interpolación lineal entre puntos anterior y posterior
-    \item \textbf{Remoción de offset:} Para cada punto, se calcula el promedio de 5000 puntos circundantes y se resta
-  \end{enumerate}
-  
-  \note{
-    El programa de preprocesamiento realiza dos operaciones fundamentales.
-    
-    Primero, el rellenado de huecos mediante interpolación. Debido a las limitaciones de hardware, cada segundo se pierden aproximadamente 50 milisegundos de datos durante la adquisición. El programa identifica estos huecos y los rellena utilizando interpolación lineal entre el punto anterior y el posterior al hueco.
-    
-    Segundo, la remoción del offset de las señales. Para cada punto de la señal, se calcula el promedio de los 5000 puntos circundantes - 2500 puntos a cada lado - y se le resta este valor. Para esto se ignoran los primeros y últimos 2500 puntos de la señal. Este proceso elimina el offset de corriente continua que puede variar durante la medición.
-    
-    Finalmente, se escriben las señales preprocesadas en un archivo. El formato de salida son 4 columnas: contador de tiempo como entero, señal del anillo resultante, señal de la placa resultante y un booleano que indica si la fila corresponde a un hueco.
-  }
+\begin{frame}{Rellenado de huecos}
+    \textbf{Rellenado de huecos:} Interpolación lineal entre puntos anterior y posterior
+    \vspace{0.2cm}
+    \begin{center}
+    \includegraphics[width=0.7\textwidth]{./figures/interpolacion_puntual.png}
+    \end{center}
+\end{frame}
+
+\begin{frame}{Remoción de offset}
+    \textbf{Remoción de offset:} Para cada punto, se calcula el promedio de 5000 puntos circundantes y se resta
+    \vspace{0.2cm}
+    \begin{center}
+    \includegraphics[width=0.7\textwidth]{./figures/remocion_offset.png}
+    \end{center}
+    \vspace{0.2cm}
 \end{frame}
 
 \begin{frame}{Detección de pulsos}
