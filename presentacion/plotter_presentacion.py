@@ -315,11 +315,130 @@ def grafico_deque(guardar_path=None, mostrar=False):
     else:
         plt.close()
 
+def leer_dat(archivo):
+    """
+    Lee un archivo .dat con formato: tiempo\tsensor1\tsensor2
+    
+    Args:
+        archivo: Ruta al archivo .dat
+    
+    Returns:
+        time, sensor1, sensor2: Arrays numpy con los datos
+    """
+    time = []
+    sensor1 = []
+    sensor2 = []
+    
+    with open(archivo, 'r') as f:
+        for line in f:
+            line_clean = line.strip()
+            if not line_clean:
+                continue
+            
+            # Parsear la línea (formato: tiempo\tsensor1\tsensor2)
+            # También maneja comas como separadores decimales
+            line_clean = line_clean.replace(',', '.')
+            parts = line_clean.split()
+            if len(parts) >= 3:
+                try:
+                    t = float(parts[0])
+                    s1 = float(parts[1])
+                    s2 = float(parts[2])
+                    time.append(t)
+                    sensor1.append(s1)
+                    sensor2.append(s2)
+                except ValueError:
+                    continue
+    
+    return np.array(time), np.array(sensor1), np.array(sensor2)
+
+def grafico_dat(archivo_dat, guardar_path=None, titulo=None, mostrar=False,
+                solo_sensor1=False, solo_sensor2=False):
+    """
+    Genera un gráfico de los sensores desde un archivo .dat para la presentación.
+    
+    Args:
+        archivo_dat: Ruta al archivo .dat
+        guardar_path: Ruta donde guardar la figura (default: presentacion/figures/)
+        titulo: Título del gráfico (default: automático)
+        mostrar: Si mostrar el gráfico (default: False)
+        solo_sensor1: Si solo mostrar sensor1 (default: False)
+        solo_sensor2: Si solo mostrar sensor2 (default: False)
+    """
+    # Leer los datos
+    print(f"Leyendo datos desde el archivo {archivo_dat}...")
+    time, sensor1, sensor2 = leer_dat(archivo_dat)
+    
+    print(f"Leídos {len(time)} puntos")
+    if len(time) > 0:
+        print(f"Rango de tiempo: {time[0]:.6f}s - {time[-1]:.6f}s")
+        print(f"Rango sensor1: {np.min(sensor1):.6f} - {np.max(sensor1):.6f}")
+        print(f"Rango sensor2: {np.min(sensor2):.6f} - {np.max(sensor2):.6f}")
+    
+    # Configurar el estilo del gráfico para presentación
+    plt.style.use('seaborn-v0_8')
+    plt.rcParams['font.size'] = 14
+    plt.rcParams['axes.labelsize'] = 16
+    plt.rcParams['axes.titlesize'] = 18
+    plt.rcParams['xtick.labelsize'] = 14
+    plt.rcParams['ytick.labelsize'] = 14
+    plt.rcParams['legend.fontsize'] = 14
+    
+    # Crear la figura
+    fig, ax = plt.subplots(figsize=(14, 8))
+    
+    # Graficar los sensores según las opciones
+    if solo_sensor1:
+        ax.plot(time, sensor1, 'b-', linewidth=1.5, label='Sensor 1 (Anillo)', alpha=0.8)
+    elif solo_sensor2:
+        ax.plot(time, sensor2, 'r-', linewidth=1.5, label='Sensor 2 (Placa)', alpha=0.8)
+    else:
+        ax.plot(time, sensor1, 'b-', linewidth=1.5, label='Sensor 1 (Anillo)', alpha=0.8)
+        ax.plot(time, sensor2, 'r-', linewidth=1.5, label='Sensor 2 (Placa)', alpha=0.8)
+    
+    ax.set_xlabel('Tiempo (s)', fontweight='bold')
+    ax.set_ylabel('Amplitud (V)', fontweight='bold')
+    
+    # Agregar título si se proporciona
+    if titulo:
+        ax.set_title(titulo, fontweight='bold', pad=20)
+    
+    # Agregar grid
+    ax.grid(True, alpha=0.3, linestyle='--')
+    
+    # Configurar la leyenda
+    ax.legend(loc='upper right', frameon=True, fancybox=True, shadow=True)
+    
+    # Ajustar el layout
+    plt.tight_layout()
+    
+    # Guardar la figura
+    if guardar_path is None:
+        # Crear nombre de archivo basado en el archivo de entrada
+        base_name = os.path.splitext(os.path.basename(archivo_dat))[0]
+        guardar_path = f'/Users/uzielluduena/Thesis/new_def/presentacion/figures/{base_name}.png'
+    
+    # Asegurar que el directorio existe
+    os.makedirs(os.path.dirname(guardar_path), exist_ok=True)
+    
+    plt.savefig(guardar_path, dpi=300, bbox_inches='tight', facecolor='white')
+    print(f"Gráfico guardado en: {guardar_path}")
+    
+    # Mostrar el gráfico
+    if mostrar:
+        plt.show()
+    else:
+        plt.close()
+
 if __name__ == "__main__":
     # Generar gráficos de estructuras de datos
     grafico_array(mostrar=False)
     grafico_queue(mostrar=False)
     grafico_deque(mostrar=False)
+    
+    # Archivo .dat a graficar
+    archivo_dat = '/Users/uzielluduena/Thesis/new_def/23-03-23-02-04-27-casa-A2/drops_falla_velocidad.dat'
+    grafico_dat(archivo_dat, mostrar=False)
     
     # Archivo .lvm a leer (opcional)
     # archivo = '/Users/uzielluduena/Thesis/Tormentas/21-11-09-01-10-24.lvm'
