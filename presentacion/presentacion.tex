@@ -1,8 +1,6 @@
 \documentclass{beamer}
 \mode<presentation>{
-  \usetheme{Madrid}
-  \usecolortheme{default}
-  \usefonttheme{default}
+  \usetheme{metropolis}
   \setbeamertemplate{navigation symbols}{}
   \setbeamertemplate{caption}[numbered]
 }
@@ -28,7 +26,8 @@
 
 \title[Procesamiento eficiente de gotas]{Desarrollo de un sistema eficiente para el procesamiento de datos experimentales de la
 carga eléctrica de gotas de lluvia}
-\author{Uziel Ludueña}
+\author{Uziel Ludueña\\
+Director: Rodolfo Guillermo Pereyra}
 \institute{FaMAF -- UNC}
 \date{19 de Diciembre de 2025}
 
@@ -50,13 +49,31 @@ carga eléctrica de gotas de lluvia}
 
 \section{Motivación y contexto}
 
-\begin{frame}{Motivación científica}
+\begin{frame}{Contexto}
   \begin{itemize}
-    \item Las gotas de lluvia pueden transportar \textbf{carga eléctrica}, adquirida mediante procesos microfísicos en la nube
+    \item En el \textbf{grupo de física de la atmósfera de FaMAF} se estudian fenómenos meteorológicos y climáticos
+    \vspace{0.5cm}
+    \item Existe un \textbf{instrumento experimental} que mide la carga eléctrica de gotas de lluvia
+    \vspace{0.5cm}
+    \item El instrumento genera \textbf{grandes volúmenes de datos} que requieren procesamiento eficiente
+  \end{itemize}
+  
+  \note{
+    Comenzaré presentando el contexto de este trabajo.
+    
+    En el grupo de física de la atmósfera de FaMAF se realizan investigaciones sobre fenómenos meteorológicos y climáticos. Dentro de este grupo, ya existe un instrumento experimental desarrollado que es capaz de realizar mediciones simultáneas de la carga eléctrica de gotas de lluvia, así como de su tamaño y velocidad de caída.
+    
+    Este instrumento genera grandes volúmenes de datos que requieren un procesamiento eficiente para extraer la información relevante. Sin embargo, como veremos más adelante, el código existente para procesar estos datos presenta limitaciones tanto en diseño como en rendimiento.
+  }
+\end{frame}
+
+\begin{frame}{¿Para qué medir la carga y el tamaño de las gotas?}
+  \begin{itemize}
+    \item Las gotas de lluvia adquieren su carga eléctrica a través de procesos microfísicos en la nube
     \vspace{0.5cm}
     \item El signo y magnitud de la carga dependen de condiciones termodinámicas de la tormenta
     \vspace{0.5cm}
-    \item La distribución de tamaños (RSD) es clave para:
+    \item La distribución de tamaños de las gotas es clave para:
     \begin{itemize}
       \item Estimar precipitación
       \item Modelos numéricos y radar meteorológico
@@ -65,7 +82,7 @@ carga eléctrica de gotas de lluvia}
   \end{itemize}
   
   \note{
-    Comenzaré explicando por qué es importante estudiar las gotas de lluvia cargadas eléctricamente.
+    Ahora explicaré por qué es importante estudiar las gotas de lluvia cargadas eléctricamente.
     
     Las gotas de lluvia no son simplemente agua que cae. Pueden transportar carga eléctrica que se adquiere dentro de la nube, principalmente a través de colisiones entre diferentes tipos de partículas como granizo, graupel, copos de nieve y cristales de hielo.
     
@@ -100,11 +117,9 @@ carga eléctrica de gotas de lluvia}
   \end{columns}
   
   \note{
-    En el grupo de física de la atmósfera de FaMAF ya existe un instrumento capaz de realizar estas mediciones, como el descrito en el trabajo de Pereyra et al. 2025.
+    El instrumento, descrito en el trabajo de Pereyra et al. 2025, consiste en un anillo de inducción de latón posicionado a 5.7 centímetros por encima de una placa plana de aluminio. Ambos están conectados a amplificadores de corriente de alta ganancia con una amplificación de 5 por 10 a la 8 voltios por amperio, y todo el sistema está protegido por una jaula de Faraday que protege contra interferencias electromagnéticas.
     
-    El dispositivo consiste en un anillo de inducción de latón posicionado a 5.7 centímetros por encima de una placa plana de aluminio. Ambos están conectados a amplificadores de corriente de alta ganancia y todo el sistema está protegido por una jaula de Faraday.
-    
-    La recolección de datos se realiza a 5 kilohertz por canal, es decir, 5000 datos por segundo. Sin embargo, debido a limitaciones de hardware, cada segundo se pierden aproximadamente 50 milisegundos de datos durante la escritura a disco, lo cual produce huecos en la señal.
+    La recolección de datos se realiza a 5 kilohertz por canal, es decir, 5000 datos por segundo. Sin embargo, debido a limitaciones de hardware, no se puede realizar la recolección al mismo tiempo que la escritura a disco, por lo que cada segundo se pierden aproximadamente 50 milisegundos de datos durante la escritura, lo cual produce huecos en la señal.
   }
 \end{frame}
 
@@ -262,9 +277,6 @@ carga eléctrica de gotas de lluvia}
     \item \texttt{acceso[i]}: $O(1)$
   \end{itemize}
   
-  \vspace{0.2cm}
-  \textbf{Ejemplo:} Lista de supermercado
-  
   \note{
     Un array, o arreglo, es un espacio contiguo de memoria que permite acceso directo a cualquier elemento mediante su índice. Esta estructura es fundamental porque permite acceso directo a cualquier elemento en tiempo constante O(1), simplemente calculando la posición en memoria basándose en el índice.
     
@@ -274,16 +286,16 @@ carga eléctrica de gotas de lluvia}
 
 \begin{frame}{Queue (Cola)}
   \begin{center}
-  \includegraphics[width=0.7\textwidth]{figures/queue.png}
+  \includegraphics[width=0.6\textwidth]{figures/queue.png}
   \end{center}
   
-  \vspace{0.3cm}
+  \vspace{0.1cm}
   \textbf{Características:}
   \begin{itemize}
     \item FIFO: First In, First Out
   \end{itemize}
   
-  \vspace{0.2cm}
+  \vspace{0.1cm}
   \textbf{Operaciones:}
   \begin{itemize}
     \item \texttt{push}: $O(1)$
@@ -291,7 +303,7 @@ carga eléctrica de gotas de lluvia}
     \item \texttt{front}: $O(1)$
   \end{itemize}
   
-  \vspace{0.2cm}
+  \vspace{0.1cm}
   \textbf{Ejemplo:} Cola del supermercado
   
   \note{
@@ -303,16 +315,16 @@ carga eléctrica de gotas de lluvia}
 
 \begin{frame}{Deque (Cola doble)}
   \begin{center}
-  \includegraphics[width=0.7\textwidth]{figures/deque.png}
+  \includegraphics[width=0.6\textwidth]{figures/deque.png}
   \end{center}
   
-  \vspace{0.3cm}
+  \vspace{0.1cm}
   \textbf{Características:}
   \begin{itemize}
     \item Inserción/eliminación por ambos extremos
   \end{itemize}
   
-  \vspace{0.2cm}
+  \vspace{0.1cm}
   \textbf{Operaciones:}
   \begin{itemize}
     \item \texttt{push\_back}, \texttt{push\_front}: $O(1)$
@@ -320,7 +332,7 @@ carga eléctrica de gotas de lluvia}
     \item \texttt{front}, \texttt{back}: $O(1)$
   \end{itemize}
   
-  \vspace{0.2cm}
+  \vspace{0.1cm}
   \textbf{Ejemplo:} Historial del navegador
   
   \note{
@@ -382,17 +394,15 @@ carga eléctrica de gotas de lluvia}
 \end{frame}
 
 \begin{frame}{Detección de pulsos}
-  \textbf{Sistema de umbrales adaptativos:}
+  \textbf{Busqueda por umbrales:}
   \begin{itemize}
-    \item 1000 umbrales desde 2.00 hasta 0.02
-    \item Para cada umbral, busca pares de puntos consecutivos que superen el umbral en ambas señales, con separación máxima de 100 puntos entre señales
+    \item 1000 umbrales desde 2.00 hasta 0.02V
+    \item Pares de puntos consecutivos que superen el umbral en cada señal, con separación máxima de 100 puntos entre señales
   \end{itemize}
   
-  \vspace{0.1cm}
   \begin{center}
   \includegraphics[width=0.6\textwidth]{../escrito/figures/sensores_gota.png}
   \end{center}
-  \vspace{0.1cm}
   En el peor caso, el algoritmo tiene complejidad $O(1000 \cdot 100 \cdot n) = O(n)$
   
   \note{
@@ -439,24 +449,21 @@ carga eléctrica de gotas de lluvia}
       \item Factor de conversión por amplificación
     \end{itemize}
     
-    \vspace{0.3cm}
     \centering
     \includegraphics[width=0.9\textwidth]{../escrito/figures/calculo_carga_electrica.png}
     
     \column{0.5\textwidth}
     \textbf{Velocidad:}
     \begin{itemize}
-      \item Separación conocida: 5.7 cm
-      \item Dividida por tiempo entre p1 y p2
+      \item 5.7 cm entre anillo y placa
+      \item Tiempo entre p1 y p2
     \end{itemize}
     
-    \vspace{0.3cm}
     \textbf{Diámetro:}
     \begin{itemize}
       \item Interpolación en tabla velocidad-diámetro
     \end{itemize}
     
-    \vspace{0.3cm}
     \centering
     \includegraphics[width=0.9\textwidth]{../escrito/figures/relacion_velocidad_diametro.png}
   \end{columns}
@@ -476,7 +483,7 @@ carga eléctrica de gotas de lluvia}
 
   Una vez detectados y delimitados los pulsos, se aplican los siguientes filtros de calidad:
   \begin{enumerate}
-    \item \textbf{Carga:} $|q| > 0.2$ en ambos canales
+    \item \textbf{Carga:} $|q| > 0.2pC$ en ambos canales
     \item \textbf{Signo:} Mismo signo en ambos canales
     \item \textbf{Velocidad:} Entre 0.7125 y 11.4 m/s
   \end{enumerate}
@@ -537,9 +544,9 @@ carga eléctrica de gotas de lluvia}
   }
 \end{frame}
 
-\begin{frame}{Beneficios de la refactorización}
+\begin{frame}{Conclusiones del análisis del programa}
   \begin{columns}[t]
-    \column{0.5\textwidth}
+    \column{0.4\textwidth}
     \vspace{0pt}
     \textbf{Problemas de diseño:}
     \begin{itemize}
@@ -551,9 +558,9 @@ carga eléctrica de gotas de lluvia}
       \item Filtros post-detección
     \end{itemize}
     
-    \column{0.5\textwidth}
+    \column{0.6\textwidth}
     \vspace{0pt}
-    \textbf{Beneficios de la refactorización:}
+    \textbf{Beneficios de una refactorización:}
     \begin{itemize}
       \item Mantenibilidad
       \item Reutilizabilidad
@@ -682,15 +689,10 @@ carga eléctrica de gotas de lluvia}
 \end{frame}
 
 \begin{frame}{Ejemplo MinQueue - Parte 1}
-  \begin{columns}
-    \column{0.5\textwidth}
-    \centering
-    \includegraphics[width=0.95\textwidth]{figures/minqueue_1.png}
-    
-    \column{0.5\textwidth}
-    \centering
-    \includegraphics[width=0.95\textwidth]{figures/minqueue_2.png}
-  \end{columns}
+  \centering
+  \includegraphics[width=0.8\textwidth]{figures/minqueue_1.png}
+  \vspace{0.5cm}
+  \includegraphics[width=0.8\textwidth]{figures/minqueue_2.png}
   
   \note{
     Veamos un ejemplo paso a paso de cómo funciona la MinQueue. En estas primeras dos imágenes podemos ver las operaciones iniciales de push.
@@ -698,15 +700,10 @@ carga eléctrica de gotas de lluvia}
 \end{frame}
 
 \begin{frame}{Ejemplo MinQueue - Parte 2}
-  \begin{columns}
-    \column{0.5\textwidth}
-    \centering
-    \includegraphics[width=0.95\textwidth]{figures/minqueue_3.png}
-    
-    \column{0.5\textwidth}
-    \centering
-    \includegraphics[width=0.95\textwidth]{figures/minqueue_4.png}
-  \end{columns}
+  \centering
+  \includegraphics[width=0.8\textwidth]{figures/minqueue_3.png}
+  \vspace{0.5cm}
+  \includegraphics[width=0.8\textwidth]{figures/minqueue_4.png}
   
   \note{
     Continuamos con más operaciones de push. Noten cómo la deque mantiene los candidatos al mínimo en orden creciente.
@@ -714,79 +711,57 @@ carga eléctrica de gotas de lluvia}
 \end{frame}
 
 \begin{frame}{Ejemplo MinQueue - Parte 3}
-  \begin{columns}
-    \column{0.5\textwidth}
-    \centering
-    \includegraphics[width=0.95\textwidth]{figures/minqueue_5.png}
-    
-    \column{0.5\textwidth}
-    \centering
-    \includegraphics[width=0.95\textwidth]{figures/minqueue_6.png}
-  \end{columns}
-  
-  \note{
-    Observen cómo cuando se agregan elementos menores, estos eliminan elementos mayores de la deque, manteniendo siempre el orden creciente.
-  }
+  \centering
+  \includegraphics[width=0.8\textwidth]{figures/minqueue_5.png}
 \end{frame}
 
 \begin{frame}{Ejemplo MinQueue - Parte 4}
-  \begin{columns}
-    \column{0.5\textwidth}
-    \centering
-    \includegraphics[width=0.95\textwidth]{figures/minqueue_7.png}
-    
-    \column{0.5\textwidth}
-    \centering
-    \includegraphics[width=0.95\textwidth]{figures/minqueue_8.png}
-  \end{columns}
+  \centering
+  \includegraphics[width=0.8\textwidth]{figures/minqueue_6.png}
+  \vspace{0.5cm}
+  \includegraphics[width=0.8\textwidth]{figures/minqueue_7.png}
+
+  \note{
+    Observen cómo cuando se agregan elementos menores, estos eliminan elementos mayores de la deque, manteniendo siempre el orden creciente.
+  }  
+\end{frame}
+
+\begin{frame}{Ejemplo MinQueue - Parte 5}
+  \centering
+  \includegraphics[width=0.8\textwidth]{figures/minqueue_8.png}
+  \vspace{0.5cm}
+  \includegraphics[width=0.8\textwidth]{figures/minqueue_9.png}
   
   \note{
     Continuamos viendo cómo se mantiene la deque ordenada y cómo el mínimo siempre está en el frente.
   }
 \end{frame}
 
-\begin{frame}{Ejemplo MinQueue - Parte 5}
-  \begin{columns}
-    \column{0.5\textwidth}
-    \centering
-    \includegraphics[width=0.95\textwidth]{figures/minqueue_9.png}
-    
-    \column{0.5\textwidth}
-    \centering
-    \includegraphics[width=0.95\textwidth]{figures/minqueue_10.png}
-  \end{columns}
+\begin{frame}{Ejemplo MinQueue - Parte 6}
+  \centering
+  \includegraphics[width=0.8\textwidth]{figures/minqueue_10.png}
+  \vspace{0.5cm}
+  \includegraphics[width=0.8\textwidth]{figures/minqueue_11.png}
   
   \note{
     Ahora vemos operaciones de pop. Cuando se elimina un elemento de la queue, si ese elemento es el mínimo actual (está en el frente de la deque), también se elimina de la deque.
   }
 \end{frame}
 
-\begin{frame}{Ejemplo MinQueue - Parte 6}
-  \begin{columns}
-    \column{0.5\textwidth}
-    \centering
-    \includegraphics[width=0.95\textwidth]{figures/minqueue_11.png}
-    
-    \column{0.5\textwidth}
-    \centering
-    \includegraphics[width=0.95\textwidth]{figures/minqueue_12.png}
-  \end{columns}
+\begin{frame}{Ejemplo MinQueue - Parte 7}
+  \centering
+  \includegraphics[width=0.8\textwidth]{figures/minqueue_12.png}
   
   \note{
     Continuamos con más operaciones, mostrando cómo la estructura se mantiene consistente después de cada operación.
   }
 \end{frame}
 
-\begin{frame}{Ejemplo MinQueue - Parte 7}
-  \begin{columns}
-    \column{0.5\textwidth}
-    \centering
-    \includegraphics[width=0.95\textwidth]{figures/minqueue_13.png}
-    
-    \column{0.5\textwidth}
-    \centering
-    \includegraphics[width=0.95\textwidth]{figures/minqueue_14.png}
-  \end{columns}
+\begin{frame}{Ejemplo MinQueue - Parte 8}
+  \centering
+  \includegraphics[width=0.8\textwidth]{figures/minqueue_13.png}
+  \vspace{0.5cm}
+  \includegraphics[width=0.8\textwidth]{figures/minqueue_14.png}
   
   \note{
     Finalizamos el ejemplo mostrando cómo la MinQueue mantiene correctamente el mínimo en todo momento, permitiendo acceder a él en tiempo constante.
@@ -823,21 +798,71 @@ carga eléctrica de gotas de lluvia}
 
 \section{Mejoras aplicadas en el sistema}
 
-\begin{frame}{Mejora en el algoritmo de rellenado de huecos}
-  % papapapa
+\begin{frame}{Arquitectura del nuevo sistema}
+  \textbf{Refactorización en C++:}
+  \begin{itemize}
+    \item La \textbf{stdlib} es bastante completa para implementar todas las estructuras y algoritmos necesarios
+    \item Permite implementar eficientemente: ventanas deslizantes, MaxMinQueue, etc
+  \end{itemize}
+  
+  \textbf{Automatización:}
+  \begin{itemize}
+    \item Script en \textbf{Python} para automatizar todo el pipeline de procesamiento
+    \item Ejecución con un único comando
+  \end{itemize}
+  
+  \textbf{Post-análisis:}
+  \begin{itemize}
+    \item Script en \textbf{Fortran} breve que muestra un ejemplo de post-análisis posible sobre los datos extraídos
+  \end{itemize}
 \end{frame}
 
-\begin{frame}{Optimizacion en el algoritmo de remoción de offset}
-  % papapapa
+\begin{frame}{Nuevo flujo de trabajo}
+  \begin{center}
+    \includegraphics[width=0.8\textwidth]{figures/nuevo_flujo_trabajo.png}
+  \end{center}
+\end{frame}
+
+\begin{frame}{Mejora en el algoritmo de rellenado de huecos}
+  En vez de interpolar entre los puntos adyacentes al hueco, se interpolan entre los promedios de los 2500 puntos anteriores y posteriores al hueco.
+  \begin{center}
+    \includegraphics[width=0.7\textwidth]{figures/mejora_rellenado_huecos.png}
+  \end{center}
+\end{frame}
+
+\begin{frame}{Optimización en el algoritmo de remoción de offset}
+  \textbf{Algoritmo original:}
+  \begin{itemize}
+    \item Para cada punto: suma de 5001 valores y división
+    \item Complejidad: $O(5001n) = O(n)$ con constante muy alta
+  \end{itemize}
+  
+  \vspace{0.5cm}
+  \textbf{Optimización aplicada:}
+  \begin{itemize}
+    \item Uso de \textbf{ventana deslizante}
+    \item Reducción de \textbf{5001 operaciones} a solo \textbf{3 operaciones} por punto
+    \item Misma complejidad: $O(n)$, pero con constante mucho menor
+  \end{itemize}
+  
+  \vspace{0.3cm}
+  \centering
+  \textcolor{red}{\textbf{Reducción de $\sim 1600$ veces en operaciones por punto}}
 \end{frame}
 
 \begin{frame}{Cambios en la detección de pulsos}
   % papapapa
 \end{frame}
 
-\section{Resultados}
+\section{Resultados y cierre}
 
 \begin{frame}{Resultados y benchmarking}
+  \textbf{Configuración de compilación:}
+  \begin{itemize}
+    \item C++: \texttt{-std=c++17 -O3}
+    \item Fortran: \texttt{-O2}
+  \end{itemize}
+  \vspace{0.5cm}
   \begin{itemize}
     \item Reducción de tiempo: 6 h \textrightarrow{} 5 min para 100 millones de datos.
     \item Uso de memoria estable por debajo de 2 GB.
@@ -846,12 +871,25 @@ carga eléctrica de gotas de lluvia}
 \end{frame}
 
 \begin{frame}{Validación cualitativa}
-  % papapapa
+  \begin{center}
+    \includegraphics[width=0.6\textwidth]{../escrito/figures/calidad_detecciones.png}
+  \end{center}
+  \textbf{Resultados:}
+  \begin{itemize}
+    \item El algoritmo mejorado obtiene \textbf{mejor calidad} de gotas que el original
+    \item Las gotas extras detectadas tienen en general un \textbf{buen puntaje de evaluación}
+  \end{itemize}
+  
+  \note{
+    Además de la mejora cuantitativa en la cantidad de gotas detectadas, se observó una mejora cualitativa en la calidad de las detecciones.
+    
+    Si observamos la proporción acumulada de la evaluación de las gotas obtenidas, vemos que el nuevo sistema obtiene, aunque por un margen pequeño, mejor calidad de gotas que el sistema original. Esto nos dice que las gotas extras detectadas tienen en general un buen puntaje de evaluación.
+    
+    La curva azul del algoritmo mejorado está consistentemente a la izquierda de la curva verde del algoritmo original, lo que significa que para cualquier proporción acumulada, el algoritmo mejorado tiene valores de evaluación más bajos, y recordemos que valores más bajos de evaluación significan mejor calidad.
+  }
 \end{frame}
 
-\section{Cierre}
-
-\begin{frame}{Trabajo futuro}
+\begin{frame}{Posibles mejoras}
   \begin{itemize}
     \item Mejora en la adquisición de datos: eliminar los huecos de 50ms cada segundo.
     \item Procesamiento en tiempo real: solo almacenar las gotas detectadas, sin apagar y encender el instrumento.

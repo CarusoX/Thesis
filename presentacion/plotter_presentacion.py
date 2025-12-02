@@ -352,6 +352,128 @@ def leer_dat(archivo):
     
     return np.array(time), np.array(sensor1), np.array(sensor2)
 
+def leer_drops_dat(archivo):
+    """
+    Lee un archivo .dat de drops con múltiples columnas.
+    Extrae las columnas 0 (tiempo), 2 (sensor1) y 3 (sensor2).
+    
+    Args:
+        archivo: Ruta al archivo .dat
+    
+    Returns:
+        time, sensor1, sensor2: Arrays numpy con los datos
+    """
+    time = []
+    sensor1 = []
+    sensor2 = []
+    
+    with open(archivo, 'r') as f:
+        for line in f:
+            line_clean = line.strip()
+            if not line_clean:
+                continue
+            
+            # Parsear la línea (formato: tiempo\tid\tsensor1\tsensor2\t...)
+            # También maneja comas como separadores decimales
+            line_clean = line_clean.replace(',', '.')
+            parts = line_clean.split()
+            if len(parts) >= 4:
+                try:
+                    t = float(parts[0])      # Columna 0: tiempo
+                    s1 = float(parts[2])     # Columna 2: sensor1
+                    s2 = float(parts[3])     # Columna 3: sensor2
+                    time.append(t)
+                    sensor1.append(s1)
+                    sensor2.append(s2)
+                except ValueError:
+                    continue
+    
+    return np.array(time), np.array(sensor1), np.array(sensor2)
+
+def grafico_gota_buena_mala(archivo_good, archivo_bad, guardar_path_good=None, guardar_path_bad=None, mostrar=False):
+    """
+    Genera dos gráficos separados: uno para gota buena y otro para gota mala.
+    
+    Args:
+        archivo_good: Ruta al archivo .dat con gota buena
+        archivo_bad: Ruta al archivo .dat con gota mala
+        guardar_path_good: Ruta donde guardar la figura de gota buena (default: presentacion/figures/gota_buena.png)
+        guardar_path_bad: Ruta donde guardar la figura de gota mala (default: presentacion/figures/gota_mala.png)
+        mostrar: Si mostrar los gráficos (default: False)
+    """
+    # Leer los datos de ambos archivos
+    print(f"Leyendo gota buena desde {archivo_good}...")
+    time_good, sensor1_good, sensor2_good = leer_drops_dat(archivo_good)
+    
+    print(f"Leyendo gota mala desde {archivo_bad}...")
+    time_bad, sensor1_bad, sensor2_bad = leer_drops_dat(archivo_bad)
+    
+    print(f"Gota buena: {len(time_good)} puntos")
+    print(f"Gota mala: {len(time_bad)} puntos")
+    
+    # Normalizar tiempos para que empiecen en 0
+    if len(time_good) > 0:
+        time_good = time_good - time_good[0]
+    if len(time_bad) > 0:
+        time_bad = time_bad - time_bad[0]
+    
+    # Configurar el estilo del gráfico para presentación
+    plt.style.use('seaborn-v0_8')
+    plt.rcParams['font.size'] = 14
+    plt.rcParams['axes.labelsize'] = 16
+    plt.rcParams['axes.titlesize'] = 18
+    plt.rcParams['xtick.labelsize'] = 14
+    plt.rcParams['ytick.labelsize'] = 14
+    plt.rcParams['legend.fontsize'] = 14
+    
+    # Asegurar que el directorio existe
+    base_dir = '/Users/uzielluduena/Thesis/new_def/presentacion/figures'
+    os.makedirs(base_dir, exist_ok=True)
+    
+    # ===== GRÁFICO DE GOTA BUENA =====
+    fig1, ax1 = plt.subplots(figsize=(14, 8))
+    ax1.plot(time_good, sensor1_good, 'b-', linewidth=1.5, label='Sensor 1 (Anillo)', alpha=0.8)
+    ax1.plot(time_good, sensor2_good, 'r-', linewidth=1.5, label='Sensor 2 (Placa)', alpha=0.8)
+    ax1.set_xlabel('Tiempo (s)', fontweight='bold')
+    ax1.set_ylabel('Amplitud (V)', fontweight='bold')
+    # Sin título
+    ax1.grid(True, alpha=0.3, linestyle='--')
+    ax1.legend(loc='upper right', frameon=True, fancybox=True, shadow=True)
+    plt.tight_layout()
+    
+    if guardar_path_good is None:
+        guardar_path_good = f'{base_dir}/gota_buena.png'
+    
+    plt.savefig(guardar_path_good, dpi=300, bbox_inches='tight', facecolor='white')
+    print(f"Gráfico de gota buena guardado en: {guardar_path_good}")
+    
+    if mostrar:
+        plt.show()
+    else:
+        plt.close(fig1)
+    
+    # ===== GRÁFICO DE GOTA MALA =====
+    fig2, ax2 = plt.subplots(figsize=(14, 8))
+    ax2.plot(time_bad, sensor1_bad, 'b-', linewidth=1.5, label='Sensor 1 (Anillo)', alpha=0.8)
+    ax2.plot(time_bad, sensor2_bad, 'r-', linewidth=1.5, label='Sensor 2 (Placa)', alpha=0.8)
+    ax2.set_xlabel('Tiempo (s)', fontweight='bold')
+    ax2.set_ylabel('Amplitud (V)', fontweight='bold')
+    # Sin título
+    ax2.grid(True, alpha=0.3, linestyle='--')
+    ax2.legend(loc='upper right', frameon=True, fancybox=True, shadow=True)
+    plt.tight_layout()
+    
+    if guardar_path_bad is None:
+        guardar_path_bad = f'{base_dir}/gota_mala.png'
+    
+    plt.savefig(guardar_path_bad, dpi=300, bbox_inches='tight', facecolor='white')
+    print(f"Gráfico de gota mala guardado en: {guardar_path_bad}")
+    
+    if mostrar:
+        plt.show()
+    else:
+        plt.close(fig2)
+
 def grafico_dat(archivo_dat, guardar_path=None, titulo=None, mostrar=False,
                 solo_sensor1=False, solo_sensor2=False):
     """
@@ -432,13 +554,18 @@ def grafico_dat(archivo_dat, guardar_path=None, titulo=None, mostrar=False,
 
 if __name__ == "__main__":
     # Generar gráficos de estructuras de datos
-    grafico_array(mostrar=False)
-    grafico_queue(mostrar=False)
-    grafico_deque(mostrar=False)
+    # grafico_array(mostrar=False)
+    # grafico_queue(mostrar=False)
+    # grafico_deque(mostrar=False)
     
     # Archivo .dat a graficar
     archivo_dat = '/Users/uzielluduena/Thesis/new_def/23-03-23-02-04-27-casa-A2/drops_falla_velocidad.dat'
     grafico_dat(archivo_dat, mostrar=False)
+    
+    # Gráfico comparativo de gota buena y mala
+    archivo_good = '/Users/uzielluduena/Thesis/new_def/21-11-09-01-10-24/drops_good.dat'
+    archivo_bad = '/Users/uzielluduena/Thesis/new_def/21-11-09-01-10-24/drops_bad.dat'
+    grafico_gota_buena_mala(archivo_good, archivo_bad, mostrar=False)
     
     # Archivo .lvm a leer (opcional)
     # archivo = '/Users/uzielluduena/Thesis/Tormentas/21-11-09-01-10-24.lvm'
