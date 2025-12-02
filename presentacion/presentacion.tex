@@ -188,7 +188,7 @@ Director: Rodolfo Guillermo Pereyra}
   \begin{itemize}
     \item \textbf{Es lentísimo:} 6 horas para procesar una tormenta de 5 horas (100M datos)
     \item \textbf{Consume mucha memoria:} obliga a procesar los datos de a partes
-    \item \textbf{Codigo monolítico:} Requiere entender todo el codigo para hacer modificaciones
+    \item \textbf{Código monolítico:} Requiere entender todo el código para hacer modificaciones
   \end{itemize}
 
   \textbf{Objetivos:}
@@ -202,7 +202,7 @@ Director: Rodolfo Guillermo Pereyra}
     El código actual, aunque funcional, presenta problemas serios de rendimiento. Es extremadamente lento: tarda 6 horas para procesar una tormenta de 5 horas, que son aproximadamente 100 millones de datos. Además, consume mucha memoria, lo que obliga a procesar los datos de a partes. El código es monolítico, lo que dificulta su mantenimiento y modificación.
 
     Para solucionar estos problemas, es necesario analizar el código existente para entender completamente su funcionamiento y poder replicar su funcionalidad de forma más óptima. El objetivo es mejorar significativamente el rendimiento y el uso de memoria, manteniendo la misma precisión en la detección de pulsos.
-    Tambien es necesario refactorizar el código para hacerlo más modular y mantenible, lo cual facilita la implementación de nuevas funcionalidades y la corrección de errores.
+    También es necesario refactorizar el código para hacerlo más modular y mantenible, lo cual facilita la implementación de nuevas funcionalidades y la corrección de errores.
   }
 \end{frame}
 
@@ -242,7 +242,7 @@ Director: Rodolfo Guillermo Pereyra}
 
 \begin{frame}{Importancia de la constante en la complejidad}
 
-  En general, la funcion $g(n)$ es lo mas simple posible, es decir que si
+  En general, la función $g(n)$ es lo más simple posible, es decir que si
   \begin{itemize}
     \item $f(n) = O(n)$
     \item $f(n) = O(n^2)$
@@ -256,7 +256,7 @@ Director: Rodolfo Guillermo Pereyra}
   \begin{itemize}
     \item Por definición: $f(n) = O(10n) = O(n)$ (la constante se elimina)
     \item Pero, un algoritmo que hace 10 veces más operaciones requiere 10 veces más cómputo
-    \item Por lo tanto, es importante prestar atención a la cantidad de constante de un algoritmo, para terminar de evaluar su desempeño en la práctica.
+    \item Por lo tanto, es importante prestar atención a la magnitud de la constante de un algoritmo, para terminar de evaluar su desempeño en la práctica.
   \end{itemize}
 \end{frame}
 
@@ -394,7 +394,7 @@ Director: Rodolfo Guillermo Pereyra}
 \end{frame}
 
 \begin{frame}{Detección de pulsos}
-  \textbf{Busqueda por umbrales:}
+  \textbf{Búsqueda por umbrales:}
   \begin{itemize}
     \item 1000 umbrales desde 2.00 hasta 0.02V
     \item Pares de puntos consecutivos que superen el umbral en cada señal, con separación máxima de 100 puntos entre señales
@@ -554,7 +554,7 @@ Director: Rodolfo Guillermo Pereyra}
       \item Variables sin contexto
       \item Código duplicado
       \item I/O hard-codeado
-      \item Perdida de datos
+      \item Pérdida de datos
       \item Filtros post-detección
     \end{itemize}
     
@@ -851,7 +851,7 @@ Director: Rodolfo Guillermo Pereyra}
 \end{frame}
 
 \begin{frame}{Cambios en la detección de pulsos - Parte 1}
-  Aprovechar que los pulsos miden maximo 400 puntos
+  Aprovechar que los pulsos miden máximo 400 puntos
   \begin{center}
     \includegraphics[width=0.9\textwidth]{figures/mejora_busqueda_0.png}
   \end{center}
@@ -865,7 +865,7 @@ Director: Rodolfo Guillermo Pereyra}
 \end{frame}
 
 \begin{frame}{Cambios en la detección de pulsos - Parte 3}
-  Buscamos el punto critco del sensor 1 entre los primeros 400 puntos, pero permitimos que el punto critico del sensor 2 esté en la siguiente ventana
+  Buscamos el punto crítico del sensor 1 entre los primeros 400 puntos, pero permitimos que el punto crítico del sensor 2 esté en la siguiente ventana
   \begin{center}
     \includegraphics[width=0.9\textwidth]{figures/mejora_busqueda_2.png}
   \end{center}
@@ -878,7 +878,7 @@ Director: Rodolfo Guillermo Pereyra}
 \end{frame}
 
 \begin{frame}{Cambios en la detección de pulsos - Parte 5}
-  Busqueda con MinMaxQueue de tamaño 100 sobre el sensor 2 para obtener el mejor critico para cada punto del sensor 1
+  Búsqueda con MinMaxQueue de tamaño 100 sobre el sensor 2 para obtener el mejor crítico para cada punto del sensor 1
   \begin{center}
     \includegraphics[width=0.9\textwidth]{figures/mejora_busqueda_4.png}
   \end{center}
@@ -892,7 +892,7 @@ Director: Rodolfo Guillermo Pereyra}
 \end{frame}
 
 \begin{frame}{Cambios en la detección de pulsos - Parte 7}
-  En caso de que sea valido, marcamos como utilizado todos los puntos del pulso y reiniciamos la busqueda en la misma ventana
+  En caso de que sea válido, marcamos como utilizado todos los puntos del pulso y reiniciamos la búsqueda en la misma ventana
   \begin{center}
     \includegraphics[width=0.9\textwidth]{figures/mejora_busqueda_6.png}
   \end{center}
@@ -903,6 +903,24 @@ Director: Rodolfo Guillermo Pereyra}
   \begin{center}
     \includegraphics[width=0.9\textwidth]{figures/mejora_busqueda_7.png}
   \end{center}
+\end{frame}
+
+\begin{frame}{Análisis de complejidad}
+  \begin{itemize}
+    \item El algoritmo procesa $O(n/300)$ ventanas, donde $n$ es el número total de puntos
+    \item Cada ventana tiene tamaño $V = 800$ puntos
+    \item Se marcan como mínimo 4 puntos por búsqueda $\Rightarrow$ cota superior de $300/4 = 75$ búsquedas por ventana
+    \item Cada búsqueda tiene complejidad $O(V)$
+  \end{itemize}
+  
+  \vspace{0.5cm}
+  
+  \textbf{Complejidad total:}
+  $$O\left(\frac{n}{300} \times 75 \times 800 \right) = O(200n) = O(n)$$
+  
+  \vspace{0.3cm}
+  
+  \textcolor{red}{\textbf{Reducción de constante: de 100000 a 200}}
 \end{frame}
 
 
@@ -920,6 +938,12 @@ Director: Rodolfo Guillermo Pereyra}
     \item Uso de memoria estable por debajo de 2 GB.
     \item Detección de pulsos aumenta 1--5\% según tormenta.
   \end{itemize}
+
+\vspace{0.5cm}
+\begin{center}
+  \textcolor{red}{\textbf{7200\% de mejora en tiempo de procesamiento}}
+\end{center}
+\vspace{0.3cm}
 \end{frame}
 
 \begin{frame}{Validación cualitativa}
@@ -952,6 +976,11 @@ Director: Rodolfo Guillermo Pereyra}
 \begin{frame}
   \centering
   {\Large \textbf{Preguntas?}}
+\end{frame}
+
+\begin{frame}
+  \centering
+  {\Large \textbf{Gracias!}}
 \end{frame}
 
 \end{document}
