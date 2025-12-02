@@ -552,6 +552,346 @@ def grafico_dat(archivo_dat, guardar_path=None, titulo=None, mostrar=False,
     else:
         plt.close()
 
+def leer_drops_lvm_data(archivo):
+    """
+    Lee un archivo .dat con múltiples drops separados por "---".
+    
+    Args:
+        archivo: Ruta al archivo .dat con formato drops_lvm_data.dat
+    
+    Returns:
+        drops: Lista de tuplas (time, sensor1, sensor2) para cada drop
+    """
+    drops = []
+    current_drop_time = []
+    current_drop_sensor1 = []
+    current_drop_sensor2 = []
+    
+    with open(archivo, 'r') as f:
+        for line in f:
+            line_clean = line.strip()
+            
+            # Si encontramos un separador, guardamos el drop actual
+            if line_clean == "---":
+                if len(current_drop_time) > 0:
+                    drops.append((
+                        np.array(current_drop_time),
+                        np.array(current_drop_sensor1),
+                        np.array(current_drop_sensor2)
+                    ))
+                    current_drop_time = []
+                    current_drop_sensor1 = []
+                    current_drop_sensor2 = []
+                continue
+            
+            # Parsear la línea (formato: tiempo sensor1 sensor2)
+            line_clean = line_clean.replace(',', '.')
+            parts = line_clean.split()
+            if len(parts) >= 3:
+                try:
+                    t = float(parts[0])
+                    s1 = float(parts[1])
+                    s2 = float(parts[2])
+                    current_drop_time.append(t)
+                    current_drop_sensor1.append(s1)
+                    current_drop_sensor2.append(s2)
+                except ValueError:
+                    continue
+    
+    # Guardar el último drop si no termina con "---"
+    if len(current_drop_time) > 0:
+        drops.append((
+            np.array(current_drop_time),
+            np.array(current_drop_sensor1),
+            np.array(current_drop_sensor2)
+        ))
+    
+    return drops
+
+def grafico_todas_las_gotas(archivo_dat, guardar_path=None, mostrar=False, 
+                            inicio_drop=0, fin_drop=None, espacio_entre_drops=0.01):
+    """
+    Genera un gráfico de todas las gotas desde un archivo drops_lvm_data.dat.
+    Las gotas se muestran una después de otra, con líneas verticales marcando los cortes.
+    
+    Args:
+        archivo_dat: Ruta al archivo drops_lvm_data.dat
+        guardar_path: Ruta donde guardar la figura (default: presentacion/figures/todas_las_gotas.png)
+        mostrar: Si mostrar el gráfico (default: False)
+        inicio_drop: Índice del primer drop a graficar (default: 0)
+        fin_drop: Índice del último drop a graficar (None = todos) (default: None)
+        espacio_entre_drops: Espacio en segundos entre drops consecutivos (default: 0.01)
+    """
+    # Leer todos los drops
+    print(f"Leyendo drops desde {archivo_dat}...")
+    todos_los_drops = leer_drops_lvm_data(archivo_dat)
+    print(f"Total de drops encontrados: {len(todos_los_drops)}")
+    
+    # Filtrar drops según los índices especificados
+    if fin_drop is None:
+        drops = todos_los_drops[inicio_drop:]
+    else:
+        drops = todos_los_drops[inicio_drop:fin_drop]
+    
+    # Filtrar drops vacíos
+    drops = [(t, s1, s2) for t, s1, s2 in drops if len(t) > 0]
+    
+    if len(drops) == 0:
+        print("No se encontraron drops válidos para graficar")
+        return
+    
+    print(f"Graficando {len(drops)} drops (desde índice {inicio_drop})")
+    
+    # Configurar el estilo del gráfico para presentación
+    plt.style.use('seaborn-v0_8')
+    plt.rcParams['font.size'] = 14
+    plt.rcParams['axes.labelsize'] = 16
+    plt.rcParams['axes.titlesize'] = 18
+    plt.rcParams['xtick.labelsize'] = 14
+    plt.rcParams['ytick.labelsize'] = 14
+    plt.rcParams['legend.fontsize'] = 14
+    
+    # Crear la figura
+    fig, ax = plt.subplots(figsize=(16, 8))
+    
+    # Procesar y graficar cada drop
+    time_offset = 0.0
+    separator_positions = []
+    
+    for i, (time, sensor1, sensor2) in enumerate(drops):
+        # Normalizar tiempo del drop para que empiece en 0
+        time_normalized = time - time[0]
+        duracion_drop = time_normalized[-1] if len(time_normalized) > 0 else 0
+        
+        # Agregar offset para concatenar con drops anteriores
+        time_shifted = time_normalized + time_offset
+
+        print(len(time_shifted))
+        print(len(sensor1))
+        print(len(sensor2))
+        
+        # Graficar sensores
+        ax.plot(time_shifted, sensor1, 'b-', linewidth=1.5, 
+                label='Sensor 1 (Anillo)' if i == 0 else '', alpha=0.8)
+        ax.plot(time_shifted, sensor2, 'r-', linewidth=1.5, 
+                label='Sensor 2 (Placa)' if i == 0 else '', alpha=0.8)
+        
+        # Marcar el punto 400 si existe
+        if len(time_shifted) > 400:
+            ax.plot(time_shifted[400], sensor1[400], 'go', markersize=10, 
+                   label='Punto 400 (Sensor 1)' if i == 0 else '', zorder=5)
+            ax.plot(time_shifted[400], sensor2[400], 'mo', markersize=10, 
+                   label='Punto 400 (Sensor 2)' if i == 0 else '', zorder=5)
+        
+        # Guardar posición del separador (al final de este drop)
+        if i < len(drops) - 1:
+            separator_positions.append(time_shifted[-1])
+        
+        # Actualizar offset para el siguiente drop
+        time_offset = time_shifted[-1] + espacio_entre_drops
+    
+    # Dibujar líneas verticales para marcar los cortes entre drops
+    if separator_positions:
+        for sep_pos in separator_positions:
+            ax.axvline(x=sep_pos, color='green', linestyle='--', linewidth=2, 
+                      alpha=0.7, label='Separador' if sep_pos == separator_positions[0] else '')
+    
+    # Configurar etiquetas y título
+    ax.set_xlabel('Tiempo (s)', fontweight='bold')
+    ax.set_ylabel('Amplitud (V)', fontweight='bold')
+    ax.set_title(f'Todas las gotas detectadas ({len(drops)} drops)', fontweight='bold', pad=20)
+    
+    # Agregar grid
+    ax.grid(True, alpha=0.3, linestyle='--')
+    
+    # Configurar la leyenda
+    ax.legend(loc='upper right', frameon=True, fancybox=True, shadow=True)
+    
+    # Ajustar el layout
+    plt.tight_layout()
+    
+    # Guardar la figura
+    if guardar_path is None:
+        guardar_path = '/Users/uzielluduena/Thesis/new_def/presentacion/figures/todas_las_gotas.png'
+    
+    # Asegurar que el directorio existe
+    os.makedirs(os.path.dirname(guardar_path), exist_ok=True)
+    
+    plt.savefig(guardar_path, dpi=300, bbox_inches='tight', facecolor='white')
+    print(f"Gráfico guardado en: {guardar_path}")
+    
+    # Mostrar el gráfico
+    if mostrar:
+        plt.show()
+    else:
+        plt.close()
+
+def generar_svg_gota(archivo_dat, indice_drop, guardar_path=None, 
+                     ancho=800, alto=400, margen=50, punto_marcar=400):
+    """
+    Genera un archivo SVG con 2 paths (sensor1 y sensor2) para una gota específica.
+    Marca un punto específico en el gráfico.
+    
+    Args:
+        archivo_dat: Ruta al archivo drops_lvm_data.dat
+        indice_drop: Índice del drop a graficar (0-based)
+        guardar_path: Ruta donde guardar el SVG (default: presentacion/figures/gota_{indice_drop}.svg)
+        ancho: Ancho del SVG en píxeles (default: 800)
+        alto: Alto del SVG en píxeles (default: 400)
+        margen: Margen en píxeles (default: 50)
+        punto_marcar: Índice del punto a marcar (default: 400)
+    """
+    # Leer todos los drops
+    print(f"Leyendo drops desde {archivo_dat}...")
+    todos_los_drops = leer_drops_lvm_data(archivo_dat)
+    
+    if indice_drop >= len(todos_los_drops):
+        print(f"Error: El índice {indice_drop} está fuera de rango. Total de drops: {len(todos_los_drops)}")
+        return
+    
+    # Obtener el drop específico
+    time, sensor1, sensor2 = todos_los_drops[indice_drop]
+    
+    if len(time) == 0:
+        print(f"Error: El drop {indice_drop} está vacío")
+        return
+    
+    print(f"Generando SVG para drop {indice_drop} con {len(time)} puntos")
+    
+    # Normalizar tiempo para que empiece en 0
+    time_normalized = time - time[0]
+    
+    # Calcular rangos de datos
+    min_time = time_normalized[0]
+    max_time = time_normalized[-1]
+    
+    # Buscar máximo y mínimo entre los puntos 200 y 600
+    inicio_rango = max(0, min(200, len(time_normalized) - 1))
+    fin_rango = min(len(time_normalized), 600)
+    
+    if fin_rango > inicio_rango:
+        # Extraer los datos en el rango de interés
+        sensor1_rango = sensor1[inicio_rango:fin_rango]
+        sensor2_rango = sensor2[inicio_rango:fin_rango]
+        
+        # Calcular min y max en ese rango
+        min_sensor = min(np.min(sensor1_rango), np.min(sensor2_rango))
+        max_sensor = max(np.max(sensor1_rango), np.max(sensor2_rango))
+    else:
+        # Fallback: usar todo el rango si el rango especificado no es válido
+        min_sensor = min(np.min(sensor1), np.min(sensor2))
+        max_sensor = max(np.max(sensor1), np.max(sensor2))
+    
+    # Calcular el rango real de los sensores en el rango de interés
+    time_range = max_time - min_time
+    sensor_range = max_sensor - min_sensor
+    
+    # Área de dibujo (sin márgenes) - necesitamos esto para calcular la escala
+    draw_width = ancho - 2 * margen
+    draw_height = alto - 2 * margen
+    
+    # Ajustar la escala vertical para que la señal ocupe el 80% del área vertical
+    # Queremos que el rango de datos (sensor_range) ocupe el 80% del área de dibujo
+    # Para que ocupe el 80%, el rango visual debe ser: sensor_range / 0.8
+    sensor_range_visual = sensor_range / 1
+    
+    # Calcular el centro de los datos
+    sensor_center = (min_sensor + max_sensor) / 2
+    
+    # Posicionar para que el máximo esté cerca del 80% desde abajo (20% desde arriba)
+    # Esto significa que queremos más espacio abajo que arriba
+    # Si el máximo real está en max_sensor, queremos que esté al 20% desde arriba del rango visual
+    # Entonces: max_sensor_visual = max_sensor + (sensor_range_visual - sensor_range) * 0.2
+    padding_total = sensor_range_visual - sensor_range
+    max_sensor = max_sensor + padding_total * 0.2  # 20% del padding arriba
+    min_sensor = max_sensor - sensor_range_visual  # El rango completo hacia abajo
+    
+    # Agregar un poco de padding horizontal al tiempo
+    time_padding = time_range * 0.05
+    min_time -= time_padding
+    max_time += time_padding
+    
+    # Función para convertir coordenadas de datos a coordenadas SVG
+    def x_to_svg(x):
+        return margen + ((x - min_time) / (max_time - min_time)) * draw_width
+    
+    def y_to_svg(y):
+        # Invertir Y porque en SVG Y aumenta hacia abajo
+        return margen + draw_height - ((y - min_sensor) / (max_sensor - min_sensor)) * draw_height
+    
+    # Generar paths
+    def generar_path(time_data, sensor_data):
+        path_parts = []
+        for i in range(len(time_data)):
+            x = x_to_svg(time_data[i])
+            y = y_to_svg(sensor_data[i])
+            if i == 0:
+                path_parts.append(f"M {x:.2f} {y:.2f}")
+            else:
+                path_parts.append(f"L {x:.2f} {y:.2f}")
+        return " ".join(path_parts)
+    
+    path_sensor1 = generar_path(time_normalized, sensor1)
+    path_sensor2 = generar_path(time_normalized, sensor2)
+    
+    # Generar marcador del punto si existe
+    marcador_punto = ""
+    if punto_marcar < len(time_normalized):
+        x_punto = x_to_svg(time_normalized[punto_marcar])
+        y_punto_s1 = y_to_svg(sensor1[punto_marcar])
+        y_punto_s2 = y_to_svg(sensor2[punto_marcar])
+        y_texto = y_punto_s1 - 10
+        
+        marcador_punto = f'''
+        <circle cx="{x_punto:.2f}" cy="{y_punto_s1:.2f}" r="5" fill="green" stroke="darkgreen" stroke-width="2"/>
+        <circle cx="{x_punto:.2f}" cy="{y_punto_s2:.2f}" r="5" fill="magenta" stroke="darkmagenta" stroke-width="2"/>
+        <text x="{x_punto:.2f}" y="{y_texto:.2f}" text-anchor="middle" font-size="12" fill="green" font-weight="bold">400</text>
+        '''
+    
+    # Generar SVG
+    svg_content = f'''<?xml version="1.0" encoding="UTF-8"?>
+<svg width="{ancho}" height="{alto}" xmlns="http://www.w3.org/2000/svg">
+    <!-- Fondo -->
+    <rect width="{ancho}" height="{alto}" fill="white"/>
+    
+    <!-- Ejes -->
+    <line x1="{margen}" y1="{margen}" x2="{margen}" y2="{alto - margen}" 
+          stroke="gray" stroke-width="1" opacity="0.5"/>
+    <line x1="{margen}" y1="{alto - margen}" x2="{ancho - margen}" y2="{alto - margen}" 
+          stroke="gray" stroke-width="1" opacity="0.5"/>
+    
+    <!-- Paths de los sensores -->
+    <path d="{path_sensor1}" fill="none" stroke="blue" stroke-width="2" opacity="0.8"/>
+    <path d="{path_sensor2}" fill="none" stroke="red" stroke-width="2" opacity="0.8"/>
+    
+    <!-- Marcador del punto {punto_marcar} -->
+    {marcador_punto}
+    
+    <!-- Leyenda -->
+    <g transform="translate({ancho - 150}, {margen + 20})">
+        <line x1="0" y1="0" x2="30" y2="0" stroke="blue" stroke-width="2"/>
+        <text x="35" y="5" font-size="12" fill="black">Sensor 1 (Anillo)</text>
+        <line x1="0" y1="20" x2="30" y2="20" stroke="red" stroke-width="2"/>
+        <text x="35" y="25" font-size="12" fill="black">Sensor 2 (Placa)</text>
+    </g>
+    
+    <!-- Etiquetas de ejes -->
+    <text x="{ancho / 2}" y="{alto - 10}" text-anchor="middle" font-size="14" font-weight="bold" fill="black">Tiempo (s)</text>
+    <text x="20" y="{alto / 2}" text-anchor="middle" font-size="14" font-weight="bold" fill="black" transform="rotate(-90, 20, {alto / 2})">Amplitud (V)</text>
+</svg>'''
+    
+    # Guardar SVG
+    if guardar_path is None:
+        guardar_path = f'/Users/uzielluduena/Thesis/new_def/presentacion/figures/gota_{indice_drop}.svg'
+    
+    # Asegurar que el directorio existe
+    os.makedirs(os.path.dirname(guardar_path), exist_ok=True)
+    
+    with open(guardar_path, 'w', encoding='utf-8') as f:
+        f.write(svg_content)
+    
+    print(f"SVG guardado en: {guardar_path}")
+
 if __name__ == "__main__":
     # Generar gráficos de estructuras de datos
     # grafico_array(mostrar=False)
@@ -570,4 +910,12 @@ if __name__ == "__main__":
     # Archivo .lvm a leer (opcional)
     # archivo = '/Users/uzielluduena/Thesis/Tormentas/21-11-09-01-10-24.lvm'
     # grafico_tormenta_lvm(archivo, num_puntos=10000, inicio=0, mostrar=True)
+    
+    # Gráfico de todas las gotas desde drops_lvm_data.dat
+    archivo_drops_lvm = '/Users/uzielluduena/Thesis/new_def/21-11-09-01-10-24/drops_lvm_data.dat'
+    # Ejemplo: graficar desde el drop 14 en adelante
+    grafico_todas_las_gotas(archivo_drops_lvm, mostrar=False, inicio_drop=5, fin_drop=6)
+    
+    # Generar SVG de la gota #5 con marcador en el punto 400
+    generar_svg_gota(archivo_drops_lvm, indice_drop=5, punto_marcar=400)
 

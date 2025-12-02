@@ -819,7 +819,7 @@ Director: Rodolfo Guillermo Pereyra}
 
 \begin{frame}{Nuevo flujo de trabajo}
   \begin{center}
-    \includegraphics[width=0.8\textwidth]{figures/nuevo_flujo_trabajo.png}
+    \includegraphics[width=0.8\textwidth]{figures/diagrama_nuevo.png}
   \end{center}
 \end{frame}
 
@@ -850,9 +850,61 @@ Director: Rodolfo Guillermo Pereyra}
   \textcolor{red}{\textbf{Reducción de $\sim 1600$ veces en operaciones por punto}}
 \end{frame}
 
-\begin{frame}{Cambios en la detección de pulsos}
-  % papapapa
+\begin{frame}{Cambios en la detección de pulsos - Parte 1}
+  Aprovechar que los pulsos miden maximo 400 puntos
+  \begin{center}
+    \includegraphics[width=0.9\textwidth]{figures/mejora_busqueda_0.png}
+  \end{center}
 \end{frame}
+
+\begin{frame}{Cambios en la detección de pulsos - Parte 2}
+  Un pulso puede quedar en el medio si buscamos en solo los primeros 400 puntos
+  \begin{center}
+    \includegraphics[width=0.9\textwidth]{figures/mejora_busqueda_1.png}
+  \end{center}
+\end{frame}
+
+\begin{frame}{Cambios en la detección de pulsos - Parte 3}
+  Buscamos el punto critco del sensor 1 entre los primeros 400 puntos, pero permitimos que el punto critico del sensor 2 esté en la siguiente ventana
+  \begin{center}
+    \includegraphics[width=0.9\textwidth]{figures/mejora_busqueda_2.png}
+  \end{center}
+\end{frame}
+
+\begin{frame}{Cambios en la detección de pulsos - Parte 4}
+  \begin{center}
+    \includegraphics[width=0.9\textwidth]{figures/mejora_busqueda_3.png}
+  \end{center}
+\end{frame}
+
+\begin{frame}{Cambios en la detección de pulsos - Parte 5}
+  Busqueda con MinMaxQueue de tamaño 100 sobre el sensor 2 para obtener el mejor critico para cada punto del sensor 1
+  \begin{center}
+    \includegraphics[width=0.9\textwidth]{figures/mejora_busqueda_4.png}
+  \end{center}
+\end{frame}
+
+\begin{frame}{Cambios en la detección de pulsos - Parte 6}
+  Delimitamos el pulso encontrado, y podemos calcular sus propiedades y aplicar los filtros de calidad
+  \begin{center}
+    \includegraphics[width=0.9\textwidth]{figures/mejora_busqueda_5.png}
+  \end{center}
+\end{frame}
+
+\begin{frame}{Cambios en la detección de pulsos - Parte 7}
+  En caso de que sea valido, marcamos como utilizado todos los puntos del pulso y reiniciamos la busqueda en la misma ventana
+  \begin{center}
+    \includegraphics[width=0.9\textwidth]{figures/mejora_busqueda_6.png}
+  \end{center}
+\end{frame}
+
+\begin{frame}{Cambios en la detección de pulsos - Parte 8}
+  Se permiten 100 puntos utilizados al inicio de la ventana, para encontrar mejor el inicio del pulso
+  \begin{center}
+    \includegraphics[width=0.9\textwidth]{figures/mejora_busqueda_7.png}
+  \end{center}
+\end{frame}
+
 
 \section{Resultados y cierre}
 
