@@ -208,7 +208,7 @@ void DropFinder::getBestCandidateDrop(const std::vector<double> &sensor1,
     MaxMinQueue maxMinQueue;
 
     // Search backwards through the data
-    for (int i = sensor1.size() - 2; i >= 0; --i)
+    for (int i = DROP_SIZE + NN; i >= NN; --i)
     {
         // Add current sensor2 value to the queue
         maxMinQueue.push({sensor2Values[i], i});

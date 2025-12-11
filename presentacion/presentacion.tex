@@ -186,7 +186,7 @@ Director: Rodolfo Guillermo Pereyra}
 \begin{frame}{Problemas y objetivos}
   \textbf{Problemas principales:}
   \begin{itemize}
-    \item \textbf{Es lentísimo:} 6 horas para procesar una tormenta de 5 horas (100M datos)
+    \item \textbf{Es muy lento:} 6 horas para procesar una tormenta de 5 horas (100M datos)
     \item \textbf{Consume mucha memoria:} obliga a procesar los datos de a partes
     \item \textbf{Código monolítico:} Requiere entender todo el código para hacer modificaciones
   \end{itemize}
@@ -390,7 +390,7 @@ Director: Rodolfo Guillermo Pereyra}
     \includegraphics[width=0.7\textwidth]{./figures/remocion_offset.png}
     \end{center}
     \vspace{0.2cm}
-    La implementación actual tiene complejidad $O(5001n) = O(n)$
+    La implementación actual tiene complejidad $O(10002n) = O(n)$
 \end{frame}
 
 \begin{frame}{Detección de pulsos}
@@ -690,9 +690,9 @@ Director: Rodolfo Guillermo Pereyra}
 
 \begin{frame}{Ejemplo MinQueue - Parte 1}
   \centering
-  \includegraphics[width=0.8\textwidth]{figures/minqueue_1.png}
+  \includegraphics[width=0.8\textwidth]{figures/min_queue_1.png}
   \vspace{0.5cm}
-  \includegraphics[width=0.8\textwidth]{figures/minqueue_2.png}
+  \includegraphics[width=0.8\textwidth]{figures/min_queue_2.png}
   
   \note{
     Veamos un ejemplo paso a paso de cómo funciona la MinQueue. En estas primeras dos imágenes podemos ver las operaciones iniciales de push.
@@ -701,9 +701,9 @@ Director: Rodolfo Guillermo Pereyra}
 
 \begin{frame}{Ejemplo MinQueue - Parte 2}
   \centering
-  \includegraphics[width=0.8\textwidth]{figures/minqueue_3.png}
+  \includegraphics[width=0.8\textwidth]{figures/min_queue_3.png}
   \vspace{0.5cm}
-  \includegraphics[width=0.8\textwidth]{figures/minqueue_4.png}
+  \includegraphics[width=0.8\textwidth]{figures/min_queue_4.png}
   
   \note{
     Continuamos con más operaciones de push. Noten cómo la deque mantiene los candidatos al mínimo en orden creciente.
@@ -712,14 +712,14 @@ Director: Rodolfo Guillermo Pereyra}
 
 \begin{frame}{Ejemplo MinQueue - Parte 3}
   \centering
-  \includegraphics[width=0.8\textwidth]{figures/minqueue_5.png}
+  \includegraphics[width=0.8\textwidth]{figures/min_queue_5.png}
 \end{frame}
 
 \begin{frame}{Ejemplo MinQueue - Parte 4}
   \centering
-  \includegraphics[width=0.8\textwidth]{figures/minqueue_6.png}
+  \includegraphics[width=0.8\textwidth]{figures/min_queue_6.png}
   \vspace{0.5cm}
-  \includegraphics[width=0.8\textwidth]{figures/minqueue_7.png}
+  \includegraphics[width=0.8\textwidth]{figures/min_queue_7.png}
 
   \note{
     Observen cómo cuando se agregan elementos menores, estos eliminan elementos mayores de la deque, manteniendo siempre el orden creciente.
@@ -728,9 +728,9 @@ Director: Rodolfo Guillermo Pereyra}
 
 \begin{frame}{Ejemplo MinQueue - Parte 5}
   \centering
-  \includegraphics[width=0.8\textwidth]{figures/minqueue_8.png}
+  \includegraphics[width=0.8\textwidth]{figures/min_queue_8.png}
   \vspace{0.5cm}
-  \includegraphics[width=0.8\textwidth]{figures/minqueue_9.png}
+  \includegraphics[width=0.8\textwidth]{figures/min_queue_9.png}
   
   \note{
     Continuamos viendo cómo se mantiene la deque ordenada y cómo el mínimo siempre está en el frente.
@@ -739,9 +739,9 @@ Director: Rodolfo Guillermo Pereyra}
 
 \begin{frame}{Ejemplo MinQueue - Parte 6}
   \centering
-  \includegraphics[width=0.8\textwidth]{figures/minqueue_10.png}
+  \includegraphics[width=0.8\textwidth]{figures/min_queue_10.png}
   \vspace{0.5cm}
-  \includegraphics[width=0.8\textwidth]{figures/minqueue_11.png}
+  \includegraphics[width=0.8\textwidth]{figures/min_queue_11.png}
   
   \note{
     Ahora vemos operaciones de pop. Cuando se elimina un elemento de la queue, si ese elemento es el mínimo actual (está en el frente de la deque), también se elimina de la deque.
@@ -750,7 +750,7 @@ Director: Rodolfo Guillermo Pereyra}
 
 \begin{frame}{Ejemplo MinQueue - Parte 7}
   \centering
-  \includegraphics[width=0.8\textwidth]{figures/minqueue_12.png}
+  \includegraphics[width=0.8\textwidth]{figures/min_queue_12.png}
   
   \note{
     Continuamos con más operaciones, mostrando cómo la estructura se mantiene consistente después de cada operación.
@@ -759,9 +759,9 @@ Director: Rodolfo Guillermo Pereyra}
 
 \begin{frame}{Ejemplo MinQueue - Parte 8}
   \centering
-  \includegraphics[width=0.8\textwidth]{figures/minqueue_13.png}
+  \includegraphics[width=0.8\textwidth]{figures/min_queue_13.png}
   \vspace{0.5cm}
-  \includegraphics[width=0.8\textwidth]{figures/minqueue_14.png}
+  \includegraphics[width=0.8\textwidth]{figures/min_queue_14.png}
   
   \note{
     Finalizamos el ejemplo mostrando cómo la MinQueue mantiene correctamente el mínimo en todo momento, permitiendo acceder a él en tiempo constante.
@@ -834,20 +834,20 @@ Director: Rodolfo Guillermo Pereyra}
   \textbf{Algoritmo original:}
   \begin{itemize}
     \item Para cada punto: suma de 5001 valores y división
-    \item Complejidad: $O(5001n) = O(n)$ con constante muy alta
+    \item Complejidad: $O(10002n) = O(n)$ con constante muy alta
   \end{itemize}
   
   \vspace{0.5cm}
   \textbf{Optimización aplicada:}
   \begin{itemize}
     \item Uso de \textbf{ventana deslizante}
-    \item Reducción de \textbf{5001 operaciones} a solo \textbf{3 operaciones} por punto
+    \item Reducción de \textbf{10002 operaciones} a solo \textbf{3 operaciones} por punto
     \item Misma complejidad: $O(n)$, pero con constante mucho menor
   \end{itemize}
   
   \vspace{0.3cm}
   \centering
-  \textcolor{red}{\textbf{Reducción de $\sim 1600$ veces en operaciones por punto}}
+  \textcolor{red}{\textbf{Reducción de $\sim 3300$ veces en operaciones por punto}}
 \end{frame}
 
 \begin{frame}{Cambios en la detección de pulsos - Parte 1}
@@ -885,42 +885,55 @@ Director: Rodolfo Guillermo Pereyra}
 \end{frame}
 
 \begin{frame}{Cambios en la detección de pulsos - Parte 6}
-  Delimitamos el pulso encontrado, y podemos calcular sus propiedades y aplicar los filtros de calidad
   \begin{center}
     \includegraphics[width=0.9\textwidth]{figures/mejora_busqueda_5.png}
   \end{center}
 \end{frame}
 
 \begin{frame}{Cambios en la detección de pulsos - Parte 7}
-  En caso de que sea válido, marcamos como utilizado todos los puntos del pulso y reiniciamos la búsqueda en la misma ventana
+  Delimitamos el pulso encontrado, y podemos calcular sus propiedades y aplicar los filtros de calidad
   \begin{center}
     \includegraphics[width=0.9\textwidth]{figures/mejora_busqueda_6.png}
   \end{center}
 \end{frame}
 
 \begin{frame}{Cambios en la detección de pulsos - Parte 8}
-  Se permiten 100 puntos utilizados al inicio de la ventana, para encontrar mejor el inicio del pulso
+  En caso de que sea válido, marcamos como utilizado todos los puntos del pulso y reiniciamos la búsqueda en la misma ventana
   \begin{center}
     \includegraphics[width=0.9\textwidth]{figures/mejora_busqueda_7.png}
+  \end{center}
+\end{frame}
+
+\begin{frame}{Cambios en la detección de pulsos - Parte 9}
+  Se permiten 100 puntos utilizados al inicio de la ventana, para encontrar mejor el inicio del pulso
+  \begin{center}
+    \includegraphics[width=0.9\textwidth]{figures/mejora_busqueda_8.png}
+  \end{center}
+\end{frame}
+
+\begin{frame}{Cambios en la detección de pulsos - Parte 10}
+  Si se encuentra un pulso inválido, se marcan como utilizados los puntos críticos encontrados y se reinicia la búsqueda en la misma ventana
+  \begin{center}
+    \includegraphics[width=0.9\textwidth]{figures/mejora_busqueda_9.png}
   \end{center}
 \end{frame}
 
 \begin{frame}{Análisis de complejidad}
   \begin{itemize}
     \item El algoritmo procesa $O(n/300)$ ventanas, donde $n$ es el número total de puntos
-    \item Cada ventana tiene tamaño $V = 800$ puntos
-    \item Se marcan como mínimo 4 puntos por búsqueda $\Rightarrow$ cota superior de $300/4 = 75$ búsquedas por ventana
+    \item Cada ventana tiene tamaño $V = 800$ puntos, pero solo nos interesan 400 de ellos
+    \item Se marcan como mínimo 4 puntos por búsqueda $\Rightarrow$ cota superior de $400/4 = 100$ búsquedas por ventana
     \item Cada búsqueda tiene complejidad $O(V)$
   \end{itemize}
   
   \vspace{0.5cm}
   
   \textbf{Complejidad total:}
-  $$O\left(\frac{n}{300} \times 75 \times 800 \right) = O(200n) = O(n)$$
+  $$O\left(\frac{n}{300} \times 100 \times 400 \right) = O(133n) = O(n)$$
   
   \vspace{0.3cm}
   
-  \textcolor{red}{\textbf{Reducción de constante: de 100000 a 200}}
+  \textcolor{red}{\textbf{Reducción de constante: de 100000 a 133 (750 veces)}}
 \end{frame}
 
 
@@ -968,6 +981,7 @@ Director: Rodolfo Guillermo Pereyra}
 \begin{frame}{Posibles mejoras}
   \begin{itemize}
     \item Mejora en la adquisición de datos: eliminar los huecos de 50ms cada segundo.
+    \item Paralelizar el procesamiento de datos para reducir aún más los tiempos de ejecución.
     \item Procesamiento en tiempo real: solo almacenar las gotas detectadas, sin apagar y encender el instrumento.
     \item Mejora en la detección de pulsos: explorar técnicas de machine learning como Support Vector Networks (SVN) o redes neuronales.
   \end{itemize}

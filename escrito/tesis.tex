@@ -523,7 +523,9 @@ señal de la placa y el anillo. Experimentalmente se observó que el ancho del p
         eval = ln(1 + eval1) + ln(1 + eval2) + 3 * eval3 + 3 * eval4 + eval5^{2}
     \end{equation}
 
-    Mientras más chico sea el valor de la puntuación total, mejor es la calidad de la gota. En la figura \ref{fig:puntuacion_calidad} se puede observar la puntuación de calidad para diferentes gotas.
+    Mientras más chico sea el valor de la puntuación total, mejor es la calidad de la gota.
+    
+    % En la figura \ref{fig:puntuacion_calidad} se puede observar la puntuación de calidad para diferentes gotas.
     
 \item \textbf{Salida de resultados:} Finalmente, se escriben los datos de todos los pulsos válidos
 en un archivo, incluyendo posición temporal, cargas, velocidad, diámetro y puntuación de calidad.
@@ -555,7 +557,7 @@ Al analizar el rendimiento del código, se encontraron dos áreas de potenciales
 
 \begin{itemize}
     \item \textbf{Remoción de offset:} El algoritmo de remoción de offset es muy ineficiente. Como se puede observar en la implementación \nameref{lst:codigo_remocion_offset}, para cada punto, se hace una suma de 5001 valores divididos por 5001,
-    resultando en una complejidad $$O(5001n) = O(n)$$ Obviamente se trata de una complejidad lineal, pero no solo que la constante es altísima por el factor de 5001, sino que también se realizan 5001 divisiones por cada punto, que no es la operación más eficiente en un procesador \cite{Lemire2019FasterRemainder}.
+    resultando en una complejidad $$O(10002n) = O(n)$$ Obviamente se trata de una complejidad lineal, pero no solo que la constante es altísima por el factor de 10002, sino que también se realizan 5001 divisiones por cada punto, que no es la operación más eficiente en un procesador \cite{Lemire2019FasterRemainder}.
 
     \begin{lstlisting}[language=Fortran, label=lst:codigo_remocion_offset, caption={buscador\_de\_gotas.f - Algoritmo ineficiente de remoción de offset}]
 ! n = 5000

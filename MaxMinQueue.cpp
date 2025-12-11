@@ -33,6 +33,7 @@ void MaxMinQueue::push(std::pair<double, int> value)
     // Handle duplicate values by incrementing count
     if (!maxDeque.empty() && maxDeque.back().first.first == value.first) {
         maxDeque.back().second++;
+        maxDeque.back().first = value;
     } else {
         maxDeque.push_back({value, 1});
     }
@@ -46,6 +47,7 @@ void MaxMinQueue::push(std::pair<double, int> value)
     // Handle duplicate values by incrementing count
     if (!minDeque.empty() && minDeque.back().first.first == value.first) {
         minDeque.back().second++;
+        minDeque.back().first = value;
     } else {
         minDeque.push_back({value, 1});
     }
@@ -73,7 +75,7 @@ std::pair<double, int> MaxMinQueue::pop()
     queue.pop_front();
 
     // Update maxDeque if the popped value is the current maximum
-    if (!maxDeque.empty() && value == maxDeque.front().first)
+    if (!maxDeque.empty() && value.first == maxDeque.front().first.first)
     {
         // Decrement count for duplicate values
         if(--maxDeque.front().second == 0) {
@@ -82,7 +84,7 @@ std::pair<double, int> MaxMinQueue::pop()
     }
 
     // Update minDeque if the popped value is the current minimum
-    if (!minDeque.empty() && value == minDeque.front().first)
+    if (!minDeque.empty() && value.first == minDeque.front().first.first)
     {
         // Decrement count for duplicate values
         if(--minDeque.front().second == 0) {
