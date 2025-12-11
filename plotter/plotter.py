@@ -52,7 +52,7 @@ def grafico_complejidades():
     ax.grid(True, alpha=0.3, linestyle='--')
     
     # Configurar la leyenda
-    ax.legend(loc='upper left', frameon=True, fancybox=True, shadow=True)
+    ax.legend(loc='lower right', frameon=True, fancybox=True, shadow=True)
     
     # Ajustar el layout
     plt.tight_layout()
@@ -1119,7 +1119,7 @@ def grafico_interpolacion_puntual():
     print(f"Valores usados para interpolación: izquierdo={left_value:.1f}, derecho={right_value:.1f}")
 
 if __name__ == "__main__":
-    # grafico_complejidades()
+    grafico_complejidades()
     # grafico_sensores_gota()
     # grafico_gota_analisis()
     # grafico_calculo_carga()
@@ -1128,5 +1128,5 @@ if __name__ == "__main__":
     # grafico_comparacion_modelos()
     # grafico_sliding_window()
     # grafico_rellenado_huecos()
-    grafico_interpolacion_puntual()
+    # grafico_interpolacion_puntual()
     # grafico_minqueue()
